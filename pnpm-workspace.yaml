@@ -1,0 +1,24 @@
+packages:
+  - frontend
+  - backend
+  - admin
+
+
+allowBuilds:
+  '@nestjs/core': true
+  bufferutil: true
+  keccak: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@reown/appkit'
+  - '@scarf/scarf'
+  - bufferutil
+  - keccak
+  - msw
+  - sharp
+  - unrs-resolver
+  - utf-8-validate

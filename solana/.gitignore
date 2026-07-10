@@ -1,0 +1,21 @@
+# --- Secrets: NEVER commit ---
+# Keeper keypair (upgrade authority + settlement signer) and TxLINE API tokens.
+.keys/
+*.env
+.env
+.env.local
+
+# --- Rust / Anchor build artifacts ---
+target/
+.anchor/
+**/*.rs.bk
+
+# --- Local test validator ---
+test-ledger/
+
+# --- Dependencies ---
+node_modules/
+
+# --- macOS ---
+.DS_Store
+scripts/

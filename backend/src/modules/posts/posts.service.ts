@@ -1,0 +1,735 @@
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+  BadRequestException,
+  Inject,
+  forwardRef,
+  Logger,
+} from "@nestjs/common"
+import { InjectModel } from "@nestjs/mongoose"
+import { ConfigService } from "@nestjs/config"
+import { Model, Types } from "mongoose"
+import { Post, PostDocument } from "./posts.model"
+import { User, UserDocument } from "../users/users.model"
+import {
+  Market,
+  MarketDocument,
+  Vote,
+  VoteDocument,
+  VoteSide,
+} from "../markets/markets.model"
+import {
+  Like,
+  LikeDocument,
+  Reshare,
+  ReshareDocument,
+} from "../interactions/interactions.model"
+import { Comment, CommentDocument } from "../comments/comments.model"
+import {
+  serializeUser,
+  placeholderUserProfile,
+  UserResponse,
+} from "../auth/auth.service"
+import { CreateMarketPostDto } from "./posts.dto"
+import { SocketGateway } from "../socket/socket.gateway"
+
+export interface MarketResponse {
+  id: string
+  postId: string
+  post_id: string
+  authorId: string
+  author_id: string
+  question: string
+  category: string
+  deadline: string
+  lockTime?: string | null
+  lock_time?: string | null
+  resolutionSource: string
+  resolution_source: string
+  yesCondition: string
+  yes_condition: string
+  noCondition: string
+  no_condition: string
+  status: string
+  freeYesVotes: number
+  free_yes_votes: number
+  freeNoVotes: number
+  free_no_votes: number
+  totalFreeVotes: number
+  uniqueVotersCount: number
+  qualificationThreshold: number
+  uniqueVoterThreshold: number
+  marketCreationFeeUsdc: number
+  market_creation_fee_usdc: number
+  minimumPoolBalance: number
+  minimum_pool_balance: number
+  creationFeeTxHash: string | null
+  creation_fee_tx_hash: string | null
+  feeCollectorAddress: string | null
+  fee_collector_address: string | null
+  usdcYesAmount: number
+  usdc_yes_amount: number
+  usdcNoAmount: number
+  usdc_no_amount: number
+  liquidity: number
+  resolvedOutcome: string | null
+  resolved_outcome: string | null
+  resolvedByAdmin: string | null
+  resolved_by_admin: string | null
+  priceFeedId: string | null
+  price_feed_id: string | null
+  targetPrice: number | null
+  target_price: number | null
+  resolveAbove: boolean | null
+  resolve_above: boolean | null
+  isPythMarket: boolean
+  is_pyth_market: boolean
+  proposalReasoning?: string | null
+  proposalCitations?: string[] | null
+  proposalProposer?: string | null
+  proposalDisputer?: string | null
+  disputed?: boolean
+  proposedOutcome?: boolean | null
+  proposedOutcomeIndex?: number | null
+  proposedOutcome_index?: number | null
+  proposedAt?: string | null
+  disputeWindowSeconds?: number
+  marketType: "binary" | "parent" | "child"
+  parentMarketId: string | null
+  optionName: string | null
+  childMarkets?: MarketResponse[] | null
+  outcomeCount?: number
+  outcomes?: string[]
+  handicap?: number | null
+  winningOutcomeIndex?: number | null
+  outcomeBalances?: number[]
+  outcomePrices?: number[]
+  createdAt: string
+  created_at: string
+  updatedAt: string
+}
+
+export interface FeedPostResponse {
+  id: string
+  authorId: string
+  author_id: string
+  type: string
+  content: string
+  createdAt: string
+  created_at: string
+  updatedAt: string
+  likesCount: number
+  commentsCount: number
+  resharesCount: number
+  sharesCount: number
+  author: UserResponse
+  market: MarketResponse | null
+  viewerLiked: boolean
+  viewerReshared: boolean
+  viewerVote: VoteSide | null
+  parentPost?: FeedPostResponse | null
+}
+
+const VAGUE_WORDS = [
+  "popular",
+  "successful",
+  "viral",
+  "big",
+  "famous",
+  "good",
+  "better",
+  "important",
+]
+export const MARKET_OUTCOME_WARNING =
+  "Market posts need measurable outcomes. Define this with a number, deadline, and resolution source."
+
+@Injectable()
+export class PostsService {
+  private readonly logger = new Logger(PostsService.name)
+
+  constructor(
+    @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Market.name) private marketModel: Model<MarketDocument>,
+    @InjectModel(Like.name) private likeModel: Model<LikeDocument>,
+    @InjectModel(Reshare.name) private reshareModel: Model<ReshareDocument>,
+    @InjectModel(Vote.name) private voteModel: Model<VoteDocument>,
+    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    private socketGateway: SocketGateway,
+    private readonly configService: ConfigService,
+  ) {}
+
+  validateMarketHeuristics(input: CreateMarketPostDto) {
+    const question = input.question ? input.question.trim() : ""
+    if (question.length === 0) {
+      throw new BadRequestException("Market question/title is required.")
+    }
+
+    const resolutionSource = input.resolutionSource
+      ? input.resolutionSource.trim()
+      : ""
+    if (resolutionSource.length < 5) {
+      throw new BadRequestException(
+        "Resolution source must specify a clear, verifiable platform or oracle.",
+      )
+    }
+
+    // Skip yes/no conditions check if this is a multi-option market
+    const isMultiOption = input.options && input.options.length > 0
+    if (isMultiOption) {
+      return
+    }
+
+    const yesCondition = input.yesCondition ? input.yesCondition.trim() : ""
+    const noCondition = input.noCondition ? input.noCondition.trim() : ""
+    if (yesCondition.length < 12 || noCondition.length < 12) {
+      throw new BadRequestException(
+        "YES and NO resolution conditions must be detailed and clear (minimum 12 characters).",
+      )
+    }
+  }
+
+  getMarketWarning(question: string): string | null {
+    const normalized = question.toLowerCase()
+    return VAGUE_WORDS.some((word) => normalized.includes(word))
+      ? MARKET_OUTCOME_WARNING
+      : null
+  }
+
+  serializeMarket(
+    market: MarketDocument,
+    childMarkets: MarketDocument[] = [],
+  ): MarketResponse {
+    const postId = market.postId.toString()
+    const authorId = market.authorId.toString()
+    const createdAt = market.createdAt
+      ? new Date(market.createdAt).toISOString()
+      : new Date().toISOString()
+    const updatedAt = market.updatedAt
+      ? new Date(market.updatedAt).toISOString()
+      : new Date().toISOString()
+    const deadline = market.deadline
+      ? new Date(market.deadline).toISOString()
+      : new Date().toISOString()
+    const lockTime = market.lockTime
+      ? new Date(market.lockTime).toISOString()
+      : null
+
+    return {
+      id: market.id || (market as any)._id?.toString(),
+      postId,
+      post_id: postId,
+      authorId,
+      author_id: authorId,
+      question: market.question,
+      category: market.category,
+      deadline,
+      lockTime,
+      lock_time: lockTime,
+      resolutionSource: market.resolutionSource,
+      resolution_source: market.resolutionSource,
+      yesCondition: market.yesCondition,
+      yes_condition: market.yesCondition,
+      noCondition: market.noCondition,
+      no_condition: market.noCondition,
+      status: market.status,
+      freeYesVotes: market.freeYesVotes,
+      free_yes_votes: market.freeYesVotes,
+      freeNoVotes: market.freeNoVotes,
+      free_no_votes: market.freeNoVotes,
+      totalFreeVotes: market.totalFreeVotes,
+      uniqueVotersCount: market.uniqueVotersCount,
+      qualificationThreshold: market.qualificationThreshold,
+      uniqueVoterThreshold: market.uniqueVoterThreshold,
+      marketCreationFeeUsdc: market.marketCreationFeeUsdc,
+      market_creation_fee_usdc: market.marketCreationFeeUsdc,
+      minimumPoolBalance: market.minimumPoolBalance ?? 20,
+      minimum_pool_balance: market.minimumPoolBalance ?? 20,
+      creationFeeTxHash: market.creationFeeTxHash,
+      creation_fee_tx_hash: market.creationFeeTxHash,
+      feeCollectorAddress: market.feeCollectorAddress,
+      fee_collector_address: market.feeCollectorAddress,
+      usdcYesAmount: market.usdcYesAmount,
+      usdc_yes_amount: market.usdcYesAmount,
+      usdcNoAmount: market.usdcNoAmount,
+      usdc_no_amount: market.usdcNoAmount,
+      liquidity: market.liquidity,
+      resolvedOutcome: market.resolvedOutcome,
+      resolved_outcome: market.resolvedOutcome,
+      resolvedByAdmin: market.resolvedByAdmin,
+      resolved_by_admin: market.resolvedByAdmin,
+      priceFeedId: market.priceFeedId,
+      price_feed_id: market.priceFeedId,
+      targetPrice: market.targetPrice,
+      target_price: market.targetPrice,
+      resolveAbove: market.resolveAbove,
+      resolve_above: market.resolveAbove,
+      isPythMarket: market.isPythMarket,
+      is_pyth_market: market.isPythMarket,
+      proposalReasoning: market.proposalReasoning,
+      proposalCitations: market.proposalCitations,
+      proposalProposer: market.proposalProposer,
+      proposalDisputer: market.proposalDisputer,
+      disputed: market.disputed,
+      proposedOutcome: market.proposedOutcome,
+      proposedOutcomeIndex: market.proposedOutcomeIndex,
+      proposedOutcome_index: market.proposedOutcomeIndex,
+      proposedAt: market.proposedAt
+        ? new Date(market.proposedAt).toISOString()
+        : null,
+      disputeWindowSeconds:
+        this.configService.get<number>("DISPUTE_WINDOW_SECONDS") || 120,
+      marketType: market.marketType || "binary",
+      parentMarketId: market.parentMarketId
+        ? market.parentMarketId.toString()
+        : null,
+      optionName: market.optionName || null,
+      childMarkets:
+        childMarkets && childMarkets.length > 0
+          ? childMarkets.map((c) => this.serializeMarket(c))
+          : null,
+      outcomeCount: market.outcomeCount ?? 2,
+      outcomes: market.outcomes ?? [],
+      handicap: market.handicap,
+      winningOutcomeIndex: market.winningOutcomeIndex,
+      outcomeBalances: market.outcomeBalances ?? [],
+      outcomePrices: market.outcomePrices ?? [],
+      createdAt,
+      created_at: createdAt,
+      updatedAt,
+    }
+  }
+
+  private serializePost(post: PostDocument) {
+    const authorId = post.authorId.toString()
+    const createdAt = post.createdAt
+      ? new Date(post.createdAt).toISOString()
+      : new Date().toISOString()
+    const updatedAt = post.updatedAt
+      ? new Date(post.updatedAt).toISOString()
+      : new Date().toISOString()
+
+    return {
+      id: post.id || (post as any)._id?.toString(),
+      authorId,
+      author_id: authorId,
+      type: post.type,
+      content: post.content,
+      createdAt,
+      created_at: createdAt,
+      updatedAt,
+      likesCount: post.likesCount,
+      commentsCount: post.commentsCount,
+      resharesCount: post.resharesCount,
+      sharesCount: post.sharesCount,
+    }
+  }
+
+  async fetchFeed(
+    viewerProfileId?: string,
+    onlyMarkets = false,
+    profileId?: string,
+    tab?: string,
+  ): Promise<FeedPostResponse[]> {
+    let filter: any = {}
+
+    if (profileId) {
+      const pId = new Types.ObjectId(profileId)
+      if (tab === "posts") {
+        filter = { authorId: pId, type: "market" }
+      } else if (tab === "markets") {
+        filter = { authorId: pId, type: "market" }
+      } else if (tab === "likes") {
+        const likes = await this.likeModel
+          .find({ userId: pId })
+          .select("postId")
+        const postIds = likes.map((l) => l.postId)
+        filter = { _id: { $in: postIds }, type: "market" }
+      } else if (tab === "reshares") {
+        const reshares = await this.reshareModel
+          .find({ userId: pId })
+          .select("postId")
+        const postIds = reshares.map((r) => r.postId)
+        filter = { _id: { $in: postIds }, type: "market" }
+      } else if (tab === "comments") {
+        const comments = await this.commentModel.aggregate([
+          { $match: { authorId: new Types.ObjectId(pId) } },
+          { $sort: { createdAt: -1 } },
+          { $limit: 50 },
+          {
+            $lookup: {
+              from: "users",
+              localField: "authorId",
+              foreignField: "_id",
+              as: "commentAuthor",
+            },
+          },
+          {
+            $unwind: {
+              path: "$commentAuthor",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "posts",
+              localField: "postId",
+              foreignField: "_id",
+              as: "parentPost",
+            },
+          },
+          {
+            $unwind: { path: "$parentPost", preserveNullAndEmptyArrays: true },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "parentPost.authorId",
+              foreignField: "_id",
+              as: "parentAuthor",
+            },
+          },
+          {
+            $unwind: {
+              path: "$parentAuthor",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "markets",
+              let: { postId: "$postId" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ["$postId", "$$postId"] },
+                    marketType: { $ne: "child" },
+                  },
+                },
+              ],
+              as: "parentMarket",
+            },
+          },
+          {
+            $unwind: {
+              path: "$parentMarket",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ])
+
+        if (comments.length === 0) {
+          return []
+        }
+
+        // Collect IDs for querying viewer status
+        const parentPostIdsFetched = comments
+          .filter((c) => c.parentPost)
+          .map((c) => c.parentPost._id)
+        const parentMarketIds = comments
+          .filter((c) => c.parentMarket)
+          .map((c) => c.parentMarket._id)
+
+        const [likedIds, resharedIds, votes] = await Promise.all([
+          viewerProfileId && parentPostIdsFetched.length > 0
+            ? this.likeModel
+                .find({
+                  userId: new Types.ObjectId(viewerProfileId),
+                  postId: { $in: parentPostIdsFetched },
+                })
+                .select("postId")
+            : Promise.resolve([]),
+          viewerProfileId && parentPostIdsFetched.length > 0
+            ? this.reshareModel
+                .find({
+                  userId: new Types.ObjectId(viewerProfileId),
+                  postId: { $in: parentPostIdsFetched },
+                })
+                .select("postId")
+            : Promise.resolve([]),
+          viewerProfileId && parentMarketIds.length > 0
+            ? this.voteModel
+                .find({
+                  userId: new Types.ObjectId(viewerProfileId),
+                  marketId: { $in: parentMarketIds },
+                  voteType: "free",
+                })
+                .select("marketId side")
+            : Promise.resolve([]),
+        ])
+
+        const liked = new Set(likedIds.map((item) => item.postId.toString()))
+        const reshared = new Set(
+          resharedIds.map((item) => item.postId.toString()),
+        )
+        const voteMap = new Map<string, VoteSide>(
+          votes.map(
+            (vote) =>
+              [vote.marketId.toString(), vote.side] as [string, VoteSide],
+          ),
+        )
+
+        return comments.map((comment) => {
+          const createdAt = comment.createdAt
+            ? new Date(comment.createdAt).toISOString()
+            : new Date().toISOString()
+          const updatedAt = comment.updatedAt
+            ? new Date(comment.updatedAt).toISOString()
+            : new Date().toISOString()
+
+          const serializedCommentAuthor = comment.commentAuthor
+            ? serializeUser(comment.commentAuthor)
+            : placeholderUserProfile(profileId)
+
+          let parentPostSerialized: FeedPostResponse | null = null
+          if (comment.parentPost) {
+            const parentPost = comment.parentPost
+            const parentAuthor = comment.parentAuthor
+            const parentMarket = comment.parentMarket
+
+            const base = this.serializePost(parentPost)
+            parentPostSerialized = {
+              ...base,
+              author: parentAuthor
+                ? serializeUser(parentAuthor)
+                : placeholderUserProfile(base.authorId),
+              market: parentMarket ? this.serializeMarket(parentMarket) : null,
+              viewerLiked: liked.has(parentPost._id.toString()),
+              viewerReshared: reshared.has(parentPost._id.toString()),
+              viewerVote: parentMarket
+                ? voteMap.get(parentMarket._id.toString()) || null
+                : null,
+            }
+          }
+
+          return {
+            id: comment._id.toString(),
+            authorId: comment.authorId.toString(),
+            author_id: comment.authorId.toString(),
+            type: "comment",
+            content: comment.content,
+            createdAt,
+            created_at: createdAt,
+            updatedAt,
+            likesCount: comment.likesCount || 0,
+            commentsCount: 0,
+            resharesCount: 0,
+            sharesCount: 0,
+            author: serializedCommentAuthor,
+            market: null,
+            viewerLiked: false,
+            viewerReshared: false,
+            viewerVote: null,
+            parentPost: parentPostSerialized,
+          }
+        })
+      } else {
+        filter = { authorId: pId, type: "market" }
+      }
+    } else {
+      filter = { type: "market" }
+    }
+
+    const posts = await this.postModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(50)
+
+    const postIds = posts.map((post) => post._id)
+    const authorIds = posts.map((post) => post.authorId)
+    const [authors, markets] = await Promise.all([
+      this.userModel.find({ _id: { $in: authorIds } }),
+      this.marketModel.find({
+        postId: { $in: postIds },
+        marketType: { $ne: "child" },
+      }),
+    ])
+
+    // Fetch child markets for any parent markets in the feed
+    const parentMarketIds = markets
+      .filter((m) => m.marketType === "parent")
+      .map((m) => m._id)
+
+    const allChildMarkets =
+      parentMarketIds.length > 0
+        ? await this.marketModel.find({
+            parentMarketId: { $in: parentMarketIds },
+          })
+        : []
+
+    const childMarketsMap = new Map<string, MarketDocument[]>()
+    for (const child of allChildMarkets) {
+      const parentIdStr = child.parentMarketId!.toString()
+      if (!childMarketsMap.has(parentIdStr)) {
+        childMarketsMap.set(parentIdStr, [])
+      }
+      childMarketsMap.get(parentIdStr)!.push(child)
+    }
+
+    const authorMap = new Map(
+      authors.map((author) => [author.id, serializeUser(author)]),
+    )
+    const marketMap = new Map(
+      markets.map((market) => [market.postId.toString(), market]),
+    )
+    const marketIds = markets.map((market) => market._id)
+
+    const [likedIds, resharedIds, votes] = await Promise.all([
+      viewerProfileId
+        ? this.likeModel
+            .find({
+              userId: new Types.ObjectId(viewerProfileId),
+              postId: { $in: postIds },
+            })
+            .select("postId")
+        : Promise.resolve([]),
+      viewerProfileId
+        ? this.reshareModel
+            .find({
+              userId: new Types.ObjectId(viewerProfileId),
+              postId: { $in: postIds },
+            })
+            .select("postId")
+        : Promise.resolve([]),
+      viewerProfileId
+        ? this.voteModel
+            .find({
+              userId: new Types.ObjectId(viewerProfileId),
+              marketId: { $in: marketIds },
+              voteType: "free",
+            })
+            .select("marketId side")
+        : Promise.resolve([]),
+    ])
+
+    const liked = new Set(likedIds.map((item) => item.postId.toString()))
+    const reshared = new Set(resharedIds.map((item) => item.postId.toString()))
+    const voteMap = new Map<string, VoteSide>(
+      votes.map(
+        (vote) => [vote.marketId.toString(), vote.side] as [string, VoteSide],
+      ),
+    )
+
+    return posts.map((post) => {
+      const base = this.serializePost(post)
+      const market = marketMap.get(post.id) || null
+      const children = market ? childMarketsMap.get(market.id) || [] : []
+
+      return {
+        ...base,
+        author:
+          authorMap.get(base.authorId) || placeholderUserProfile(base.authorId),
+        market: market ? this.serializeMarket(market, children) : null,
+        viewerLiked: liked.has(post.id),
+        viewerReshared: reshared.has(post.id),
+        viewerVote: market ? voteMap.get(market.id) || null : null,
+      }
+    })
+  }
+
+  async findPostById(
+    postId: string,
+    viewerProfileId?: string,
+  ): Promise<FeedPostResponse> {
+    const post = await this.postModel.findById(postId)
+    if (!post) {
+      throw new NotFoundException("Post not found.")
+    }
+
+    const [author, market] = await Promise.all([
+      this.userModel.findById(post.authorId),
+      this.marketModel.findOne({
+        postId: post._id,
+        marketType: { $ne: "child" },
+      }),
+    ])
+
+    let childMarkets: MarketDocument[] = []
+    if (market && market.marketType === "parent") {
+      childMarkets = await this.marketModel.find({ parentMarketId: market._id })
+    }
+
+    const marketId = market?._id
+    const [viewerLiked, viewerReshared, viewerVote] = await Promise.all([
+      viewerProfileId
+        ? this.likeModel.exists({
+            userId: new Types.ObjectId(viewerProfileId),
+            postId: post._id,
+          })
+        : Promise.resolve(null),
+      viewerProfileId
+        ? this.reshareModel.exists({
+            userId: new Types.ObjectId(viewerProfileId),
+            postId: post._id,
+          })
+        : Promise.resolve(null),
+      viewerProfileId && marketId
+        ? this.voteModel
+            .findOne({
+              userId: new Types.ObjectId(viewerProfileId),
+              marketId,
+              voteType: "free",
+            })
+            .select("side")
+        : Promise.resolve(null),
+    ])
+
+    const base = this.serializePost(post)
+
+    return {
+      ...base,
+      author: author
+        ? serializeUser(author)
+        : placeholderUserProfile(post.authorId.toString()),
+      market: market ? this.serializeMarket(market, childMarkets) : null,
+      viewerLiked: !!viewerLiked,
+      viewerReshared: !!viewerReshared,
+      viewerVote: viewerVote ? (viewerVote.side as VoteSide) : null,
+    }
+  }
+
+  async createNormalPost(
+    profileId: string,
+    content: string,
+  ): Promise<FeedPostResponse> {
+    const authorExists = await this.userModel.exists({ _id: profileId })
+    if (!authorExists) {
+      throw new NotFoundException("User not found.")
+    }
+
+    const post = await this.postModel.create({
+      authorId: new Types.ObjectId(profileId),
+      type: "normal",
+      content: content.trim(),
+    })
+
+    const createdPost = await this.findPostById(post.id, profileId)
+    this.logger.log(
+      `Successfully created normal post ${post.id} by author ${profileId}`,
+    )
+
+    this.socketGateway.broadcastToRoom("feed", "feed-updated", {})
+    return createdPost
+  }
+
+  async incrementCommentsCount(postId: string): Promise<void> {
+    await this.postModel.updateOne(
+      { _id: postId },
+      { $inc: { commentsCount: 1 } },
+    )
+  }
+
+  async refreshPostCounters(postId: string): Promise<void> {
+    const [commentsCount, likesCount, resharesCount] = await Promise.all([
+      this.commentModel.countDocuments({ postId }),
+      this.likeModel.countDocuments({ postId }),
+      this.reshareModel.countDocuments({ postId }),
+    ])
+
+    await this.postModel.updateOne(
+      { _id: postId },
+      { commentsCount, likesCount, resharesCount },
+    )
+  }
+}

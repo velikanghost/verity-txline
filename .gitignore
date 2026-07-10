@@ -1,0 +1,12 @@
+# Internal planning docs
+docs
+
+# Dependencies
+node_modules
+
+# macOS
+.DS_Store
+
+# Env (never commit secrets; per-package .env.example files are committed)
+.env
+*.env.local

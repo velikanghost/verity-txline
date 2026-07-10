@@ -1,0 +1,602 @@
+@import "tailwindcss";
+@source '..';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
+
+/* ───────────────────────────────────────────────────────────────────────────
+   BRAND / ACCENT COLORS — Static, same in both themes
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-ember-orange: #ff3e00;
+  --color-meadow-green: #00ca48;
+  --color-sky-blue: #0090ff;
+  --color-sunburst-yellow: #ffbb26;
+  --color-coral-red: #ff2b3a;
+  --color-royal-blue: #2563eb;
+
+  --color-brand-primary: #121212;
+  --color-brand-secondary: #00ca48;
+  --color-brand-accent: #ff3e00;
+
+  --color-upvote: #00ca48;
+  --color-downvote: #ff3e00;
+
+  /* ── Dynamic neutral palette — resolved via CSS custom properties ── */
+  --color-warm-canvas: var(--warm-canvas);
+  --color-stone-surface: var(--stone-surface);
+  --color-parchment-card: var(--parchment-card);
+  --color-graphite: var(--graphite);
+  --color-charcoal-primary: var(--charcoal-primary);
+  --color-midnight: var(--midnight);
+  --color-obsidian: #000000;
+  --color-ash: var(--ash);
+  --color-fog: var(--fog);
+  --color-smoke: var(--smoke);
+  --color-white-surface: var(--white-surface);
+
+  --color-bg-dark: var(--warm-canvas);
+  --color-bg-panel: var(--white-surface);
+  --color-bg-panel-hover: var(--parchment-card);
+
+  --color-text-primary: var(--charcoal-primary);
+  --color-text-secondary: var(--graphite);
+
+  --color-accent: var(--color-brand-accent);
+
+  /* ── Semantic tokens — resolved via CSS custom properties ── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-inverse: var(--inverse);
+  --color-inverse-text: var(--inverse-text);
+
+  --shadow-subtle: var(--shadow-subtle);
+  --shadow-sm: var(--shadow-sm);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   LIGHT THEME (default)
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Dynamic neutral palette — light values */
+  --warm-canvas: #fbfaf9;
+  --stone-surface: #f2f0ed;
+  --parchment-card: #f8f7f4;
+  --graphite: #474645;
+  --charcoal-primary: #343433;
+  --midnight: #121212;
+  --ash: #848281;
+  --fog: #c6c6c6;
+  --smoke: #a7a7a7;
+  --white-surface: #ffffff;
+
+  /* Semantic tokens — light */
+  --background: var(--warm-canvas);
+  --foreground: var(--charcoal-primary);
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --surface-muted: var(--parchment-card);
+  --surface-hover: var(--stone-surface);
+  --border: var(--stone-surface);
+  --border-strong: #dedbd6;
+  --muted: var(--ash);
+  --inverse: var(--midnight);
+  --inverse-text: #ffffff;
+  --panel-border: var(--border);
+  --panel-shadow: color(display-p3 0.94902 0.941176 0.929412) 0px 0px 0px 1px
+    inset;
+  --panel-shadow-hover:
+    rgba(0, 0, 0, 0.04) 0px 1px 6px 0px, rgba(0, 0, 0, 0.05) 0px 0px 24px 0px;
+
+  /* Blob face color */
+  --blob-face: #121212;
+
+  /* shadcn-compatible tokens */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--inverse);
+  --primary-foreground: var(--inverse-text);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--foreground);
+  --muted-foreground: var(--muted);
+  --accent: var(--color-ember-orange);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.577 0.245 27.325);
+  --input: var(--border);
+  --ring: var(--border-strong);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --radius-card: 10px;
+  --radius-card-lg: 24px;
+  --radius-pill: 32px;
+  --shadow-subtle: color(display-p3 0.94902 0.941176 0.929412) 0px 0px 0px 1px
+    inset;
+  --shadow-sm:
+    rgba(0, 0, 0, 0.04) 0px 1px 6px 0px, rgba(0, 0, 0, 0.05) 0px 0px 24px 0px;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--surface-muted);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   DARK THEME — single consolidated block
+   ─────────────────────────────────────────────────────────────────────────── */
+:root[data-theme="dark"] {
+  /* Dynamic neutral palette — dark values (aligned with Family Midnight) */
+  --warm-canvas: #121212;
+  --stone-surface: #1e1d1b;
+  --parchment-card: #181816;
+  --graphite: #b5b3b0;
+  --charcoal-primary: #e8e6e3;
+  --midnight: #f4f3ef;
+  --ash: #9a9896;
+  --fog: #4a4947;
+  --smoke: #6a6967;
+  --white-surface: #151513;
+
+  /* Semantic tokens — dark */
+  --background: #121212;
+  --foreground: #f4f3ef;
+  --surface: rgba(21, 21, 19, 0.95);
+  --surface-solid: #151513;
+  --surface-muted: #1c1c1a;
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --muted: #a3a39b;
+  --inverse: #f4f3ef;
+  --inverse-text: #121212;
+  --panel-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  --panel-shadow-hover:
+    rgba(255, 255, 255, 0.03) 0px 1px 6px 0px,
+    rgba(255, 255, 255, 0.04) 0px 0px 24px 0px;
+
+  /* Blob face color */
+  --blob-face: #f4f3ef;
+
+  /* shadcn-compatible tokens — dark */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-solid);
+  --popover-foreground: var(--foreground);
+  --primary: var(--inverse);
+  --primary-foreground: var(--inverse-text);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--foreground);
+  --muted-foreground: var(--muted);
+  --accent: var(--surface-muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.704 0.191 22.216);
+  --input: var(--border);
+  --ring: var(--border-strong);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --shadow-subtle: rgba(255, 255, 255, 0.06) 0px 0px 0px 1px inset;
+  --shadow-sm:
+    rgba(255, 255, 255, 0.03) 0px 1px 6px 0px,
+    rgba(255, 255, 255, 0.04) 0px 0px 24px 0px;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--surface-muted);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   BODY — gradient adapts to theme
+   ─────────────────────────────────────────────────────────────────────────── */
+body {
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgba(255, 187, 38, 0.16),
+      transparent 22rem
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(0, 144, 255, 0.08),
+      transparent 18rem
+    ),
+    var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgba(255, 187, 38, 0.06),
+      transparent 22rem
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(0, 144, 255, 0.04),
+      transparent 18rem
+    ),
+    var(--background);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   GLASSMORPHISM UTILITIES
+   ─────────────────────────────────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--color-bg-panel);
+  box-shadow: var(--panel-shadow);
+}
+
+.glass-panel-hover:hover {
+  background: var(--color-bg-panel-hover);
+  border-color: var(--border-strong);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   SCROLLBAR — adapts to theme
+   ─────────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   GRADIENTS
+   ─────────────────────────────────────────────────────────────────────────── */
+.text-gradient {
+  color: var(--color-brand-primary);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   VERITY CARD — shadow adapts to theme
+   ─────────────────────────────────────────────────────────────────────────── */
+.verity-card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+}
+
+.verity-card-hover {
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.verity-card-hover:hover {
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   VERITY UTILITIES
+   ─────────────────────────────────────────────────────────────────────────── */
+.verity-pill {
+  border-radius: var(--radius-pill);
+}
+
+.verity-link {
+  color: var(--color-ember-orange);
+}
+
+.clickable,
+.clickable-card,
+.clickable-surface,
+.clickable-icon,
+.clickable-tab,
+.clickable-link {
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease,
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.clickable:hover,
+.clickable-card:hover,
+.clickable-surface:hover,
+.clickable-tab:hover {
+  transform: translateY(-1px);
+}
+
+.clickable:active,
+.clickable-card:active,
+.clickable-surface:active,
+.clickable-icon:active,
+.clickable-tab:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.clickable:focus-visible,
+.clickable-card:focus-visible,
+.clickable-surface:focus-visible,
+.clickable-icon:focus-visible,
+.clickable-tab:focus-visible,
+.clickable-link:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 3px;
+}
+
+.clickable-card:hover {
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-sm);
+}
+
+.clickable-surface:hover,
+.clickable-tab:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.clickable-icon {
+  border-radius: 999px;
+}
+
+.clickable-icon:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+  transform: translateY(-1px);
+}
+
+.clickable-link:hover {
+  color: var(--color-ember-orange);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.clickable[disabled],
+.clickable-icon[disabled],
+.clickable-tab[disabled],
+.clickable-card[aria-disabled="true"],
+.clickable-surface[aria-disabled="true"] {
+  cursor: not-allowed;
+  transform: none;
+}
+
+.landing-float {
+  animation: landing-float 4.8s ease-in-out infinite;
+}
+
+.landing-float-slow {
+  animation: landing-float 6.2s ease-in-out infinite;
+}
+
+.landing-wiggle {
+  animation: landing-wiggle 5.2s ease-in-out infinite;
+}
+
+.landing-pop {
+  animation: landing-pop 0.72s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.landing-progress {
+  animation: landing-progress 2.8s ease-in-out infinite;
+}
+
+.landing-marquee {
+  animation: landing-marquee 18s linear infinite;
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--landing-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-12px)
+      rotate(calc(var(--landing-rotate, 0deg) + 2deg));
+  }
+}
+
+@keyframes landing-wiggle {
+  0%,
+  100% {
+    transform: rotate(var(--landing-rotate, 0deg)) scale(1);
+  }
+  50% {
+    transform: rotate(calc(var(--landing-rotate, 0deg) - 4deg)) scale(1.03);
+  }
+}
+
+@keyframes landing-pop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes landing-progress {
+  0%,
+  100% {
+    width: 58%;
+  }
+  50% {
+    width: 82%;
+  }
+}
+
+@keyframes landing-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-float,
+  .landing-float-slow,
+  .landing-wiggle,
+  .landing-pop,
+  .landing-progress,
+  .landing-marquee {
+    animation: none;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   VERITY BLOB AVATAR — face adapts to theme
+   ─────────────────────────────────────────────────────────────────────────── */
+.verity-blob {
+  position: relative;
+  display: inline-block;
+  border-radius: 58% 42% 53% 47% / 48% 56% 44% 52%;
+}
+
+.verity-blob::before,
+.verity-blob::after {
+  content: "";
+  position: absolute;
+  top: 35%;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--blob-face);
+}
+
+.verity-blob::before {
+  left: 32%;
+}
+
+.verity-blob::after {
+  right: 32%;
+}
+
+.verity-blob-smile {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 14px;
+  height: 7px;
+  border-bottom: 2px solid var(--blob-face);
+  border-radius: 0 0 999px 999px;
+  transform: translateX(-50%);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   @theme inline — fonts, radius scales, shadcn semantic token mappings
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme inline {
+  --font-heading:
+    "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-family: "Fraunces", Georgia, ui-serif, serif;
+  --font-inter: "Inter", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   BASE LAYER
+   ─────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    letter-spacing: -0.01em;
+  }
+
+  /* Hide native number input spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}

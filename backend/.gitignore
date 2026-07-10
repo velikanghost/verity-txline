@@ -1,0 +1,24 @@
+# Env (secrets). .env.example is committed.
+.env
+.env.local
+.env.*.local
+
+# Circle entity-secret recovery material (NEVER commit)
+recovery
+recovery-dev
+
+# Build output
+dist
+*.tsbuildinfo
+
+# Dependencies
+node_modules
+
+# Local/dev scripts
+scripts
+
+# Tests
+coverage
+
+# macOS
+.DS_Store

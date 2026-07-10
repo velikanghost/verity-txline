@@ -1,0 +1,22 @@
+[package]
+name = "mock-txline"
+version = "0.1.0"
+description = "Local mock of TxLINE's validate_stat for deterministic offline tests"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "mock_txline"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+# No-op: lets a workspace-wide `--features localnet` build apply harmlessly here.
+localnet = []
+
+[dependencies]
+anchor-lang = "0.31.1"
