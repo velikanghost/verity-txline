@@ -50,18 +50,6 @@ export default function MobileNav() {
     (m: any) => !m.completed,
   ).length
 
-  const handleProposeMarket = () => {
-    closeQuickActions()
-    window.sessionStorage.setItem("verity-compose-intent", "market")
-    if (pathname === "/") {
-      window.dispatchEvent(
-        new CustomEvent("verity-compose-intent", { detail: "market" }),
-      )
-    } else {
-      router.push("/")
-    }
-  }
-
   const handleClaimLpFees = async () => {
     try {
       await claimLpFees()
@@ -79,7 +67,7 @@ export default function MobileNav() {
 
   const MOBILE_NAV_ITEMS = [
     { icon: Home, label: "Home", href: "/" },
-    { icon: TrendingUp, label: "Markets", href: "/markets" },
+    { icon: Swords, label: "PvP Arena", href: "/pvp" },
     { icon: null, label: "Actions", href: "#actions" }, // Center placeholder
     { icon: Sparkles, label: "Missions", href: "/missions" },
     { icon: Wallet, label: "Portfolio", href: "/portfolio" },
@@ -193,21 +181,6 @@ export default function MobileNav() {
           {/* Quick Shortcuts Grid */}
           <div className="grid grid-cols-2 gap-3 px-2">
             <button
-              onClick={handleProposeMarket}
-              className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white-surface dark:bg-zinc-950 hover:bg-stone-surface/30 border border-stone-surface text-center transition-all group active:scale-98 cursor-pointer"
-            >
-              <div className="h-10 w-10 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <Plus className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-bold text-charcoal-primary">
-                Propose Market
-              </span>
-              <span className="text-[10px] text-ash mt-0.5">
-                Submit new prediction
-              </span>
-            </button>
-
-            <button
               onClick={() => navigateTo("/missions")}
               className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white-surface dark:bg-zinc-950 hover:bg-stone-surface/30 border border-stone-surface text-center transition-all group active:scale-98 cursor-pointer"
             >
@@ -225,7 +198,7 @@ export default function MobileNav() {
             </button>
 
             <button
-              onClick={() => navigateTo("/markets?tab=pvp")}
+              onClick={() => navigateTo("/pvp")}
               className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white-surface dark:bg-zinc-950 hover:bg-stone-surface/30 border border-stone-surface text-center transition-all group active:scale-98 cursor-pointer"
             >
               <div className="h-10 w-10 rounded-full bg-ember-orange/10 text-ember-orange flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">

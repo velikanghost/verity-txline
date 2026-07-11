@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import ComposeBox from "@/components/feed/ComposeBox"
 import { type FeedTabId } from "@/components/feed/FeedTabs"
 import MarketCard from "@/components/post/MarketCard"
 import PostCard from "@/components/post/PostCard"
@@ -74,28 +73,7 @@ export default function FeedShell() {
   const { mutateAsync: toggleLike } = useToggleLikeMutation()
   const { mutateAsync: toggleReshare } = useToggleReshareMutation()
   const { mutateAsync: castFreeVote } = useCastFreeVoteMutation()
-  const [lpLoading, setLpLoading] = useState<string | null>(null)
-
-  async function handleAddLP(market: MarketPost, amount: number) {
-    if (!profile) {
-      toast.error("Sign in before taking that action.")
-      return
-    }
-    setLpLoading(market.id)
-    try {
-      await apiRequest("/solana/add-liquidity", {
-        method: "POST",
-        body: JSON.stringify({ marketId: market.id, amountUsdc: amount }),
-      })
-      await reload()
-    } catch (caught) {
-      toast.error(
-        caught instanceof Error ? caught.message : "Failed to add liquidity.",
-      )
-    } finally {
-      setLpLoading(null)
-    }
-  }
+  const [stakeLoading, setStakeLoading] = useState<string | null>(null)
 
   async function handleBuySide(
     market: MarketPost,
@@ -106,13 +84,13 @@ export default function FeedShell() {
       toast.error("Sign in before taking that action.")
       return
     }
-    setLpLoading(market.id)
+    setStakeLoading(market.id)
     try {
       await apiRequest("/solana/stake", {
         method: "POST",
         body: JSON.stringify({
           marketId: market.id,
-          side: side === "YES" ? 1 : 0,
+          outcome: side === "YES" ? 1 : 0,
           amountUsdc: amount,
         }),
       })
@@ -122,7 +100,7 @@ export default function FeedShell() {
         caught instanceof Error ? caught.message : "Failed to stake.",
       )
     } finally {
-      setLpLoading(null)
+      setStakeLoading(null)
     }
   }
 
@@ -211,8 +189,6 @@ export default function FeedShell() {
         </div>
       </section>
 
-      <ComposeBox onCreated={reload} profile={profile} />
-
       {error && (
         <div className="verity-card p-4 text-sm font-medium text-graphite">
           {error}
@@ -274,8 +250,6 @@ export default function FeedShell() {
                 )
               }
               isConnected={Boolean(profile)}
-              actionLoading={lpLoading}
-              onAddLP={handleAddLP}
               profile={profile}
               onComment={() => {
                 if (!profile) {
@@ -316,8 +290,6 @@ function FeedCard({
   onUsdcVote,
   onVote,
   isConnected,
-  actionLoading,
-  onAddLP,
   profile,
   onComment,
 }: {
@@ -331,8 +303,6 @@ function FeedCard({
   onUsdcVote: (market: MarketPost, side: VoteSide, amount: number) => void
   onVote: (market: MarketPost, side: VoteSide) => void
   isConnected: boolean
-  actionLoading: string | null
-  onAddLP: (market: MarketPost, amount: number) => Promise<void>
   profile: Profile | null
   onComment: () => void
 }) {
@@ -423,8 +393,6 @@ function FeedCard({
             market.minimumPoolBalance || market.minimum_pool_balance
           }
           isConnected={isConnected}
-          actionLoading={actionLoading === market.id}
-          onAddLP={(amount) => onAddLP(market, amount)}
           onVote={(side) => onVote(market, side)}
           onUsdcVote={(side, amount) => onUsdcVote(market, side, amount)}
           onComment={onComment}

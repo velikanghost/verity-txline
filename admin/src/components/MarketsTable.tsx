@@ -50,7 +50,6 @@ interface MarketsTableProps {
   itemsPerPage: number
   fetchMarkets: () => void
   handleApproveTrading: (id: string) => void
-  openAddLiquidityModal: (id: string) => void
   handleOpenArbitrateResolve: (market: Market) => void
 }
 
@@ -112,7 +111,6 @@ export default function MarketsTable({
   itemsPerPage,
   fetchMarkets,
   handleApproveTrading,
-  openAddLiquidityModal,
   handleOpenArbitrateResolve,
 }: MarketsTableProps) {
   // Markets sorting, filtering, searching and pagination computations
@@ -351,25 +349,8 @@ export default function MarketsTable({
                           Approve Trading
                         </Button>
                       )}
-                      {market.status === "funding_pool" && (
-                        <Button
-                          onClick={() => openAddLiquidityModal(market.id)}
-                          size="sm"
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md text-xs cursor-pointer shadow-xs transition-colors"
-                        >
-                          Add Liquidity
-                        </Button>
-                      )}
                       {market.status === "tradable" && (
                         <>
-                          <Button
-                            onClick={() => openAddLiquidityModal(market.id)}
-                            variant="outline"
-                            size="sm"
-                            className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-semibold rounded-md text-xs cursor-pointer transition-colors"
-                          >
-                            Add Liquidity
-                          </Button>
                           <Button
                             onClick={() => handleOpenArbitrateResolve(market)}
                             size="sm"

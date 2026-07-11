@@ -9,31 +9,33 @@ import { TxlineFixture, TxlineFixtureDocument } from "./fixtures.model"
 import { SolanaService } from "./solana.service"
 import { TxlineService } from "./txline.service"
 
+export interface OutcomeRule {
+  op: number
+  logic: number
+  threshold: number
+  comparison: number
+  thresholdB: number
+  comparisonB: number
+}
+
 export interface CreateWorldCupMarketInput {
   creatorUserId: string
-  /** Creator's Solana wallet — receives the creator royalty. Falls back to the keeper. */
-  creatorWallet?: string | null
   fixtureId: number
   statKey: number
-  /** Second stat key for relational markets; omit/undefined for single-stat. */
+  /** Second stat key shared by all outcome rules; omit for single-stat. */
   statKeyB?: number
-  /** Arithmetic combine op: 0 none, 1 Add, 2 Subtract. */
-  op?: number
-  /** Logical combine mode: 0 none, 1 AND, 2 OR (two predicates). */
-  logic?: number
   statPeriod: number
-  threshold: number
-  comparison: number // 0 GT, 1 LT, 2 EQ
-  /** Predicate B threshold/comparison (logical mode only). */
-  thresholdB?: number
-  comparisonB?: number
+  /** Total outcomes (2 = binary, 3 = match result, …). */
+  outcomeCount: number
+  /** Predicate per non-default outcome (length outcomeCount - 1). */
+  rules: OutcomeRule[]
+  /** Outcome labels in on-chain order (index 0 = default bucket). */
+  outcomes: string[]
   question: string
   deadlineUnix: number
-  yesCondition?: string
-  noCondition?: string
   feeBps?: number
-  creatorFeeShareBps?: number
-  lpFeeShareBps?: number
+  /** When part of a PvP slate, the slate's parent market id (links the prop). */
+  parentMarketId?: string
 }
 
 /**
@@ -84,8 +86,6 @@ export class WorldCupMarketService {
     }
 
     const authorId = new Types.ObjectId(input.creatorUserId)
-    // Route the creator royalty to the creator's own wallet when available.
-    const creatorPubkey = input.creatorWallet || keeper
     const matchup = await this.resolveMatchup(input.fixtureId)
     const matchupLabel = matchup ?? `Fixture ${input.fixtureId}`
 
@@ -105,41 +105,34 @@ export class WorldCupMarketService {
         marketType: "child",
         deadline: new Date(input.deadlineUnix * 1000),
         resolutionSource: "TxLINE",
-        yesCondition: input.yesCondition ?? "Condition met",
-        noCondition: input.noCondition ?? "Condition not met",
-        outcomes: ["YES", "NO"],
-        outcomeCount: 2,
+        // On-chain order: index 0 = default (NO), index 1 = primary (YES).
+        yesCondition: input.outcomes[1] ?? "YES",
+        noCondition: input.outcomes[0] ?? "NO",
+        outcomes: input.outcomes,
+        outcomeCount: input.outcomeCount,
         status: "tradable",
+        parentMarketId: input.parentMarketId
+          ? new Types.ObjectId(input.parentMarketId)
+          : null,
         txlineFixtureId: input.fixtureId,
         txlineMatchup: matchup,
         txlineStatKey: input.statKey,
         txlineStatKeyB: input.statKeyB ?? null,
-        txlineOp: input.op ?? 0,
-        txlineLogic: input.logic ?? 0,
         txlineStatPeriod: input.statPeriod,
-        txlineThreshold: input.threshold,
-        txlineComparison: input.comparison,
-        txlineThresholdB: input.thresholdB ?? null,
-        txlineComparisonB: input.comparisonB ?? null,
+        txlineOutcomeCount: input.outcomeCount,
+        txlineOutcomeRules: input.rules,
       })
 
       const pool = await this.solanaService.createMarketPool({
         fixtureId: input.fixtureId,
         statKey: input.statKey,
         statKeyB: input.statKeyB,
-        op: input.op,
-        logic: input.logic,
         statPeriod: input.statPeriod,
-        threshold: input.threshold,
-        comparison: input.comparison,
-        thresholdB: input.thresholdB,
-        comparisonB: input.comparisonB,
+        outcomeCount: input.outcomeCount,
+        rules: input.rules,
         deadlineUnix: input.deadlineUnix,
-        creator: new PublicKey(creatorPubkey),
         usdcMint: new PublicKey(usdcMint),
         feeBps: input.feeBps,
-        creatorFeeShareBps: input.creatorFeeShareBps,
-        lpFeeShareBps: input.lpFeeShareBps,
       })
 
       market.solanaMarketNonce = pool.nonce

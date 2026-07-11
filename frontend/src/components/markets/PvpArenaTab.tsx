@@ -314,7 +314,12 @@ export default function PvpArenaTab({
       }
       const shares = betAmountPerSelection / (price || 0.5)
 
-      return { marketId, selection, shares }
+      return {
+        marketId,
+        selection,
+        shares,
+        amountUsdc: betAmountPerSelection,
+      }
     })
 
     if (betAmountPerSelection < 1) {
@@ -384,41 +389,11 @@ export default function PvpArenaTab({
     }
   }
 
-  const handleProvideLiquidity = async (amounts: Record<string, number>) => {
-    if (!profile) {
-      toast.error("Please connect your wallet first.")
-      return
-    }
-
-    const deposits = Object.entries(amounts).map(([optId, amt]) => ({
-      marketId: optId,
-      amount: amt,
-    }))
-
-    if (deposits.length === 0) return
-
-    setIsSubmitting(true)
-    try {
-      for (const d of deposits) {
-        await apiRequest("/solana/add-liquidity", {
-          method: "POST",
-          body: JSON.stringify({ marketId: d.marketId, amountUsdc: d.amount }),
-        })
-      }
-
-      // Clear selections for this event after providing liquidity
-      setAllPvpSelections((prev) => {
-        const next = { ...prev }
-        delete next[selectedPvpEvent.id]
-        return next
-      })
-      setShowBuilderOverride(false)
-      void refetchPvpStatus()
-    } catch (error: any) {
-      // Error handled by hook
-    } finally {
-      setIsSubmitting(false)
-    }
+  // Liquidity provisioning was removed with the move to a pure parimutuel
+  // (markets are admin-created; there are no LPs). Kept as a no-op so any
+  // leftover builder control can't hit the removed endpoint.
+  const handleProvideLiquidity = async (_amounts: Record<string, number>) => {
+    toast.error("Liquidity provisioning is no longer available.")
   }
 
   // ─── Loading state ──────────────────────────────────────────

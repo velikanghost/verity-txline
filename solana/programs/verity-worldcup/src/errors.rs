@@ -12,6 +12,10 @@ pub enum WcError {
     NotResolved,
     #[msg("Invalid side; expected 0 (NO) or 1 (YES)")]
     InvalidSide,
+    #[msg("Invalid outcome count (expected 2..=MAX_OUTCOMES with matching rules)")]
+    InvalidOutcomeCount,
+    #[msg("Invalid outcome index for this market")]
+    InvalidOutcome,
     #[msg("Invalid comparison operator stored on market")]
     InvalidComparison,
     #[msg("Invalid combine op stored on market (expected 0, 1 or 2)")]

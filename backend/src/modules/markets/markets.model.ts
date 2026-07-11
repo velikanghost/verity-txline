@@ -14,6 +14,7 @@ export type MarketStatus =
   | "resolving"
   | "resolved"
   | "voided"
+  | "stale"
 
 export type MarketDocument = HydratedDocument<Market>
 export type VoteDocument = HydratedDocument<Vote>
@@ -69,6 +70,7 @@ export class Market {
       "resolving",
       "resolved",
       "voided",
+      "stale",
     ],
     default: "qualified",
     index: true,
@@ -220,35 +222,30 @@ export class Market {
   @Prop({ type: Number, default: null })
   txlineStatKey: number | null
 
-  /** Second stat key for relational (two-stat) markets; null for single-stat. */
+  /** Second stat key shared by all outcome rules; null for single-stat. */
   @Prop({ type: Number, default: null })
   txlineStatKeyB: number | null
-
-  /** Arithmetic op applied to stat A [op] stat B: 0 none, 1 Add, 2 Subtract. */
-  @Prop({ type: Number, default: 0 })
-  txlineOp: number
-
-  /** Logical combine mode over two predicates: 0 none, 1 AND, 2 OR (BTTS, etc.). */
-  @Prop({ type: Number, default: 0 })
-  txlineLogic: number
 
   @Prop({ type: Number, default: null })
   txlineStatPeriod: number | null
 
-  /** Threshold + comparison define predicate A (the YES condition). */
-  @Prop({ type: Number, default: null })
-  txlineThreshold: number | null
+  /** Number of outcomes (2 = binary YES/NO, 3 = match result, …). */
+  @Prop({ type: Number, default: 2 })
+  txlineOutcomeCount: number
 
-  /** 0 = GreaterThan, 1 = LessThan, 2 = EqualTo. */
-  @Prop({ type: Number, default: null })
-  txlineComparison: number | null
-
-  /** Predicate B threshold + comparison (logical AND/OR markets only). */
-  @Prop({ type: Number, default: null })
-  txlineThresholdB: number | null
-
-  @Prop({ type: Number, default: null })
-  txlineComparisonB: number | null
+  /**
+   * Predicate per non-default outcome (outcomes 1..count-1), matching the
+   * on-chain `OutcomeRule`. Outcome 0 is the default bucket (no rule).
+   */
+  @Prop({ type: [Object], default: [] })
+  txlineOutcomeRules: {
+    op: number
+    logic: number
+    threshold: number
+    comparison: number
+    thresholdB: number
+    comparisonB: number
+  }[]
 
   /** Unique-per-fixture nonce used as the market PDA seed. */
   @Prop({ type: Number, default: null })

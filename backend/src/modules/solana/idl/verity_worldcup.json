@@ -8,86 +8,6 @@
   },
   "instructions": [
     {
-      "name": "add_liquidity",
-      "docs": [
-        "Provide liquidity, split evenly across both sides. The LP's losing half is",
-        "forfeited to winners at settlement (directional risk); in return the LP",
-        "earns a pro-rata slice of the settlement fee."
-      ],
-      "discriminator": [
-        181,
-        157,
-        89,
-        67,
-        143,
-        182,
-        52,
-        72
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "market",
-          "writable": true
-        },
-        {
-          "name": "position",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "market"
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
-          "name": "user_usdc",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "claim",
       "docs": [
         "Claim winnings (and LP fee share) for the caller's position."
@@ -156,48 +76,9 @@
       "args": []
     },
     {
-      "name": "claim_creator_royalty",
-      "docs": [
-        "Creator claims their royalty slice of the fee (once)."
-      ],
-      "discriminator": [
-        163,
-        64,
-        97,
-        116,
-        199,
-        184,
-        152,
-        197
-      ],
-      "accounts": [
-        {
-          "name": "creator",
-          "signer": true
-        },
-        {
-          "name": "market",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true
-        },
-        {
-          "name": "creator_usdc",
-          "writable": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "claim_treasury",
       "docs": [
-        "Keeper/treasury claims the protocol slice of the fee (once)."
+        "Keeper/treasury claims the protocol fee (once)."
       ],
       "discriminator": [
         78,
@@ -236,8 +117,9 @@
     {
       "name": "init_market",
       "docs": [
-        "Create a market for one fixture + encoded stat key. The winning condition",
-        "is fixed here and cannot be altered later."
+        "Create a market. `rules` holds the predicate for each non-default outcome",
+        "(outcomes `1..outcome_count`); outcome 0 is the default. The winning",
+        "condition is fixed here and cannot be altered later."
       ],
       "discriminator": [
         33,
@@ -254,9 +136,6 @@
           "name": "authority",
           "writable": true,
           "signer": true
-        },
-        {
-          "name": "creator"
         },
         {
           "name": "usdc_mint"
@@ -341,32 +220,22 @@
           "type": "u32"
         },
         {
-          "name": "op",
-          "type": "u8"
-        },
-        {
-          "name": "logic",
-          "type": "u8"
-        },
-        {
           "name": "stat_period",
           "type": "i32"
         },
         {
-          "name": "threshold",
-          "type": "i32"
-        },
-        {
-          "name": "comparison",
+          "name": "outcome_count",
           "type": "u8"
         },
         {
-          "name": "threshold_b",
-          "type": "i32"
-        },
-        {
-          "name": "comparison_b",
-          "type": "u8"
+          "name": "rules",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "OutcomeRule"
+              }
+            }
+          }
         },
         {
           "name": "deadline",
@@ -375,22 +244,15 @@
         {
           "name": "fee_bps",
           "type": "u16"
-        },
-        {
-          "name": "creator_fee_share_bps",
-          "type": "u16"
-        },
-        {
-          "name": "lp_fee_share_bps",
-          "type": "u16"
         }
       ]
     },
     {
       "name": "settle",
       "docs": [
-        "Resolve the market by CPI-ing into TxLINE `validate_stat` with a fresh",
-        "proof. Keeper-only. Snapshots the fee split and winning pool."
+        "Resolve the market by evaluating each non-default outcome's predicate via",
+        "CPI into TxLINE `validate_stat`. The first true outcome wins; if none are",
+        "true, outcome 0 wins. Keeper-only. Snapshots the fee split + winning pool."
       ],
       "discriminator": [
         175,
@@ -493,7 +355,7 @@
     {
       "name": "stake",
       "docs": [
-        "Place a directional bet on YES (1) or NO (0)."
+        "Place a bet on one outcome (0..outcome_count)."
       ],
       "discriminator": [
         206,
@@ -563,7 +425,7 @@
       ],
       "args": [
         {
-          "name": "side",
+          "name": "outcome",
           "type": "u8"
         },
         {
@@ -644,71 +506,81 @@
     },
     {
       "code": 6005,
+      "name": "InvalidOutcomeCount",
+      "msg": "Invalid outcome count (expected 2..=MAX_OUTCOMES with matching rules)"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidOutcome",
+      "msg": "Invalid outcome index for this market"
+    },
+    {
+      "code": 6007,
       "name": "InvalidComparison",
       "msg": "Invalid comparison operator stored on market"
     },
     {
-      "code": 6006,
+      "code": 6008,
       "name": "InvalidOp",
       "msg": "Invalid combine op stored on market (expected 0, 1 or 2)"
     },
     {
-      "code": 6007,
+      "code": 6009,
       "name": "InvalidLogic",
       "msg": "Invalid logic mode stored on market (expected 0, 1 or 2)"
     },
     {
-      "code": 6008,
+      "code": 6010,
       "name": "MissingSecondStat",
       "msg": "Relational market requires a second stat proof but none was supplied"
     },
     {
-      "code": 6009,
+      "code": 6011,
       "name": "ZeroAmount",
       "msg": "Stake or liquidity amount must be greater than zero"
     },
     {
-      "code": 6010,
+      "code": 6012,
       "name": "InvalidFeeConfig",
       "msg": "Fee configuration is invalid (shares exceed the total fee)"
     },
     {
-      "code": 6011,
+      "code": 6013,
       "name": "InvalidTxlineProgram",
       "msg": "Provided TxLINE program account does not match the expected program id"
     },
     {
-      "code": 6012,
+      "code": 6014,
       "name": "FixtureMismatch",
       "msg": "Fixture id in the proof does not match this market"
     },
     {
-      "code": 6013,
+      "code": 6015,
       "name": "NoReturnData",
       "msg": "TxLINE validate_stat returned no data"
     },
     {
-      "code": 6014,
+      "code": 6016,
       "name": "AlreadyClaimed",
       "msg": "This position has already been claimed"
     },
     {
-      "code": 6015,
+      "code": 6017,
       "name": "NothingToClaim",
       "msg": "Nothing available to claim for this account"
     },
     {
-      "code": 6016,
+      "code": 6018,
       "name": "CreatorAlreadyClaimed",
       "msg": "Creator royalty already claimed"
     },
     {
-      "code": 6017,
+      "code": 6019,
       "name": "TreasuryAlreadyClaimed",
       "msg": "Treasury fee already claimed"
     },
     {
-      "code": 6018,
+      "code": 6020,
       "name": "Overflow",
       "msg": "Arithmetic overflow"
     }
@@ -717,11 +589,11 @@
     {
       "name": "Market",
       "docs": [
-        "One parimutuel prop market, keyed by a TxLINE fixture + encoded stat key.",
+        "One parimutuel prop market, keyed by a TxLINE fixture + a unique nonce.",
         "",
-        "The winning condition (`stat_key`/`stat_period`/`threshold`/`comparison`) is",
-        "fixed at creation and cannot be changed, so resolution is a pure function of",
-        "TxLINE-signed data — the settler only supplies a fresh Merkle proof."
+        "A market has `outcome_count` mutually-exclusive outcomes sharing one stat",
+        "pair. The winning outcome is a pure function of TxLINE-signed data, fixed at",
+        "creation — the settler only supplies fresh Merkle proofs."
       ],
       "type": {
         "kind": "struct",
@@ -729,14 +601,7 @@
           {
             "name": "authority",
             "docs": [
-              "Keeper authorized to call `settle` (backend protocol wallet)."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "creator",
-            "docs": [
-              "Market creator, entitled to the creator royalty slice of the fee."
+              "Keeper authorized to call `settle` and collect the treasury fee."
             ],
             "type": "pubkey"
           },
@@ -761,79 +626,54 @@
           {
             "name": "nonce",
             "docs": [
-              "Unique-per-fixture nonce used in the market PDA seeds. Lets several",
-              "markets share the same base stat key (e.g. winner / draw / totals all",
-              "read P1 goals) without their PDAs colliding."
+              "Unique-per-fixture nonce used in the market PDA seeds."
             ],
             "type": "u32"
           },
           {
             "name": "stat_key",
             "docs": [
-              "Encoded TxLINE stat key `A`: `(period * 1000) + base_key`."
+              "Shared stat key A (e.g. Participant 1 goals) read by every outcome rule."
             ],
             "type": "u32"
           },
           {
             "name": "stat_key_b",
             "docs": [
-              "Second stat key for relational (two-stat) markets; `0` when single-stat."
+              "Shared stat key B (e.g. Participant 2 goals); 0 when unused."
             ],
             "type": "u32"
           },
           {
-            "name": "op",
-            "docs": [
-              "Arithmetic combine op (used only when `logic == 0`): 0 = none (single",
-              "stat), 1 = Add, 2 = Subtract. The predicate is applied to `stat_a [op stat_b]`."
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "logic",
-            "docs": [
-              "Logical combine mode: 0 = none (arithmetic path above), 1 = AND, 2 = OR.",
-              "When set, two independent predicates — `(stat_a cmp_a thr_a)` and",
-              "`(stat_b cmp_b thr_b)` — are evaluated and combined (e.g. BTTS, exact",
-              "score). `op` is ignored in this mode."
-            ],
-            "type": "u8"
-          },
-          {
             "name": "stat_period",
             "docs": [
-              "Period component passed to TxLINE's `ScoreStat` (informational; the",
-              "authoritative period is supplied from the fresh proof at settlement)."
+              "Period passed to TxLINE's `ScoreStat` (informational; the authoritative",
+              "period comes from the fresh proof at settlement)."
             ],
             "type": "i32"
           },
           {
-            "name": "threshold",
+            "name": "outcome_count",
             "docs": [
-              "Threshold for stat A (predicate A)."
-            ],
-            "type": "i32"
-          },
-          {
-            "name": "comparison",
-            "docs": [
-              "Comparison for stat A: 0 = GreaterThan, 1 = LessThan, 2 = EqualTo."
+              "Number of outcomes (2..=MAX_OUTCOMES). Outcome 0 is the default bucket."
             ],
             "type": "u8"
           },
           {
-            "name": "threshold_b",
+            "name": "outcome_rules",
             "docs": [
-              "Threshold for stat B's predicate (logical mode only)."
+              "Per-outcome predicates; index 0 is unused (the default outcome)."
             ],
-            "type": "i32"
-          },
-          {
-            "name": "comparison_b",
-            "docs": [
-              "Comparison for stat B's predicate (logical mode only)."
-            ],
-            "type": "u8"
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "OutcomeRule"
+                  }
+                },
+                4
+              ]
+            }
           },
           {
             "name": "deadline",
@@ -845,44 +685,22 @@
           {
             "name": "fee_bps",
             "docs": [
-              "Total protocol fee taken from the pot at settlement (basis points)."
+              "Protocol fee skimmed from the pot at settlement (basis points) — all to",
+              "the treasury (this is a pure parimutuel: no LPs, no creator royalty)."
             ],
             "type": "u16"
           },
           {
-            "name": "creator_fee_share_bps",
+            "name": "pools",
             "docs": [
-              "Portion of the fee routed to the creator (basis points of the fee)."
+              "USDC staked on each outcome by bettors."
             ],
-            "type": "u16"
-          },
-          {
-            "name": "lp_fee_share_bps",
-            "docs": [
-              "Portion of the fee routed to LPs (basis points of the fee)."
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "yes_pool",
-            "docs": [
-              "Total USDC staked on YES (bettor stakes + LP yes halves)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "no_pool",
-            "docs": [
-              "Total USDC staked on NO (bettor stakes + LP no halves)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "total_lp_deposits",
-            "docs": [
-              "Total LP principal (used to weight the LP fee slice)."
-            ],
-            "type": "u64"
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
           },
           {
             "name": "resolved",
@@ -891,14 +709,14 @@
           {
             "name": "voided",
             "docs": [
-              "Set when the winning side had zero stake — everyone is refunded."
+              "Set when the winning outcome had zero stake — everyone is refunded."
             ],
             "type": "bool"
           },
           {
-            "name": "winning_side",
+            "name": "winning_outcome",
             "docs": [
-              "0 = NO won, 1 = YES won (valid only once `resolved`)."
+              "Winning outcome index (valid only once `resolved`)."
             ],
             "type": "u8"
           },
@@ -911,20 +729,8 @@
             "type": "u64"
           },
           {
-            "name": "creator_fee",
-            "type": "u64"
-          },
-          {
-            "name": "lp_fee",
-            "type": "u64"
-          },
-          {
             "name": "treasury_fee",
             "type": "u64"
-          },
-          {
-            "name": "creator_claimed",
-            "type": "bool"
           },
           {
             "name": "treasury_claimed",
@@ -955,7 +761,7 @@
             "type": "i64"
           },
           {
-            "name": "winning_side",
+            "name": "winning_outcome",
             "type": "u8"
           },
           {
@@ -970,11 +776,57 @@
       }
     },
     {
+      "name": "OutcomeRule",
+      "docs": [
+        "The settlement predicate for a single (non-default) outcome, applied to the",
+        "market's shared stat pair (`stat_key` [and `stat_key_b`]). Mirrors the fields",
+        "the TxLINE `validate_stat` CPI needs:",
+        "- `logic == 0`: arithmetic — `predicate(stat_a [op] stat_b)`.",
+        "- `logic != 0`: two single-stat predicates combined by AND/OR."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "op",
+            "docs": [
+              "Arithmetic combine op (logic == 0): 0 none, 1 Add, 2 Subtract."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "logic",
+            "docs": [
+              "Logical combine mode: 0 none, 1 AND, 2 OR."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "threshold",
+            "type": "i32"
+          },
+          {
+            "name": "comparison",
+            "docs": [
+              "0 = GreaterThan, 1 = LessThan, 2 = EqualTo."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "threshold_b",
+            "type": "i32"
+          },
+          {
+            "name": "comparison_b",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "Position",
       "docs": [
-        "A single account's stake in a market. LPs and bettors share this account:",
-        "LP deposits are split evenly into `yes_stake`/`no_stake` and additionally",
-        "recorded in `lp_deposit` for fee-share weighting."
+        "A single bettor's stake in a market."
       ],
       "type": {
         "kind": "struct",
@@ -988,16 +840,16 @@
             "type": "pubkey"
           },
           {
-            "name": "yes_stake",
-            "type": "u64"
-          },
-          {
-            "name": "no_stake",
-            "type": "u64"
-          },
-          {
-            "name": "lp_deposit",
-            "type": "u64"
+            "name": "stakes",
+            "docs": [
+              "Stake on each outcome (parallel to `Market.pools`)."
+            ],
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
           },
           {
             "name": "claimed",

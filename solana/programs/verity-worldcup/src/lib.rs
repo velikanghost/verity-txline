@@ -1,10 +1,13 @@
 //! Verity World Cup — a parimutuel prop-market settlement engine.
 //!
-//! Bettors stake USDC on YES/NO for a TxLINE-tracked match stat (e.g. "total
-//! corners > 10"). LPs seed both sides and earn a fee slice. At settlement a
-//! keeper submits a fresh TxLINE Merkle proof; the program CPIs into TxLINE's
-//! `validate_stat` to trustlessly determine the winning side, then winners and
-//! LPs claim pro-rata. No oracle trust beyond TxLINE's signed on-chain roots.
+//! Bettors stake USDC on one of a market's outcomes for a TxLINE-tracked match
+//! stat. A market has 2..=MAX_OUTCOMES mutually-exclusive outcomes (binary
+//! YES/NO, or e.g. a 3-way match result). Outcome 0 is the default bucket;
+//! outcomes 1.. carry predicates evaluated at settlement — the first true one
+//! wins, else outcome 0. LPs seed every outcome and earn a fee slice. At
+//! settlement a keeper submits fresh TxLINE Merkle proofs; the program CPIs into
+//! TxLINE's `validate_stat` to trustlessly determine the winner, then winners
+//! and LPs claim pro-rata. No oracle trust beyond TxLINE's signed roots.
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
@@ -26,8 +29,9 @@ declare_id!("8t3WbL4A91QGdUwdz9EAAW1yCtyVyEmmMBGRFcG89a21");
 pub mod verity_worldcup {
     use super::*;
 
-    /// Create a market for one fixture + encoded stat key. The winning condition
-    /// is fixed here and cannot be altered later.
+    /// Create a market. `rules` holds the predicate for each non-default outcome
+    /// (outcomes `1..outcome_count`); outcome 0 is the default. The winning
+    /// condition is fixed here and cannot be altered later.
     #[allow(clippy::too_many_arguments)]
     pub fn init_market(
         ctx: Context<InitMarket>,
@@ -35,69 +39,61 @@ pub mod verity_worldcup {
         nonce: u32,
         stat_key: u32,
         stat_key_b: u32,
-        op: u8,
-        logic: u8,
         stat_period: i32,
-        threshold: i32,
-        comparison: u8,
-        threshold_b: i32,
-        comparison_b: u8,
+        outcome_count: u8,
+        rules: Vec<OutcomeRule>,
         deadline: i64,
         fee_bps: u16,
-        creator_fee_share_bps: u16,
-        lp_fee_share_bps: u16,
     ) -> Result<()> {
-        require!(comparison <= 2, WcError::InvalidComparison);
-        require!(comparison_b <= 2, WcError::InvalidComparison);
-        require!(op <= 2, WcError::InvalidOp);
-        require!(logic <= 2, WcError::InvalidLogic);
-        require!(fee_bps <= BPS_DENOMINATOR as u16, WcError::InvalidFeeConfig);
+        let count = outcome_count as usize;
         require!(
-            (creator_fee_share_bps as u64 + lp_fee_share_bps as u64) <= BPS_DENOMINATOR,
-            WcError::InvalidFeeConfig
+            count >= 2 && count <= MAX_OUTCOMES,
+            WcError::InvalidOutcomeCount
         );
+        require!(rules.len() == count - 1, WcError::InvalidOutcomeCount);
+        for r in &rules {
+            require!(r.op <= 2, WcError::InvalidOp);
+            require!(r.logic <= 2, WcError::InvalidLogic);
+            require!(r.comparison <= 2, WcError::InvalidComparison);
+            require!(r.comparison_b <= 2, WcError::InvalidComparison);
+        }
+        require!(fee_bps <= BPS_DENOMINATOR as u16, WcError::InvalidFeeConfig);
 
         let market = &mut ctx.accounts.market;
         market.authority = ctx.accounts.authority.key();
-        market.creator = ctx.accounts.creator.key();
         market.usdc_mint = ctx.accounts.usdc_mint.key();
         market.vault = ctx.accounts.vault.key();
         market.fixture_id = fixture_id;
         market.nonce = nonce;
         market.stat_key = stat_key;
         market.stat_key_b = stat_key_b;
-        market.op = op;
-        market.logic = logic;
         market.stat_period = stat_period;
-        market.threshold = threshold;
-        market.comparison = comparison;
-        market.threshold_b = threshold_b;
-        market.comparison_b = comparison_b;
+        market.outcome_count = outcome_count;
+        market.outcome_rules = [OutcomeRule::default(); MAX_OUTCOMES];
+        for (i, r) in rules.iter().enumerate() {
+            market.outcome_rules[i + 1] = *r; // outcome 0 stays default
+        }
         market.deadline = deadline;
         market.fee_bps = fee_bps;
-        market.creator_fee_share_bps = creator_fee_share_bps;
-        market.lp_fee_share_bps = lp_fee_share_bps;
-        market.yes_pool = 0;
-        market.no_pool = 0;
-        market.total_lp_deposits = 0;
+        market.pools = [0u64; MAX_OUTCOMES];
         market.resolved = false;
         market.voided = false;
-        market.winning_side = SIDE_NO;
+        market.winning_outcome = OUTCOME_DEFAULT;
         market.winning_pool = 0;
         market.distributable = 0;
-        market.creator_fee = 0;
-        market.lp_fee = 0;
         market.treasury_fee = 0;
-        market.creator_claimed = false;
         market.treasury_claimed = false;
         market.bump = ctx.bumps.market;
         market.vault_bump = ctx.bumps.vault;
         Ok(())
     }
 
-    /// Place a directional bet on YES (1) or NO (0).
-    pub fn stake(ctx: Context<Stake>, side: u8, amount: u64) -> Result<()> {
-        require!(side == SIDE_YES || side == SIDE_NO, WcError::InvalidSide);
+    /// Place a bet on one outcome (0..outcome_count).
+    pub fn stake(ctx: Context<Stake>, outcome: u8, amount: u64) -> Result<()> {
+        require!(
+            (outcome as usize) < ctx.accounts.market.outcome_count as usize,
+            WcError::InvalidOutcome
+        );
         require!(amount > 0, WcError::ZeroAmount);
         let clock = Clock::get()?;
         require!(clock.unix_timestamp < ctx.accounts.market.deadline, WcError::MarketClosed);
@@ -116,55 +112,16 @@ pub mod verity_worldcup {
         position.market = market.key();
         position.owner = ctx.accounts.user.key();
 
-        if side == SIDE_YES {
-            market.yes_pool = market.yes_pool.checked_add(amount).ok_or(WcError::Overflow)?;
-            position.yes_stake = position.yes_stake.checked_add(amount).ok_or(WcError::Overflow)?;
-        } else {
-            market.no_pool = market.no_pool.checked_add(amount).ok_or(WcError::Overflow)?;
-            position.no_stake = position.no_stake.checked_add(amount).ok_or(WcError::Overflow)?;
-        }
+        let i = outcome as usize;
+        market.pools[i] = market.pools[i].checked_add(amount).ok_or(WcError::Overflow)?;
+        position.stakes[i] = position.stakes[i].checked_add(amount).ok_or(WcError::Overflow)?;
         position.bump = ctx.bumps.position;
         Ok(())
     }
 
-    /// Provide liquidity, split evenly across both sides. The LP's losing half is
-    /// forfeited to winners at settlement (directional risk); in return the LP
-    /// earns a pro-rata slice of the settlement fee.
-    pub fn add_liquidity(ctx: Context<Stake>, amount: u64) -> Result<()> {
-        require!(amount > 0, WcError::ZeroAmount);
-        let clock = Clock::get()?;
-        require!(clock.unix_timestamp < ctx.accounts.market.deadline, WcError::MarketClosed);
-        require!(!ctx.accounts.market.resolved, WcError::AlreadyResolved);
-
-        transfer_in(
-            &ctx.accounts.token_program,
-            &ctx.accounts.user_usdc,
-            &ctx.accounts.vault,
-            &ctx.accounts.user,
-            amount,
-        )?;
-
-        let yes_half = amount / 2;
-        let no_half = amount - yes_half;
-
-        let market = &mut ctx.accounts.market;
-        let position = &mut ctx.accounts.position;
-        position.market = market.key();
-        position.owner = ctx.accounts.user.key();
-
-        market.yes_pool = market.yes_pool.checked_add(yes_half).ok_or(WcError::Overflow)?;
-        market.no_pool = market.no_pool.checked_add(no_half).ok_or(WcError::Overflow)?;
-        market.total_lp_deposits =
-            market.total_lp_deposits.checked_add(amount).ok_or(WcError::Overflow)?;
-        position.yes_stake = position.yes_stake.checked_add(yes_half).ok_or(WcError::Overflow)?;
-        position.no_stake = position.no_stake.checked_add(no_half).ok_or(WcError::Overflow)?;
-        position.lp_deposit = position.lp_deposit.checked_add(amount).ok_or(WcError::Overflow)?;
-        position.bump = ctx.bumps.position;
-        Ok(())
-    }
-
-    /// Resolve the market by CPI-ing into TxLINE `validate_stat` with a fresh
-    /// proof. Keeper-only. Snapshots the fee split and winning pool.
+    /// Resolve the market by evaluating each non-default outcome's predicate via
+    /// CPI into TxLINE `validate_stat`. The first true outcome wins; if none are
+    /// true, outcome 0 wins. Keeper-only. Snapshots the fee split + winning pool.
     #[allow(clippy::too_many_arguments)]
     pub fn settle(
         ctx: Context<Settle>,
@@ -186,134 +143,57 @@ pub mod verity_worldcup {
 
         let txline_program = &ctx.accounts.txline_program;
         let daily_scores = &ctx.accounts.daily_scores_merkle_roots;
+        let count = market.outcome_count as usize;
+        let stat_b_ref = stat_b.as_ref();
 
-        let outcome = if market.logic == 0 {
-            // --- Arithmetic path: `predicate(stat_a [op stat_b])` (single-stat,
-            // totals via Add, winner/spread via Subtract). One CPI. ---
-            let op = binary_expression_from_u8(market.op)?;
-            let stat_b_term = match (op.as_ref(), stat_b) {
-                (Some(_), Some(b)) => Some(StatTerm {
-                    stat_to_prove: ScoreStat {
-                        key: market.stat_key_b,
-                        value: b.value,
-                        period: b.period,
-                    },
-                    event_stat_root: b.event_stat_root,
-                    stat_proof: b.stat_proof,
-                }),
-                (Some(_), None) => return err!(WcError::MissingSecondStat),
-                (None, _) => None,
-            };
-
-            let inputs = ValidateStatInputs {
+        // Evaluate outcomes 1..count in order; first true wins, else outcome 0.
+        let mut winning = OUTCOME_DEFAULT;
+        for i in 1..count {
+            let rule = market.outcome_rules[i];
+            let hit = eval_outcome(
+                txline_program,
+                daily_scores,
                 ts,
-                fixture_summary,
-                fixture_proof,
-                main_tree_proof,
-                predicate: TraderPredicate {
-                    threshold: market.threshold,
-                    comparison: comparison_from_u8(market.comparison)?,
-                },
-                stat_a: StatTerm {
-                    stat_to_prove: ScoreStat {
-                        key: market.stat_key,
-                        value: stat_value,
-                        period: stat_period,
-                    },
-                    event_stat_root,
-                    stat_proof,
-                },
-                stat_b: stat_b_term,
-                op,
-            };
-            cpi_validate_stat(txline_program, daily_scores, inputs)?
-        } else {
-            // --- Logical path: two independent single-stat predicates combined
-            // by AND/OR (BTTS, exact score, either-scores). Two CPIs; each proof
-            // is still verified against TxLINE's signed roots. ---
-            let b = stat_b.ok_or(error!(WcError::MissingSecondStat))?;
-
-            let inputs_a = ValidateStatInputs {
-                ts,
-                fixture_summary: fixture_summary.clone(),
-                fixture_proof: fixture_proof.clone(),
-                main_tree_proof: main_tree_proof.clone(),
-                predicate: TraderPredicate {
-                    threshold: market.threshold,
-                    comparison: comparison_from_u8(market.comparison)?,
-                },
-                stat_a: StatTerm {
-                    stat_to_prove: ScoreStat {
-                        key: market.stat_key,
-                        value: stat_value,
-                        period: stat_period,
-                    },
-                    event_stat_root,
-                    stat_proof,
-                },
-                stat_b: None,
-                op: None,
-            };
-            let bool_a = cpi_validate_stat(txline_program, daily_scores, inputs_a)?;
-
-            let inputs_b = ValidateStatInputs {
-                ts,
-                fixture_summary,
-                fixture_proof,
-                main_tree_proof,
-                predicate: TraderPredicate {
-                    threshold: market.threshold_b,
-                    comparison: comparison_from_u8(market.comparison_b)?,
-                },
-                stat_a: StatTerm {
-                    stat_to_prove: ScoreStat {
-                        key: market.stat_key_b,
-                        value: b.value,
-                        period: b.period,
-                    },
-                    event_stat_root: b.event_stat_root,
-                    stat_proof: b.stat_proof,
-                },
-                stat_b: None,
-                op: None,
-            };
-            let bool_b = cpi_validate_stat(txline_program, daily_scores, inputs_b)?;
-
-            match market.logic {
-                1 => bool_a && bool_b,
-                2 => bool_a || bool_b,
-                _ => return err!(WcError::InvalidLogic),
+                &fixture_summary,
+                &fixture_proof,
+                &main_tree_proof,
+                market.stat_key,
+                stat_value,
+                stat_period,
+                &event_stat_root,
+                &stat_proof,
+                market.stat_key_b,
+                stat_b_ref,
+                &rule,
+            )?;
+            if hit {
+                winning = i as u8;
+                break;
             }
-        };
+        }
 
-        market.winning_side = if outcome { SIDE_YES } else { SIDE_NO };
-        let pot = (market.yes_pool as u128)
-            .checked_add(market.no_pool as u128)
-            .ok_or(WcError::Overflow)?;
+        market.winning_outcome = winning;
+
+        let mut pot: u128 = 0;
+        for i in 0..count {
+            pot = pot.checked_add(market.pools[i] as u128).ok_or(WcError::Overflow)?;
+        }
+        // Pure parimutuel: the whole fee goes to the treasury.
         let fee = pot * market.fee_bps as u128 / BPS_DENOMINATOR as u128;
-        let creator_fee = fee * market.creator_fee_share_bps as u128 / BPS_DENOMINATOR as u128;
-        let lp_fee = fee * market.lp_fee_share_bps as u128 / BPS_DENOMINATOR as u128;
-        let treasury_fee = fee - creator_fee - lp_fee;
         let distributable = pot - fee;
-        let winning_pool = if market.winning_side == SIDE_YES {
-            market.yes_pool
-        } else {
-            market.no_pool
-        };
+        let winning_pool = market.pools[winning as usize];
 
         market.winning_pool = winning_pool;
         market.distributable = distributable as u64;
-        market.creator_fee = creator_fee as u64;
-        market.lp_fee = lp_fee as u64;
-        market.treasury_fee = treasury_fee as u64;
-        // No winners staked the correct side -> refund everyone their principal.
+        market.treasury_fee = fee as u64;
+        // No winners staked the correct outcome -> refund everyone their principal.
         market.voided = winning_pool == 0;
         market.resolved = true;
 
         emit!(MarketSettled {
             market: market.key(),
             fixture_id: market.fixture_id,
-            winning_side: market.winning_side,
+            winning_outcome: market.winning_outcome,
             voided: market.voided,
             distributable: market.distributable,
         });
@@ -328,28 +208,19 @@ pub mod verity_worldcup {
         require!(!position.claimed, WcError::AlreadyClaimed);
 
         let payout: u64 = if market.voided {
-            position
-                .yes_stake
-                .checked_add(position.no_stake)
-                .ok_or(WcError::Overflow)?
+            let mut refund: u64 = 0;
+            for s in position.stakes.iter() {
+                refund = refund.checked_add(*s).ok_or(WcError::Overflow)?;
+            }
+            refund
         } else {
-            let winning_stake = if market.winning_side == SIDE_YES {
-                position.yes_stake
-            } else {
-                position.no_stake
-            } as u128;
+            let winning_stake = position.stakes[market.winning_outcome as usize] as u128;
             let base = if market.winning_pool > 0 {
                 (market.distributable as u128) * winning_stake / (market.winning_pool as u128)
             } else {
                 0
             };
-            let lp_reward = if market.total_lp_deposits > 0 && position.lp_deposit > 0 {
-                (market.lp_fee as u128) * (position.lp_deposit as u128)
-                    / (market.total_lp_deposits as u128)
-            } else {
-                0
-            };
-            (base + lp_reward) as u64
+            base as u64
         };
 
         require!(payout > 0, WcError::NothingToClaim);
@@ -358,20 +229,7 @@ pub mod verity_worldcup {
         Ok(())
     }
 
-    /// Creator claims their royalty slice of the fee (once).
-    pub fn claim_creator_royalty(ctx: Context<ClaimCreatorRoyalty>) -> Result<()> {
-        let market = &ctx.accounts.market;
-        require!(market.resolved, WcError::NotResolved);
-        require!(!market.voided, WcError::NothingToClaim);
-        require!(!market.creator_claimed, WcError::CreatorAlreadyClaimed);
-        let amount = market.creator_fee;
-        require!(amount > 0, WcError::NothingToClaim);
-        transfer_out(market, &ctx.accounts.token_program, &ctx.accounts.vault, &ctx.accounts.creator_usdc, amount)?;
-        ctx.accounts.market.creator_claimed = true;
-        Ok(())
-    }
-
-    /// Keeper/treasury claims the protocol slice of the fee (once).
+    /// Keeper/treasury claims the protocol fee (once).
     pub fn claim_treasury(ctx: Context<ClaimTreasury>) -> Result<()> {
         let market = &ctx.accounts.market;
         require!(market.resolved, WcError::NotResolved);
@@ -382,6 +240,118 @@ pub mod verity_worldcup {
         transfer_out(market, &ctx.accounts.token_program, &ctx.accounts.vault, &ctx.accounts.authority_usdc, amount)?;
         ctx.accounts.market.treasury_claimed = true;
         Ok(())
+    }
+}
+
+// --------------------------------------------------------------------------
+// Outcome predicate evaluation (CPI into TxLINE validate_stat)
+// --------------------------------------------------------------------------
+
+/// Evaluate one outcome's predicate over the market's shared stat pair.
+/// `logic == 0` is the arithmetic path (one CPI); `logic != 0` runs two
+/// single-stat predicates and combines them with AND/OR (two CPIs). Proofs are
+/// cloned per call so several outcomes can reuse the same fetched proofs.
+#[allow(clippy::too_many_arguments)]
+fn eval_outcome<'info>(
+    txline_program: &AccountInfo<'info>,
+    daily_scores: &AccountInfo<'info>,
+    ts: i64,
+    fixture_summary: &ScoresBatchSummary,
+    fixture_proof: &[ProofNode],
+    main_tree_proof: &[ProofNode],
+    stat_key: u32,
+    stat_value: i32,
+    stat_period: i32,
+    event_stat_root: &[u8; 32],
+    stat_proof: &[ProofNode],
+    stat_key_b: u32,
+    stat_b: Option<&SettleSecondStat>,
+    rule: &OutcomeRule,
+) -> Result<bool> {
+    let make_stat_a = || StatTerm {
+        stat_to_prove: ScoreStat {
+            key: stat_key,
+            value: stat_value,
+            period: stat_period,
+        },
+        event_stat_root: *event_stat_root,
+        stat_proof: stat_proof.to_vec(),
+    };
+
+    if rule.logic == 0 {
+        let op = binary_expression_from_u8(rule.op)?;
+        let stat_b_term = match (op.as_ref(), stat_b) {
+            (Some(_), Some(b)) => Some(StatTerm {
+                stat_to_prove: ScoreStat {
+                    key: stat_key_b,
+                    value: b.value,
+                    period: b.period,
+                },
+                event_stat_root: b.event_stat_root,
+                stat_proof: b.stat_proof.clone(),
+            }),
+            (Some(_), None) => return err!(WcError::MissingSecondStat),
+            (None, _) => None,
+        };
+        let inputs = ValidateStatInputs {
+            ts,
+            fixture_summary: fixture_summary.clone(),
+            fixture_proof: fixture_proof.to_vec(),
+            main_tree_proof: main_tree_proof.to_vec(),
+            predicate: TraderPredicate {
+                threshold: rule.threshold,
+                comparison: comparison_from_u8(rule.comparison)?,
+            },
+            stat_a: make_stat_a(),
+            stat_b: stat_b_term,
+            op,
+        };
+        cpi_validate_stat(txline_program, daily_scores, inputs)
+    } else {
+        let b = stat_b.ok_or(error!(WcError::MissingSecondStat))?;
+        let inputs_a = ValidateStatInputs {
+            ts,
+            fixture_summary: fixture_summary.clone(),
+            fixture_proof: fixture_proof.to_vec(),
+            main_tree_proof: main_tree_proof.to_vec(),
+            predicate: TraderPredicate {
+                threshold: rule.threshold,
+                comparison: comparison_from_u8(rule.comparison)?,
+            },
+            stat_a: make_stat_a(),
+            stat_b: None,
+            op: None,
+        };
+        let bool_a = cpi_validate_stat(txline_program, daily_scores, inputs_a)?;
+
+        let inputs_b = ValidateStatInputs {
+            ts,
+            fixture_summary: fixture_summary.clone(),
+            fixture_proof: fixture_proof.to_vec(),
+            main_tree_proof: main_tree_proof.to_vec(),
+            predicate: TraderPredicate {
+                threshold: rule.threshold_b,
+                comparison: comparison_from_u8(rule.comparison_b)?,
+            },
+            stat_a: StatTerm {
+                stat_to_prove: ScoreStat {
+                    key: stat_key_b,
+                    value: b.value,
+                    period: b.period,
+                },
+                event_stat_root: b.event_stat_root,
+                stat_proof: b.stat_proof.clone(),
+            },
+            stat_b: None,
+            op: None,
+        };
+        let bool_b = cpi_validate_stat(txline_program, daily_scores, inputs_b)?;
+
+        Ok(match rule.logic {
+            1 => bool_a && bool_b,
+            2 => bool_a || bool_b,
+            _ => return err!(WcError::InvalidLogic),
+        })
     }
 }
 
@@ -440,8 +410,6 @@ fn transfer_out<'info>(
 pub struct InitMarket<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
-    /// CHECK: creator identity recorded for royalty routing only.
-    pub creator: UncheckedAccount<'info>,
     pub usdc_mint: Account<'info, Mint>,
     #[account(
         init,
@@ -519,19 +487,6 @@ pub struct Claim<'info> {
 }
 
 #[derive(Accounts)]
-pub struct ClaimCreatorRoyalty<'info> {
-    #[account(address = market.creator)]
-    pub creator: Signer<'info>,
-    #[account(mut)]
-    pub market: Account<'info, Market>,
-    #[account(mut, address = market.vault)]
-    pub vault: Account<'info, TokenAccount>,
-    #[account(mut, constraint = creator_usdc.mint == market.usdc_mint)]
-    pub creator_usdc: Account<'info, TokenAccount>,
-    pub token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
 pub struct ClaimTreasury<'info> {
     #[account(address = market.authority)]
     pub authority: Signer<'info>,
@@ -548,7 +503,7 @@ pub struct ClaimTreasury<'info> {
 pub struct MarketSettled {
     pub market: Pubkey,
     pub fixture_id: i64,
-    pub winning_side: u8,
+    pub winning_outcome: u8,
     pub voided: bool,
     pub distributable: u64,
 }

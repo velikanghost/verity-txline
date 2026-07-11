@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { LogOut, TrendingUp, BarChart4, Sparkles, Ticket, FolderOpen, Trophy } from "lucide-react"
+import { LogOut, TrendingUp, BarChart4, Sparkles, Ticket, FolderOpen, Trophy, Swords } from "lucide-react"
 
 // Import modular sub-components
 import LoginPanel from "@/components/LoginPanel"
@@ -26,6 +26,7 @@ import CouponsTab from "@/components/CouponsTab"
 import MissionsTab from "@/components/MissionsTab"
 import CategoriesTab from "@/components/CategoriesTab"
 import WorldCupTab from "@/components/WorldCupTab"
+import SlateBuilderTab from "@/components/SlateBuilderTab"
 
 interface Market {
   id: string
@@ -100,7 +101,13 @@ export default function AdminPage() {
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<
-    "moderation" | "metrics" | "coupons" | "missions" | "categories" | "worldcup"
+    | "moderation"
+    | "metrics"
+    | "coupons"
+    | "missions"
+    | "categories"
+    | "worldcup"
+    | "slates"
   >("moderation")
 
   // Markets state
@@ -144,13 +151,6 @@ export default function AdminPage() {
 
   // Arbitration / Settle State
   const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
-
-  // Add Liquidity Dialog State
-  const [isAddLiquidityOpen, setIsAddLiquidityOpen] = useState(false)
-  const [liquidityAmount, setLiquidityAmount] = useState("40")
-  const [liquidityMarketId, setLiquidityMarketId] = useState<string | null>(
-    null,
-  )
 
   const [winningOutcome, setWinningOutcome] = useState<string>("YES")
   const [resolveTxHash, setResolveTxHash] = useState("")
@@ -333,45 +333,6 @@ export default function AdminPage() {
     }
   }
 
-  const openAddLiquidityModal = (marketId: string) => {
-    setLiquidityMarketId(marketId)
-    const defaultAmount = "40"
-    setLiquidityAmount(defaultAmount)
-    setIsAddLiquidityOpen(true)
-  }
-
-  // Add Liquidity to a prediction market pool
-  async function handleAddLiquidity(e?: React.FormEvent) {
-    if (e) e.preventDefault()
-    if (!liquidityMarketId) return
-
-    const amount = parseFloat(liquidityAmount)
-    if (isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid positive number.")
-      return
-    }
-
-    setLoading(true)
-    try {
-      const response = await apiRequest<{ success: boolean; txHash: string }>(
-        `/markets/${liquidityMarketId}/admin-deposit-liquidity`,
-        {
-          method: "POST",
-          body: JSON.stringify({ amount }),
-          headers: { "Content-Type": "application/json" },
-        },
-      )
-      toast.success(`Liquidity added successfully! Tx: ${response.txHash}`)
-      setIsAddLiquidityOpen(false)
-      void fetchMarkets()
-      void fetchMetricsData()
-    } catch (err: any) {
-      toast.error(err.message || "Failed to add liquidity.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   function handleLogOut() {
     localStorage.removeItem("verity_admin_auth_token")
     setIsAuthorized(false)
@@ -517,6 +478,17 @@ export default function AdminPage() {
                 <Trophy className="h-3.5 w-3.5" />
                 World Cup
               </button>
+              <button
+                onClick={() => setActiveTab("slates")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  activeTab === "slates"
+                    ? "bg-white text-stone-950 shadow-xs"
+                    : "text-stone-600 hover:text-stone-900"
+                }`}
+              >
+                <Swords className="h-3.5 w-3.5" />
+                PvP Slates
+              </button>
             </nav>
           </div>
 
@@ -562,7 +534,6 @@ export default function AdminPage() {
             itemsPerPage={itemsPerPage}
             fetchMarkets={fetchMarkets}
             handleApproveTrading={handleApproveTrading}
-            openAddLiquidityModal={openAddLiquidityModal}
             handleOpenArbitrateResolve={handleOpenArbitrateResolve}
           />
         )}
@@ -581,6 +552,7 @@ export default function AdminPage() {
         {activeTab === "missions" && <MissionsTab />}
         {activeTab === "categories" && <CategoriesTab />}
         {activeTab === "worldcup" && <WorldCupTab />}
+        {activeTab === "slates" && <SlateBuilderTab />}
       </main>
 
       {/* Create PvP Event Drawer */}
@@ -610,66 +582,6 @@ export default function AdminPage() {
         setAdminAddress={setAdminAddress}
         now={now}
       />
-
-      {/* Dialog for Add Liquidity */}
-      <Dialog open={isAddLiquidityOpen} onOpenChange={setIsAddLiquidityOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white border border-stone-200 rounded-lg shadow-lg">
-          <form onSubmit={handleAddLiquidity}>
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold text-stone-900">
-                Deposit Pre-Market Liquidity
-              </DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 mt-1">
-                Fund the on-chain escrow balance for this prediction market.
-                Funding meets the threshold to activate the market for trading.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4 my-2">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-mono font-bold uppercase tracking-wider text-stone-500">
-                  Market ID
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={liquidityMarketId || ""}
-                  className="w-full h-9 px-3 border border-stone-200 bg-stone-50 text-xs font-mono rounded-lg outline-none text-stone-400"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-mono font-bold uppercase tracking-wider text-stone-500">
-                  USDC Deposit Amount
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={liquidityAmount}
-                  onChange={(e) => setLiquidityAmount(e.target.value)}
-                  className="w-full h-9 px-3 border border-stone-200 bg-white text-sm font-semibold rounded-lg outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
-            </div>
-            <DialogFooter className="flex gap-2 justify-end pt-2 border-t border-stone-150">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAddLiquidityOpen(false)}
-                className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer border border-stone-200 hover:bg-stone-50 transition-colors"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="h-9 px-4 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer shadow-xs transition-colors"
-              >
-                {loading ? "Depositing..." : "Confirm Deposit"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

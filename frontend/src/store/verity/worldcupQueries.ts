@@ -8,12 +8,14 @@ export interface WorldCupMarket {
   fixtureId: number
   matchup: string | null
   statKey: number
-  threshold: number | null
-  comparison: number | null
+  outcomeCount: number
+  /** Outcome labels in on-chain order (index 0 = default). */
+  outcomes: string[]
   deadline: string
   yesCondition: string
   noCondition: string
   resolvedOutcome: string | null
+  winningOutcomeIndex: number | null
   solanaMarketPda: string | null
   solanaCreateTxSig: string | null
   solanaResolveTxSig: string | null
@@ -21,12 +23,12 @@ export interface WorldCupMarket {
 }
 
 export interface PoolState {
-  yesPool: string
-  noPool: string
+  /** USDC staked per outcome, in on-chain order (index 0 = default). */
+  pools: string[]
   totalLpDeposits: string
   resolved: boolean
   voided: boolean
-  winningSide: number
+  winningOutcome: number
 }
 
 const WC_KEY = ["worldcup", "markets"]
@@ -49,20 +51,8 @@ export function usePoolStateQuery(marketId: string | null) {
 export function useStakeWorldCupMutation() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: { marketId: string; side: number; amountUsdc: number }) =>
+    mutationFn: (input: { marketId: string; outcome: number; amountUsdc: number }) =>
       apiRequest<{ txSig: string }>("/solana/stake", {
-        method: "POST",
-        body: JSON.stringify(input),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: WC_KEY }),
-  })
-}
-
-export function useAddLiquidityWorldCupMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (input: { marketId: string; amountUsdc: number }) =>
-      apiRequest<{ txSig: string }>("/solana/add-liquidity", {
         method: "POST",
         body: JSON.stringify(input),
       }),
@@ -82,24 +72,3 @@ export function useClaimWorldCupMutation() {
   })
 }
 
-export interface CreateWorldCupMarketInput {
-  fixtureId: number
-  statKey: number
-  statPeriod: number
-  threshold: number
-  comparison: number
-  question: string
-  deadlineUnix: number
-}
-
-export function useCreateWorldCupMarketMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (input: CreateWorldCupMarketInput) =>
-      apiRequest<{ marketId: string; solanaMarketPda: string; solanaCreateTxSig: string }>(
-        "/solana/admin/create-market",
-        { method: "POST", body: JSON.stringify(input) },
-      ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: WC_KEY }),
-  })
-}

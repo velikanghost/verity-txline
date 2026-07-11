@@ -5,7 +5,6 @@ import { User, UserSchema } from "../users/users.model"
 import { Market, MarketSchema } from "../markets/markets.model"
 import { Post, PostSchema } from "../posts/posts.model"
 import { TxlineFixture, TxlineFixtureSchema } from "./fixtures.model"
-import { SolanaLiquidity, SolanaLiquiditySchema } from "./liquidity-record.model"
 import { SolanaService } from "./solana.service"
 import { TxlineService } from "./txline.service"
 import { CircleSolanaWalletService } from "./circle-solana-wallet.service"
@@ -26,7 +25,6 @@ import { SolanaController } from "./solana.controller"
       { name: Market.name, schema: MarketSchema },
       { name: Post.name, schema: PostSchema },
       { name: TxlineFixture.name, schema: TxlineFixtureSchema },
-      { name: SolanaLiquidity.name, schema: SolanaLiquiditySchema },
     ]),
   ],
   controllers: [SolanaController],
@@ -36,6 +34,11 @@ import { SolanaController } from "./solana.controller"
     CircleSolanaWalletService,
     WorldCupMarketService,
   ],
-  exports: [SolanaService, TxlineService, CircleSolanaWalletService],
+  exports: [
+    SolanaService,
+    TxlineService,
+    CircleSolanaWalletService,
+    WorldCupMarketService,
+  ],
 })
 export class SolanaModule {}

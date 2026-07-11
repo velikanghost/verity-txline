@@ -12,10 +12,6 @@ import { CreateMissionDto, UpdateMissionDto } from "./missions.dto"
 import { Vote, Market, MarketTrade } from "../markets/markets.model"
 import { Comment } from "../comments/comments.model"
 import { Like } from "../interactions/interactions.model"
-import {
-  SolanaLiquidity,
-  SolanaLiquidityDocument,
-} from "../solana/liquidity-record.model"
 import { Post } from "../posts/posts.model"
 import { TwitterVerifyService } from "./twitter-verify.service"
 
@@ -33,8 +29,6 @@ export class MissionsService {
     private readonly marketTradeModel: Model<MarketTrade>,
     @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
     @InjectModel(Like.name) private readonly likeModel: Model<Like>,
-    @InjectModel(SolanaLiquidity.name)
-    private readonly solanaLiquidityModel: Model<SolanaLiquidityDocument>,
     @InjectModel(Post.name) private readonly postModel: Model<Post>,
     private readonly twitterVerifyService: TwitterVerifyService,
   ) {}
@@ -215,20 +209,9 @@ export class MissionsService {
             break
           }
           case "has_added_liquidity": {
-            // Verified against on-chain Solana liquidity records written when
-            // /solana/add-liquidity succeeds (replaces the old Arc LP ledger).
-            const query: any = {
-              userId: new Types.ObjectId(userId),
-              createdAt: { $gt: missionCreatedAt },
-            }
-            if (mission.marketId) {
-              query.marketId = new Types.ObjectId(mission.marketId)
-            }
-            const hasLP = await this.solanaLiquidityModel.findOne(query)
-            if (!hasLP) {
-              throw new BadRequestException("You must add liquidity first.")
-            }
-            break
+            // Deprecated: liquidity provisioning was removed with the move to a
+            // pure parimutuel (admin-only markets, no LPs).
+            throw new BadRequestException("This quest is no longer available.")
           }
           case "has_created_market": {
             const hasCreatedMarket = await this.postModel.findOne({

@@ -3,6 +3,19 @@
 import { useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { apiRequest } from "@/store/apiClient"
+import {
+  MARKET_TYPES,
+  GROUPS,
+  buildMarketFor,
+  describeMarket,
+  toDatetimeLocal,
+  type MarketType,
+  type ParamKey,
+  type ParamState,
+  type Period,
+  type Team,
+  type Teams,
+} from "@/lib/marketTypes"
 
 interface WorldCupMarket {
   id: string
@@ -25,395 +38,6 @@ interface Fixture {
   startTime: string | null
 }
 
-// --- settlement config produced by a market type -------------------------
-interface BuiltConfig {
-  statKey: number
-  statKeyB: number
-  op: number // 0 none, 1 Add, 2 Subtract
-  logic: number // 0 none, 1 AND, 2 OR
-  threshold: number
-  comparison: number // 0 GT, 1 LT, 2 EQ
-  thresholdB: number
-  comparisonB: number
-  question: string
-}
-
-type Period = "full" | "h1" | "h2"
-type Team = "1" | "2"
-interface Teams {
-  a: string
-  b: string
-}
-interface ParamState {
-  line: number
-  team: Team
-  scoreA: number
-  scoreB: number
-  period: Period
-  outcome: string
-}
-
-const GT = 0,
-  LT = 1,
-  EQ = 2
-const OP_NONE = 0,
-  OP_ADD = 1,
-  OP_SUB = 2
-const LOGIC_AND = 1
-
-// TxLINE full-match base keys: 1/2 goals · 3/4 yellows · 5/6 reds · 7/8 corners
-// (odd = Participant 1, even = Participant 2). Period offset encodes the half.
-const POFF: Record<Period, number> = { full: 0, h1: 1000, h2: 2000 }
-const pLabel: Record<Period, string> = { full: "", h1: " (1st half)", h2: " (2nd half)" }
-const key = (base: number, p: Period) => base + POFF[p]
-
-type ParamKey = "line" | "team" | "score" | "period" | "outcome"
-
-interface MarketType {
-  id: string
-  group: string
-  label: (t: Teams) => string
-  params: ParamKey[]
-  defaultLine?: number
-  outcomes?: { value: string; label: (t: Teams) => string }[]
-  build: (p: ParamState, t: Teams) => BuiltConfig
-}
-
-const base = (o: Partial<BuiltConfig>): BuiltConfig => ({
-  statKey: 0,
-  statKeyB: 0,
-  op: OP_NONE,
-  logic: 0,
-  threshold: 0,
-  comparison: GT,
-  thresholdB: 0,
-  comparisonB: GT,
-  question: "",
-  ...o,
-})
-
-const teamName = (t: Teams, team: Team) => (team === "1" ? t.a : t.b)
-const oppGoals = (team: Team, p: Period) => (team === "1" ? key(2, p) : key(1, p))
-const teamGoals = (team: Team, p: Period) => (team === "1" ? key(1, p) : key(2, p))
-const teamYellow = (team: Team, p: Period) => (team === "1" ? key(3, p) : key(4, p))
-const teamCorners = (team: Team, p: Period) => (team === "1" ? key(7, p) : key(8, p))
-
-// Full catalogue of settleable markets, grouped for the picker.
-const MARKET_TYPES: MarketType[] = [
-  // --- Result ---
-  {
-    id: "winner",
-    group: "Result",
-    label: () => "Match result (winner)",
-    params: ["outcome"],
-    outcomes: [
-      { value: "p1", label: (t) => `${t.a} to win` },
-      { value: "draw", label: () => "Draw" },
-      { value: "p2", label: (t) => `${t.b} to win` },
-    ],
-    build: (p, t) => {
-      const cmp = p.outcome === "p1" ? GT : p.outcome === "p2" ? LT : EQ
-      const q =
-        p.outcome === "p1" ? `${t.a} to win` : p.outcome === "p2" ? `${t.b} to win` : "Draw"
-      return base({ statKey: 1, statKeyB: 2, op: OP_SUB, threshold: 0, comparison: cmp, question: q })
-    },
-  },
-  {
-    id: "double_chance",
-    group: "Result",
-    label: () => "Double chance",
-    params: ["outcome"],
-    outcomes: [
-      { value: "1x", label: (t) => `${t.a} or draw` },
-      { value: "x2", label: (t) => `Draw or ${t.b}` },
-    ],
-    build: (p, t) => {
-      // Integer goals: (A-B) >= 0  ==  (A-B) > -1 ; (A-B) <= 0  ==  (A-B) < 1.
-      if (p.outcome === "x2")
-        return base({ statKey: 1, statKeyB: 2, op: OP_SUB, threshold: 1, comparison: LT, question: `Draw or ${t.b}` })
-      return base({ statKey: 1, statKeyB: 2, op: OP_SUB, threshold: -1, comparison: GT, question: `${t.a} or draw` })
-    },
-  },
-  {
-    id: "handicap",
-    group: "Result",
-    label: () => "Goal handicap",
-    params: ["team", "line"],
-    defaultLine: 1.5,
-    build: (p, t) => {
-      const thr = Math.floor(p.line) // -1.5 line => win by 2+ => diff > 1
-      const [a, b] = p.team === "1" ? [1, 2] : [2, 1]
-      return base({
-        statKey: a,
-        statKeyB: b,
-        op: OP_SUB,
-        threshold: thr,
-        comparison: GT,
-        question: `${teamName(t, p.team)} -${p.line}`,
-      })
-    },
-  },
-  // --- Goals ---
-  {
-    id: "total_goals",
-    group: "Goals",
-    label: () => "Total goals (over/under)",
-    params: ["line", "period"],
-    defaultLine: 2.5,
-    build: (p, t) =>
-      base({
-        statKey: key(1, p.period),
-        statKeyB: key(2, p.period),
-        op: OP_ADD,
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question: `Over ${p.line} total goals${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "btts",
-    group: "Goals",
-    label: () => "Both teams to score (BTTS)",
-    params: ["period"],
-    build: (p) =>
-      base({
-        statKey: key(1, p.period),
-        statKeyB: key(2, p.period),
-        logic: LOGIC_AND,
-        threshold: 0,
-        comparison: GT,
-        thresholdB: 0,
-        comparisonB: GT,
-        question: `Both teams to score${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "team_to_score",
-    group: "Goals",
-    label: (t) => `Team to score (${t.a} / ${t.b})`,
-    params: ["team", "period"],
-    build: (p, t) =>
-      base({
-        statKey: teamGoals(p.team, p.period),
-        threshold: 0,
-        comparison: GT,
-        question: `${teamName(t, p.team)} to score${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "clean_sheet",
-    group: "Goals",
-    label: () => "Clean sheet",
-    params: ["team", "period"],
-    build: (p, t) =>
-      base({
-        statKey: oppGoals(p.team, p.period),
-        threshold: 0,
-        comparison: EQ,
-        question: `${teamName(t, p.team)} clean sheet${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "exact_total_goals",
-    group: "Goals",
-    label: () => "Exact total goals",
-    params: ["line", "period"],
-    defaultLine: 2,
-    build: (p) =>
-      base({
-        statKey: key(1, p.period),
-        statKeyB: key(2, p.period),
-        op: OP_ADD,
-        threshold: Math.round(p.line),
-        comparison: EQ,
-        question: `Exactly ${Math.round(p.line)} total goals${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "correct_score",
-    group: "Goals",
-    label: () => "Correct score",
-    params: ["score"],
-    build: (p, t) =>
-      base({
-        statKey: 1,
-        statKeyB: 2,
-        logic: LOGIC_AND,
-        threshold: Math.round(p.scoreA),
-        comparison: EQ,
-        thresholdB: Math.round(p.scoreB),
-        comparisonB: EQ,
-        question: `Correct score: ${t.a} ${Math.round(p.scoreA)}–${Math.round(p.scoreB)} ${t.b}`,
-      }),
-  },
-  {
-    id: "team_total_goals",
-    group: "Goals",
-    label: () => "Team total goals (over/under)",
-    params: ["team", "line", "period"],
-    defaultLine: 1.5,
-    build: (p, t) =>
-      base({
-        statKey: teamGoals(p.team, p.period),
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question: `${teamName(t, p.team)} over ${p.line} goals${pLabel[p.period]}`,
-      }),
-  },
-  // --- Corners ---
-  {
-    id: "total_corners",
-    group: "Corners",
-    label: () => "Total corners (over/under)",
-    params: ["line", "period"],
-    defaultLine: 9.5,
-    build: (p) =>
-      base({
-        statKey: key(7, p.period),
-        statKeyB: key(8, p.period),
-        op: OP_ADD,
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question: `Over ${p.line} total corners${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "team_corners",
-    group: "Corners",
-    label: () => "Team corners (over/under)",
-    params: ["team", "line", "period"],
-    defaultLine: 4.5,
-    build: (p, t) =>
-      base({
-        statKey: teamCorners(p.team, p.period),
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question: `${teamName(t, p.team)} over ${p.line} corners${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "most_corners",
-    group: "Corners",
-    label: () => "Most corners",
-    params: ["team"],
-    build: (p, t) => {
-      const [a, b] = p.team === "1" ? [7, 8] : [8, 7]
-      return base({
-        statKey: a,
-        statKeyB: b,
-        op: OP_SUB,
-        threshold: 0,
-        comparison: GT,
-        question: `${teamName(t, p.team)} to have most corners`,
-      })
-    },
-  },
-  // --- Cards ---
-  {
-    id: "total_yellow",
-    group: "Cards",
-    label: () => "Total yellow cards (over/under)",
-    params: ["line", "period"],
-    defaultLine: 3.5,
-    build: (p) =>
-      base({
-        statKey: key(3, p.period),
-        statKeyB: key(4, p.period),
-        op: OP_ADD,
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question: `Over ${p.line} total yellow cards${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "total_red",
-    group: "Cards",
-    label: () => "Total red cards / any red card",
-    params: ["line", "period"],
-    defaultLine: 0.5,
-    build: (p) =>
-      base({
-        statKey: key(5, p.period),
-        statKeyB: key(6, p.period),
-        op: OP_ADD,
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question:
-          p.line <= 0.5
-            ? `A red card is shown${pLabel[p.period]}`
-            : `Over ${p.line} total red cards${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "team_yellow",
-    group: "Cards",
-    label: () => "Team yellow cards (over/under)",
-    params: ["team", "line", "period"],
-    defaultLine: 1.5,
-    build: (p, t) =>
-      base({
-        statKey: teamYellow(p.team, p.period),
-        threshold: Math.floor(p.line),
-        comparison: GT,
-        question: `${teamName(t, p.team)} over ${p.line} yellow cards${pLabel[p.period]}`,
-      }),
-  },
-  {
-    id: "most_bookings",
-    group: "Cards",
-    label: () => "Most bookings (yellows)",
-    params: ["team"],
-    build: (p, t) => {
-      const [a, b] = p.team === "1" ? [3, 4] : [4, 3]
-      return base({
-        statKey: a,
-        statKeyB: b,
-        op: OP_SUB,
-        threshold: 0,
-        comparison: GT,
-        question: `${teamName(t, p.team)} to receive more bookings`,
-      })
-    },
-  },
-]
-
-const GROUPS = ["Result", "Goals", "Corners", "Cards"]
-
-// Turn a built config into a plain-English settlement rule for the preview.
-const cmpSym = (c: number) => (c === GT ? ">" : c === LT ? "<" : "=")
-const statTypeByBase: Record<number, string> = {
-  1: "goals",
-  2: "goals",
-  3: "yellow cards",
-  4: "yellow cards",
-  5: "red cards",
-  6: "red cards",
-  7: "corners",
-  8: "corners",
-}
-function statName(k: number, t: Teams): string {
-  const period = k >= 2000 ? " (2nd half)" : k >= 1000 ? " (1st half)" : ""
-  const b = k % 1000
-  const who = b % 2 === 1 ? t.a : t.b
-  return `${who} ${statTypeByBase[b] ?? "stat"}${period}`
-}
-function describeRule(c: BuiltConfig, t: Teams): string {
-  const a = statName(c.statKey, t)
-  if (c.logic !== 0) {
-    const join = c.logic === 1 ? "AND" : "OR"
-    return `YES if (${a} ${cmpSym(c.comparison)} ${c.threshold}) ${join} (${statName(
-      c.statKeyB,
-      t,
-    )} ${cmpSym(c.comparisonB)} ${c.thresholdB})`
-  }
-  if (c.op !== 0) {
-    return `YES if ${a} ${c.op === OP_ADD ? "+" : "−"} ${statName(c.statKeyB, t)} ${cmpSym(
-      c.comparison,
-    )} ${c.threshold}`
-  }
-  return `YES if ${a} ${cmpSym(c.comparison)} ${c.threshold}`
-}
-
 // Small labelled field wrapper with a one-line description under the label.
 function Field({
   label,
@@ -433,13 +57,6 @@ function Field({
       {children}
     </label>
   )
-}
-
-function toDatetimeLocal(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ""
-  const pad = (n: number) => String(n).padStart(2, "0")
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 const inputCls = "rounded-md border border-stone-200 px-2 py-1.5"
@@ -474,7 +91,10 @@ export default function WorldCupTab() {
     ? { a: selectedFixture.participant1, b: selectedFixture.participant2 }
     : { a: "Team A", b: "Team B" }
 
-  const built = useMemo(() => marketType.build(params, teams), [marketType, params, teams])
+  const built = useMemo(
+    () => buildMarketFor(marketType, params, teams),
+    [marketType, params, teams],
+  )
 
   // Keep the (editable) question in sync with the selected type/params/teams.
   useEffect(() => {
@@ -482,6 +102,23 @@ export default function WorldCupTab() {
   }, [built.question])
 
   const setParam = (patch: Partial<ParamState>) => setParams((p) => ({ ...p, ...patch }))
+
+  const [pruning, setPruning] = useState(false)
+  const prune = async () => {
+    setPruning(true)
+    try {
+      const res = await apiRequest<{ scanned: number; pruned: number }>(
+        "/solana/admin/prune-stale",
+        { method: "POST" },
+      )
+      toast.success(`Pruned ${res.pruned} stale market(s) of ${res.scanned} scanned.`)
+      await load()
+    } catch (e: any) {
+      toast.error(e?.message || "Prune failed")
+    } finally {
+      setPruning(false)
+    }
+  }
 
   const load = async () => {
     setLoading(true)
@@ -532,8 +169,6 @@ export default function WorldCupTab() {
     if (!deadline) return toast.error("Pick a staking deadline.")
     setSubmitting(true)
     try {
-      const twoStat = built.op !== 0 || built.logic !== 0
-      const logical = built.logic !== 0
       const res = await apiRequest<{ marketId: string; solanaCreateTxSig: string }>(
         "/solana/admin/create-market",
         {
@@ -541,14 +176,11 @@ export default function WorldCupTab() {
           body: JSON.stringify({
             fixtureId: Number(fixtureId),
             statKey: built.statKey,
-            statKeyB: twoStat ? built.statKeyB : undefined,
-            op: built.op,
-            logic: built.logic,
+            statKeyB: built.statKeyB || undefined,
             statPeriod: 0,
-            threshold: built.threshold,
-            comparison: built.comparison,
-            thresholdB: logical ? built.thresholdB : undefined,
-            comparisonB: logical ? built.comparisonB : undefined,
+            outcomeCount: built.outcomeCount,
+            rules: built.rules,
+            outcomes: built.outcomes,
             question: question || built.question,
             deadlineUnix: Math.floor(new Date(deadline).getTime() / 1000),
           }),
@@ -740,7 +372,7 @@ export default function WorldCupTab() {
           <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
             Settles trustlessly via TxLINE
           </p>
-          <p className="mt-0.5 font-mono text-[11px] text-stone-700">{describeRule(built, teams)}</p>
+          <p className="mt-0.5 font-mono text-[11px] text-stone-700">{describeMarket(built, teams)}</p>
         </div>
 
         <button
@@ -755,9 +387,19 @@ export default function WorldCupTab() {
       <section className="rounded-xl border border-stone-200 bg-white p-5">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-stone-900">World Cup markets</h2>
-          <button onClick={load} className="text-xs text-stone-500 hover:text-stone-900">
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={prune}
+              disabled={pruning}
+              className="text-xs text-amber-600 hover:text-amber-800 disabled:opacity-50"
+              title="Mark markets with incompatible (pre-redeploy) on-chain accounts as stale"
+            >
+              {pruning ? "Pruning…" : "Prune stale"}
+            </button>
+            <button onClick={load} className="text-xs text-stone-500 hover:text-stone-900">
+              Refresh
+            </button>
+          </div>
         </div>
         {loading ? (
           <p className="mt-3 text-xs text-stone-400">Loading…</p>

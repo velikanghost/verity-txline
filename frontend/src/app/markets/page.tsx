@@ -12,7 +12,6 @@ import {
 } from "@/store/verity/verityQueries"
 
 // Extracted subcomponents
-import StandardMarketsFeed from "@/components/markets/StandardMarketsFeed"
 import { WorldCupMarketsList } from "@/components/worldcup/WorldCupMarketsList"
 import PvpArenaTab from "@/components/markets/PvpArenaTab"
 import PvpSidebarStats from "@/components/markets/PvpSidebarStats"
@@ -26,11 +25,9 @@ function MarketsContent() {
   const searchParams = useSearchParams()
   const tabQuery = searchParams.get("tab") as MarketsTab | null
   const [activeTab, setActiveTab] = useState<MarketsTab>(
-    tabQuery === "general" ||
-      tabQuery === "pvp-arena" ||
-      tabQuery === "worldcup"
+    tabQuery === "pvp-arena" || tabQuery === "worldcup"
       ? tabQuery
-      : "general",
+      : "pvp-arena",
   )
   const [mobilePvpTab, setMobilePvpTab] = useState<MobilePvpTab>("markets")
   const { profile } = useWalletProfile()
@@ -150,22 +147,6 @@ function MarketsContent() {
         <button
           onClick={() => {
             setHasManuallySelected(false)
-            handleTabChange("general")
-          }}
-          className={`relative pb-3 text-sm font-semibold tracking-tight whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === "general"
-              ? "text-charcoal-primary dark:text-white"
-              : "text-ash hover:text-charcoal-primary dark:hover:text-white"
-          }`}
-        >
-          General
-          {activeTab === "general" && (
-            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-charcoal-primary dark:bg-white rounded-full animate-in fade-in duration-200" />
-          )}
-        </button>
-        <button
-          onClick={() => {
-            setHasManuallySelected(false)
             handleTabChange("pvp-arena")
           }}
           className={`relative pb-3 text-sm font-semibold tracking-tight whitespace-nowrap transition-colors cursor-pointer ${
@@ -199,20 +180,6 @@ function MarketsContent() {
 
       {/* World Cup (TxLINE + Solana) Tab */}
       {activeTab === "worldcup" && <WorldCupMarketsList />}
-
-      {/* Prediction Markets Tab */}
-      {activeTab === "general" && (
-        <StandardMarketsFeed
-          feedItems={feedItems}
-          feedLoading={feedLoading}
-          reloadFeed={reloadFeed}
-          profile={profile}
-          setActiveTab={handleTabChange}
-          pvpEvents={pvpEvents}
-          pvpEventsLoading={pvpEventsLoading}
-          setSelectedPvpEventId={handleSelectPvpEvent}
-        />
-      )}
 
       {/* PvP Arena Tab */}
       {activeTab === "pvp-arena" && (

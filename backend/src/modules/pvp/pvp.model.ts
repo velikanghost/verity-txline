@@ -12,6 +12,10 @@ export class PvpPick {
   @Prop({ type: String, required: true })
   selection: string
 
+  /** USDC the user put on this pick (backed in the market's parimutuel pool). */
+  @Prop({ type: Number, default: 0 })
+  amountUsdc: number
+
   @Prop({ type: Boolean, default: null })
   isCorrect: boolean | null
 }
@@ -62,6 +66,10 @@ export class PvpTicket {
 
   @Prop({ type: Number, default: 0 })
   score: number
+
+  /** Solana tx that placed all the picks' on-chain predictions. */
+  @Prop({ type: String, default: null })
+  backTxSig: string | null
 
   @Prop({ type: Number, default: 0 })
   xpEarned: number

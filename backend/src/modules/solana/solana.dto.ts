@@ -1,12 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger"
+import { Type } from "class-transformer"
 import {
+  ArrayMinSize,
+  IsArray,
   IsInt,
   IsNumber,
   IsOptional,
   IsPositive,
   IsString,
-  Min,
   Max,
+  Min,
+  ValidateNested,
 } from "class-validator"
 
 export class StakeDto {
@@ -14,11 +18,10 @@ export class StakeDto {
   @IsString()
   marketId: string
 
-  @ApiProperty({ description: "0 = NO, 1 = YES", minimum: 0, maximum: 1 })
+  @ApiProperty({ description: "Outcome index (0 = NO/default, 1 = YES, …)" })
   @IsInt()
   @Min(0)
-  @Max(1)
-  side: number
+  outcome: number
 
   @ApiProperty({ description: "Stake amount in USDC (human units)" })
   @IsNumber()
@@ -26,16 +29,6 @@ export class StakeDto {
   amountUsdc: number
 }
 
-export class AddLiquidityDto {
-  @ApiProperty({ description: "Mongo market id" })
-  @IsString()
-  marketId: string
-
-  @ApiProperty({ description: "Liquidity amount in USDC (human units)" })
-  @IsNumber()
-  @IsPositive()
-  amountUsdc: number
-}
 
 export class ClaimDto {
   @ApiProperty({ description: "Mongo market id" })
@@ -54,67 +47,83 @@ export class SendUsdcDto {
   amountUsdc: number
 }
 
+/** Predicate for one non-default outcome (outcomes 1..count-1). */
+export class OutcomeRuleDto {
+  @ApiProperty({ description: "Arithmetic op: 0 none, 1 Add, 2 Subtract" })
+  @IsInt()
+  @Min(0)
+  @Max(2)
+  op: number
+
+  @ApiProperty({ description: "Logical mode: 0 none, 1 AND, 2 OR" })
+  @IsInt()
+  @Min(0)
+  @Max(2)
+  logic: number
+
+  @ApiProperty({ description: "Predicate A threshold" })
+  @IsInt()
+  threshold: number
+
+  @ApiProperty({ description: "Predicate A comparison: 0 GT, 1 LT, 2 EQ" })
+  @IsInt()
+  @Min(0)
+  @Max(2)
+  comparison: number
+
+  @ApiProperty({ description: "Predicate B threshold (logical mode)" })
+  @IsInt()
+  thresholdB: number
+
+  @ApiProperty({ description: "Predicate B comparison (logical mode)" })
+  @IsInt()
+  @Min(0)
+  @Max(2)
+  comparisonB: number
+}
+
 export class CreateWorldCupMarketDto {
   @ApiProperty({ description: "TxLINE fixture id" })
   @IsInt()
   fixtureId: number
 
-  @ApiProperty({ description: "Encoded stat key A: (period * 1000) + base_key" })
+  @ApiProperty({ description: "Shared stat key A: (period * 1000) + base_key" })
   @IsInt()
   statKey: number
 
   @ApiPropertyOptional({
-    description: "Second stat key for relational markets; omit for single-stat",
+    description: "Shared stat key B for relational markets; omit for single-stat",
   })
   @IsOptional()
   @IsInt()
   statKeyB?: number
 
-  @ApiPropertyOptional({
-    description: "Arithmetic combine op: 0 none, 1 Add, 2 Subtract (default 0)",
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(2)
-  op?: number
-
-  @ApiPropertyOptional({
-    description: "Logical combine mode: 0 none, 1 AND, 2 OR (BTTS/exact score)",
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(2)
-  logic?: number
-
-  @ApiPropertyOptional({ description: "Predicate B threshold (logical mode only)" })
-  @IsOptional()
-  @IsInt()
-  thresholdB?: number
-
-  @ApiPropertyOptional({
-    description: "Predicate B comparison: 0 GT, 1 LT, 2 EQ (logical mode only)",
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(2)
-  comparisonB?: number
-
   @ApiProperty({ description: "Stat period component" })
   @IsInt()
   statPeriod: number
 
-  @ApiProperty({ description: "Threshold the observed stat is compared to" })
+  @ApiProperty({ description: "Total outcomes (2 = binary, 3 = match result, …)" })
   @IsInt()
-  threshold: number
+  @Min(2)
+  outcomeCount: number
 
-  @ApiProperty({ description: "0 = GreaterThan, 1 = LessThan, 2 = EqualTo" })
-  @IsInt()
-  @Min(0)
-  @Max(2)
-  comparison: number
+  @ApiProperty({
+    type: [OutcomeRuleDto],
+    description: "Predicate per non-default outcome (length outcomeCount - 1)",
+  })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => OutcomeRuleDto)
+  rules: OutcomeRuleDto[]
+
+  @ApiProperty({
+    type: [String],
+    description: "Outcome labels in on-chain order (index 0 = default)",
+  })
+  @IsArray()
+  @IsString({ each: true })
+  outcomes: string[]
 
   @ApiProperty({ description: "Human-readable market question" })
   @IsString()

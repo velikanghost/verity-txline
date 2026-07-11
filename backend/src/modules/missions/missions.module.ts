@@ -15,10 +15,6 @@ import {
 } from "../markets/markets.model"
 import { Comment, CommentSchema } from "../comments/comments.model"
 import { Like, LikeSchema } from "../interactions/interactions.model"
-import {
-  SolanaLiquidity,
-  SolanaLiquiditySchema,
-} from "../solana/liquidity-record.model"
 import { Post, PostSchema } from "../posts/posts.model"
 
 @Module({
@@ -31,7 +27,6 @@ import { Post, PostSchema } from "../posts/posts.model"
       { name: MarketTrade.name, schema: MarketTradeSchema },
       { name: Comment.name, schema: CommentSchema },
       { name: Like.name, schema: LikeSchema },
-      { name: SolanaLiquidity.name, schema: SolanaLiquiditySchema },
       { name: Post.name, schema: PostSchema },
     ]),
   ],

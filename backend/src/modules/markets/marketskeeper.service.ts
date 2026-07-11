@@ -74,6 +74,23 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
     for (const market of markets) {
       const marketId = market._id.toString()
       try {
+        // Markets created by an older program layout (pre-N-outcome redeploy)
+        // can't be decoded or settled — mark them stale so they drop out of the
+        // active loop instead of erroring every tick.
+        if (market.solanaMarketNonce != null) {
+          const onchain = await this.solanaService.tryReadPoolState(
+            market.txlineFixtureId!,
+            market.solanaMarketNonce,
+          )
+          if (!onchain) {
+            market.status = "stale"
+            market.solanaSettled = true
+            await market.save()
+            this.logger.warn(`Marked market ${marketId} stale (incompatible on-chain account)`)
+            continue
+          }
+        }
+
         const seq = await this.getLatestScoresSeq(market.txlineFixtureId!)
         if (seq == null) {
           // Fixture has no published scores batch yet; retry next loop.
@@ -85,18 +102,16 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
           seq,
           market.txlineStatKey!,
         )
-        // Relational (arithmetic op) and logical (AND/OR) markets both combine
-        // a second proven stat; fetch its fresh proof at the same seq.
-        const usesSecondStat =
-          (market.txlineOp || market.txlineLogic) &&
-          market.txlineStatKeyB != null
-        const proofB = usesSecondStat
-          ? await this.txlineService.getStatValidation(
-              market.txlineFixtureId!,
-              seq,
-              market.txlineStatKeyB!,
-            )
-          : null
+        // Any market with a shared second stat (totals, winner, BTTS, 3-way, …)
+        // combines a second proven stat; fetch its fresh proof at the same seq.
+        const proofB =
+          market.txlineStatKeyB != null && market.txlineStatKeyB !== 0
+            ? await this.txlineService.getStatValidation(
+                market.txlineFixtureId!,
+                seq,
+                market.txlineStatKeyB,
+              )
+            : null
         const result = await this.solanaService.settleMarket(
           market.txlineFixtureId!,
           market.solanaMarketNonce!,
@@ -110,8 +125,12 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
         if (result.voided) {
           market.status = "voided"
         } else {
-          const winningOutcome = result.winningSide === 1 ? "YES" : "NO"
-          market.winningOutcomeIndex = result.winningSide === 1 ? 0 : 1
+          // Outcomes are stored in on-chain order (index 0 = default), so the
+          // winning index maps straight through. Binary falls back to YES/NO.
+          const idx = result.winningOutcome
+          const winningOutcome =
+            market.outcomes?.[idx] ?? (idx === 1 ? "YES" : "NO")
+          market.winningOutcomeIndex = idx
           market.status = "resolved"
           market.resolvedOutcome = winningOutcome
           await market.save()

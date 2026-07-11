@@ -9,7 +9,7 @@ import {
   User,
   Wallet,
   CircleHelp,
-  TrendingUp,
+  Swords,
   Trophy,
   Sparkles,
 } from "lucide-react"
@@ -21,7 +21,7 @@ import { useAuth } from "@/components/providers/AuthModals"
 
 const NAV_ITEMS = [
   { icon: Home, label: "Home", href: "/" },
-  { icon: TrendingUp, label: "Markets", href: "/markets" },
+  { icon: Swords, label: "PvP Arena", href: "/pvp" },
   { icon: Sparkles, label: "Missions", href: "/missions" },
   { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
   { icon: Bell, label: "Notifications", href: "/notifications" },

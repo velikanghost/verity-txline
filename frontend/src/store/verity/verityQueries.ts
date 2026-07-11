@@ -666,7 +666,7 @@ export function useSubmitPvpTicketMutation() {
   return useMutation({
     mutationFn: (body: {
       parentMarketId: string
-      picks: { marketId: string; selection: string }[]
+      picks: { marketId: string; selection: string; amountUsdc: number }[]
       couponCode?: string
     }) =>
       apiRequest<any>("/pvp/ticket", {

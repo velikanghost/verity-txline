@@ -18,18 +18,11 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AdminGuard } from "../../common/guards/admin.guard"
 import { User, UserDocument } from "../users/users.model"
 import { Market, MarketDocument } from "../markets/markets.model"
-import { SolanaLiquidity, SolanaLiquidityDocument } from "./liquidity-record.model"
 import { SolanaService } from "./solana.service"
 import { TxlineService } from "./txline.service"
 import { CircleSolanaWalletService } from "./circle-solana-wallet.service"
 import { WorldCupMarketService } from "./worldcup-market.service"
-import {
-  StakeDto,
-  AddLiquidityDto,
-  ClaimDto,
-  CreateWorldCupMarketDto,
-  SendUsdcDto,
-} from "./solana.dto"
+import { StakeDto, ClaimDto, CreateWorldCupMarketDto, SendUsdcDto } from "./solana.dto"
 
 const toBaseUnits = (usdc: number): bigint => BigInt(Math.round(usdc * 1e6))
 
@@ -43,25 +36,18 @@ export class SolanaController {
     private readonly worldCupMarketService: WorldCupMarketService,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Market.name) private readonly marketModel: Model<MarketDocument>,
-    @InjectModel(SolanaLiquidity.name)
-    private readonly liquidityModel: Model<SolanaLiquidityDocument>,
   ) {}
 
   private async createWorldCupMarket(userId: string, dto: CreateWorldCupMarketDto) {
-    const user = await this.userModel.findById(userId)
     const market = await this.worldCupMarketService.createMarket({
       creatorUserId: userId,
-      creatorWallet: user?.solanaWalletAddress ?? null,
       fixtureId: dto.fixtureId,
       statKey: dto.statKey,
       statKeyB: dto.statKeyB,
-      op: dto.op,
-      logic: dto.logic,
       statPeriod: dto.statPeriod,
-      threshold: dto.threshold,
-      thresholdB: dto.thresholdB,
-      comparisonB: dto.comparisonB,
-      comparison: dto.comparison,
+      outcomeCount: dto.outcomeCount,
+      rules: dto.rules,
+      outcomes: dto.outcomes,
       question: dto.question,
       deadlineUnix: dto.deadlineUnix,
     })
@@ -77,14 +63,6 @@ export class SolanaController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin: create a World Cup prop market + on-chain pool" })
   async createMarketAdmin(@Request() req: any, @Body() dto: CreateWorldCupMarketDto) {
-    return this.createWorldCupMarket(req.user.id, dto)
-  }
-
-  @Post("create-market")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Create a World Cup prop market + on-chain pool" })
-  async createMarketUser(@Request() req: any, @Body() dto: CreateWorldCupMarketDto) {
     return this.createWorldCupMarket(req.user.id, dto)
   }
 
@@ -114,42 +92,13 @@ export class SolanaController {
       market.txlineFixtureId!,
       market.solanaMarketNonce!,
       wallet,
-      dto.side,
+      dto.outcome,
       toBaseUnits(dto.amountUsdc),
     )
     const txSig = await this.circleSolanaWalletService.signAndBroadcast(
       req.user.id,
       [ix],
     )
-    return { txSig }
-  }
-
-  @Post("add-liquidity")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Provide liquidity to a World Cup prop market" })
-  async addLiquidity(@Request() req: any, @Body() dto: AddLiquidityDto) {
-    const { market, wallet } = await this.resolveMarketAndUser(
-      req.user.id,
-      dto.marketId,
-    )
-    const ix = await this.solanaService.buildAddLiquidityInstruction(
-      market.txlineFixtureId!,
-      market.solanaMarketNonce!,
-      wallet,
-      toBaseUnits(dto.amountUsdc),
-    )
-    const txSig = await this.circleSolanaWalletService.signAndBroadcast(
-      req.user.id,
-      [ix],
-    )
-    // Record the LP action so the "has_added_liquidity" mission can verify it.
-    await this.liquidityModel.create({
-      userId: req.user.id,
-      marketId: market._id,
-      amountUsdc: dto.amountUsdc,
-      txSig,
-    })
     return { txSig }
   }
 
@@ -220,11 +169,44 @@ export class SolanaController {
     }))
   }
 
+  @Post("admin/prune-stale")
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Admin: mark fixture markets with incompatible on-chain accounts as stale",
+  })
+  async pruneStale() {
+    const markets = await this.marketModel.find({
+      txlineFixtureId: { $ne: null },
+      solanaMarketNonce: { $ne: null },
+      solanaSettled: { $ne: true },
+      status: { $nin: ["stale", "resolved", "voided"] },
+    })
+    let pruned = 0
+    for (const m of markets) {
+      const onchain = await this.solanaService.tryReadPoolState(
+        m.txlineFixtureId!,
+        m.solanaMarketNonce!,
+      )
+      if (!onchain) {
+        m.status = "stale"
+        m.solanaSettled = true
+        await m.save()
+        pruned++
+      }
+    }
+    return { scanned: markets.length, pruned }
+  }
+
   @Get("markets")
   @ApiOperation({ summary: "List World Cup prop markets" })
   async listMarkets() {
     const markets = await this.marketModel
-      .find({ category: "worldcup", txlineFixtureId: { $ne: null } })
+      .find({
+        category: "worldcup",
+        txlineFixtureId: { $ne: null },
+        status: { $ne: "stale" },
+      })
       .sort({ createdAt: -1 })
       .lean()
     return markets.map((m: any) => ({
@@ -234,12 +216,13 @@ export class SolanaController {
       fixtureId: m.txlineFixtureId,
       matchup: m.txlineMatchup ?? null,
       statKey: m.txlineStatKey,
-      threshold: m.txlineThreshold,
-      comparison: m.txlineComparison,
+      outcomeCount: m.txlineOutcomeCount ?? m.outcomes?.length ?? 2,
+      outcomes: m.outcomes ?? [m.noCondition, m.yesCondition],
       deadline: m.deadline,
       yesCondition: m.yesCondition,
       noCondition: m.noCondition,
       resolvedOutcome: m.resolvedOutcome,
+      winningOutcomeIndex: m.winningOutcomeIndex ?? null,
       solanaMarketPda: m.solanaMarketPda,
       solanaCreateTxSig: m.solanaCreateTxSig,
       solanaResolveTxSig: m.solanaResolveTxSig,
@@ -258,17 +241,24 @@ export class SolanaController {
     ) {
       throw new NotFoundException("Solana market not found.")
     }
-    const state = await this.solanaService.readPoolState(
-      market.txlineFixtureId,
-      market.solanaMarketNonce,
-    )
+    let state: any
+    try {
+      state = await this.solanaService.readPoolState(
+        market.txlineFixtureId,
+        market.solanaMarketNonce,
+      )
+    } catch {
+      // Account created by an older program layout (pre-N-outcome redeploy) or
+      // not yet on-chain: degrade gracefully instead of 500-ing.
+      return { stale: true, pools: [], totalLpDeposits: "0", resolved: false, voided: false }
+    }
+    const count = state.outcomeCount as number
     return {
-      yesPool: state.yesPool?.toString(),
-      noPool: state.noPool?.toString(),
+      pools: (state.pools as any[]).slice(0, count).map((p) => p.toString()),
       totalLpDeposits: state.totalLpDeposits?.toString(),
       resolved: state.resolved,
       voided: state.voided,
-      winningSide: state.winningSide,
+      winningOutcome: state.winningOutcome,
     }
   }
 }

@@ -9,7 +9,7 @@ import {
   Param,
 } from "@nestjs/common"
 import { PvpService } from "./pvp.service"
-import { CreatePvpEventDto, SubmitTicketDto } from "./pvp.dto"
+import { CreatePvpEventDto, CreateSlateDto, SubmitTicketDto } from "./pvp.dto"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AdminGuard } from "../../common/guards/admin.guard"
 import {
@@ -33,6 +33,17 @@ export class PvpController {
   })
   async createPvpEvent(@Request() req: any, @Body() dto: CreatePvpEventDto) {
     return this.pvpService.createPvpEvent(req.user.id, dto)
+  }
+
+  @Post("slates")
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      "Admin-only: create a PvP slate — props across multiple fixtures grouped into one contest",
+  })
+  async createSlate(@Request() req: any, @Body() dto: CreateSlateDto) {
+    return this.pvpService.createSlate(req.user.id, dto)
   }
 
   @Post("events/:parentMarketId/lock")

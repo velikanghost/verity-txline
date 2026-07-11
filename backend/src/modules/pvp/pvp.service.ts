@@ -25,8 +25,11 @@ import {
 import { Post, PostDocument } from "../posts/posts.model"
 import { SocketGateway } from "../socket/socket.gateway"
 import { NotificationsService } from "../notifications/notifications.service"
-import { CreatePvpEventDto, SubmitTicketDto } from "./pvp.dto"
+import { CreatePvpEventDto, CreateSlateDto, SubmitTicketDto } from "./pvp.dto"
+import { PublicKey, TransactionInstruction } from "@solana/web3.js"
 import { SolanaService } from "../solana/solana.service"
+import { WorldCupMarketService } from "../solana/worldcup-market.service"
+import { CircleSolanaWalletService } from "../solana/circle-solana-wallet.service"
 import { calculatePvpResultXp, calculatePvpScore } from "./pvp-scoring"
 import type { PvpResult } from "./pvp-scoring"
 import { ConfigService } from "@nestjs/config"
@@ -74,105 +77,108 @@ const OP_ADD = 1
 const OP_SUBTRACT = 2
 
 // Logical combine modes (must match the on-chain `logic` codes).
-const LOGIC_NONE = 0
 const LOGIC_AND = 1
 
 // Comparison codes.
 const CMP_GT = 0
+const CMP_LT = 1
 const CMP_EQ = 2
 
-export interface StatConfig {
-  statKey: number
-  statKeyB: number // 0 when single-stat
-  op: number // 0 none, 1 Add, 2 Subtract (arithmetic combine)
-  logic: number // 0 none, 1 AND, 2 OR (logical combine of two predicates)
-  statPeriod: number
+export interface OutcomeRule {
+  op: number
+  logic: number
   threshold: number
   comparison: number
-  thresholdB: number // predicate B (logical mode only)
+  thresholdB: number
   comparisonB: number
 }
 
-/**
- * Map a PvP prop group to a TxLINE-provable settlement config, or `null` when
- * TxLINE cannot prove it (so the market is dropped rather than settled wrongly).
- *
- * TxLINE proves only per-participant Goals/YellowCards/RedCards/Corners as
- * numbers, combined arithmetically (Add/Subtract) — there is no logical AND and
- * no offsides/fouls/first-goal-scorer stat. So:
- *  - `totals`/`goals`/`corners`/`cards` → sum both participants (Add).
- *  - `spread` → participant goal difference (Subtract).
- *  - `clean_sheet` → opponent goals == 0 (single stat).
- *  - `red_card` → total red cards > 0 (Add).
- *  - `btts` → (P1 goals > 0) AND (P2 goals > 0) — two predicates combined by
- *    the on-chain logical-AND settle path.
- *  - `offsides`/`fouls_leader`/`first_goal` (no stat), `major`/`halftime_leader`/
- *    `extra_time_penalties` (3-way, not binary) → null.
- */
-/** A config needs a second stat proof when it combines two stats (op or logic). */
-export function usesSecondStat(stat: StatConfig): boolean {
-  return stat.op !== 0 || stat.logic !== 0
+/** A settleable market spec: shared stat pair + per-outcome predicates + labels. */
+export interface MarketSpec {
+  statKey: number
+  statKeyB: number // 0 when single-stat
+  statPeriod: number
+  outcomeCount: number
+  rules: OutcomeRule[] // length outcomeCount - 1 (outcomes 1..count-1)
+  outcomes: string[] // length outcomeCount, on-chain order (index 0 = default)
 }
 
-export function deriveStatConfig(
+const rule = (
+  op: number,
+  logic: number,
+  threshold: number,
+  comparison: number,
+  thresholdB = 0,
+  comparisonB = 0,
+): OutcomeRule => ({ op, logic, threshold, comparison, thresholdB, comparisonB })
+
+/** A spec needs a second stat proof when it references stat B. */
+export function usesSecondStat(spec: MarketSpec): boolean {
+  return spec.statKeyB !== 0
+}
+
+/**
+ * Map a PvP prop group to a TxLINE-provable market spec, or `null` when TxLINE
+ * cannot prove it. TxLINE proves only per-participant Goals/YellowCards/
+ * RedCards/Corners as numbers, combined arithmetically (Add/Subtract) or, via
+ * the on-chain multi-CPI paths, logically (AND) and across outcomes:
+ *  - `totals`/`goals`/`corners`/`cards` → binary over/under (Add).
+ *  - `spread` → binary participant goal difference (Subtract).
+ *  - `clean_sheet` → binary opponent goals == 0 (single stat).
+ *  - `red_card` → binary total red cards > 0 (Add).
+ *  - `btts` → binary (P1>0) AND (P2>0) (logical AND).
+ *  - `major` → 3-way match result [Draw, teamA win, teamB win].
+ *  - `offsides`/`fouls_leader`/`first_goal` (no stat), `halftime_leader`/
+ *    `extra_time_penalties` → null.
+ */
+export function deriveMarketSpec(
   optionGroup: string,
   handicap: number | null,
-): StatConfig | null {
+  teamA: string,
+  teamB: string,
+): MarketSpec | null {
   const t = (fallback: number) =>
     handicap != null ? Math.round(handicap) : fallback
-  // Arithmetic base config; callers override the combine mode as needed.
-  const cfg = (over: Partial<StatConfig>): StatConfig => ({
-    statKey: 0,
-    statKeyB: 0,
-    op: OP_NONE,
-    logic: LOGIC_NONE,
+  // Binary market: one rule; outcome 0 = No/default, outcome 1 = Yes.
+  const binary = (statKey: number, statKeyB: number, r: OutcomeRule): MarketSpec => ({
+    statKey,
+    statKeyB,
     statPeriod: 0,
-    threshold: 0,
-    comparison: CMP_GT,
-    thresholdB: 0,
-    comparisonB: CMP_GT,
-    ...over,
+    outcomeCount: 2,
+    rules: [r],
+    outcomes: ["No", "Yes"],
   })
-  const total = (a: number, b: number, threshold: number): StatConfig =>
-    cfg({ statKey: a, statKeyB: b, op: OP_ADD, threshold })
+  const totalOver = (a: number, b: number, thr: number) =>
+    binary(a, b, rule(OP_ADD, 0, thr, CMP_GT))
 
   switch (optionGroup) {
     case "totals":
     case "goals":
-      return total(P1_GOALS, P2_GOALS, t(2))
+      return totalOver(P1_GOALS, P2_GOALS, t(2))
     case "corners":
-      return total(P1_CORNERS, P2_CORNERS, t(9))
+      return totalOver(P1_CORNERS, P2_CORNERS, t(9))
     case "cards":
     case "yellow_cards":
-      return total(P1_YELLOW, P2_YELLOW, t(3))
+      return totalOver(P1_YELLOW, P2_YELLOW, t(3))
     case "red_card":
-      // Any red card in the match: total reds > 0.
-      return total(P1_RED, P2_RED, 0)
+      return totalOver(P1_RED, P2_RED, 0)
     case "spread":
-      // Participant 1 covers the handicap: (P1 goals - P2 goals) > line.
-      return cfg({
-        statKey: P1_GOALS,
-        statKeyB: P2_GOALS,
-        op: OP_SUBTRACT,
-        threshold: t(0),
-      })
+      return binary(P1_GOALS, P2_GOALS, rule(OP_SUBTRACT, 0, t(0), CMP_GT))
     case "clean_sheet":
-      // Participant 1 keeps a clean sheet: P2 goals == 0 (single stat).
-      return cfg({ statKey: P2_GOALS, threshold: 0, comparison: CMP_EQ })
+      return binary(P2_GOALS, 0, rule(OP_NONE, 0, 0, CMP_EQ))
     case "btts":
-      // Both teams to score: (P1 goals > 0) AND (P2 goals > 0).
-      return cfg({
+      return binary(P1_GOALS, P2_GOALS, rule(OP_NONE, LOGIC_AND, 0, CMP_GT, 0, CMP_GT))
+    case "major":
+      // 3-way: 0 = Draw (default), 1 = teamA win (A-B>0), 2 = teamB win (A-B<0).
+      return {
         statKey: P1_GOALS,
         statKeyB: P2_GOALS,
-        logic: LOGIC_AND,
-        threshold: 0,
-        comparison: CMP_GT,
-        thresholdB: 0,
-        comparisonB: CMP_GT,
-      })
+        statPeriod: 0,
+        outcomeCount: 3,
+        rules: [rule(OP_SUBTRACT, 0, 0, CMP_GT), rule(OP_SUBTRACT, 0, 0, CMP_LT)],
+        outcomes: ["Draw", teamA, teamB],
+      }
     default:
-      // major, halftime_leader, extra_time_penalties (3-way, not binary),
-      // offsides / fouls_leader / first_goal (no TxLINE stat).
       return null
   }
 }
@@ -322,6 +328,8 @@ export class PvpService {
     private readonly socketGateway: SocketGateway,
     private readonly notificationsService: NotificationsService,
     private readonly solanaService: SolanaService,
+    private readonly worldCupMarketService: WorldCupMarketService,
+    private readonly circleSolanaWalletService: CircleSolanaWalletService,
     private readonly configService: ConfigService,
     private readonly couponsService: CouponsService,
   ) {}
@@ -347,10 +355,6 @@ export class PvpService {
         teamB = dashMatch[2].trim()
       }
     }
-
-    // The market creator on-chain: the admin's Solana wallet (falls back to
-    // the keeper inside SolanaService when absent).
-    const creatorWallet = admin.solanaWalletAddress || null
 
     let post: PostDocument | null = null
     let parentMarket: MarketDocument | null = null
@@ -467,7 +471,7 @@ export class PvpService {
         // first-goal, …) so we never create a market we can't resolve.
         if (
           dto.fixtureId != null &&
-          deriveStatConfig(optionGroup, handicap) == null
+          deriveMarketSpec(optionGroup, handicap, teamA, teamB) == null
         ) {
           this.logger.warn(
             `Skipping unsettleable PvP prop "${optionGroup}" for fixture ${dto.fixtureId}`,
@@ -528,9 +532,9 @@ export class PvpService {
       for (const item of deployedMarkets) {
         const hasFixture = dto.fixtureId != null
         // Unsettleable groups were already filtered out above when a fixture is
-        // set, so a config is guaranteed here for the on-chain path.
-        const stat = hasFixture
-          ? deriveStatConfig(item.optionGroup, item.handicap)
+        // set, so a spec is guaranteed here for the on-chain path.
+        const spec = hasFixture
+          ? deriveMarketSpec(item.optionGroup, item.handicap, teamA, teamB)
           : null
 
         const child = await this.marketModel.create({
@@ -550,37 +554,29 @@ export class PvpService {
           optionName: item.optionName,
           teamName: teamA, // Keep teamA as primary associated team
           optionGroup: item.optionGroup,
-          outcomeCount: item.outcomeCount,
-          outcomes: item.outcomes,
+          // On-chain markets store outcomes in on-chain order (index 0 = default).
+          outcomeCount: spec ? spec.outcomeCount : item.outcomeCount,
+          outcomes: spec ? spec.outcomes : item.outcomes,
           handicap: item.handicap,
           txlineFixtureId: hasFixture ? dto.fixtureId : null,
           txlineMatchup: hasFixture ? `${teamA} vs ${teamB}` : null,
-          txlineStatKey: stat ? stat.statKey : null,
-          txlineStatKeyB: stat && usesSecondStat(stat) ? stat.statKeyB : null,
-          txlineOp: stat ? stat.op : 0,
-          txlineLogic: stat ? stat.logic : 0,
-          txlineStatPeriod: stat ? stat.statPeriod : null,
-          txlineThreshold: stat ? stat.threshold : null,
-          txlineComparison: stat ? stat.comparison : null,
-          txlineThresholdB: stat && stat.logic !== 0 ? stat.thresholdB : null,
-          txlineComparisonB: stat && stat.logic !== 0 ? stat.comparisonB : null,
+          txlineStatKey: spec ? spec.statKey : null,
+          txlineStatKeyB: spec && usesSecondStat(spec) ? spec.statKeyB : null,
+          txlineStatPeriod: spec ? spec.statPeriod : null,
+          txlineOutcomeCount: spec ? spec.outcomeCount : 2,
+          txlineOutcomeRules: spec ? spec.rules : [],
         })
 
         // Deploy the on-chain parimutuel pool for this prop.
-        if (hasFixture && stat) {
+        if (hasFixture && spec) {
           const pool = await this.solanaService.createMarketPoolFor({
             fixtureId: dto.fixtureId!,
-            statKey: stat.statKey,
-            statKeyB: usesSecondStat(stat) ? stat.statKeyB : undefined,
-            op: stat.op,
-            logic: stat.logic,
-            statPeriod: stat.statPeriod,
-            threshold: stat.threshold,
-            comparison: stat.comparison,
-            thresholdB: stat.logic !== 0 ? stat.thresholdB : undefined,
-            comparisonB: stat.logic !== 0 ? stat.comparisonB : undefined,
+            statKey: spec.statKey,
+            statKeyB: usesSecondStat(spec) ? spec.statKeyB : undefined,
+            statPeriod: spec.statPeriod,
+            outcomeCount: spec.outcomeCount,
+            rules: spec.rules,
             deadlineUnix,
-            creatorWallet,
           })
           child.solanaMarketNonce = pool.nonce
           child.solanaMarketPda = pool.marketPda
@@ -657,6 +653,76 @@ export class PvpService {
       }
 
       throw error
+    }
+  }
+
+  /**
+   * Create a PvP **slate**: a named contest that groups prop markets across
+   * multiple fixtures. Each prop is a real TxLINE-settled parimutuel market
+   * (category "worldcup", so it's individually backable on the home feed) that
+   * also links to the slate's parent for lineup building in the Arena.
+   */
+  async createSlate(adminId: string, dto: CreateSlateDto) {
+    const admin = await this.userModel.findById(adminId)
+    if (!admin || admin.role !== "admin") {
+      throw new ForbiddenException("Only admins can create slates.")
+    }
+
+    const deadline = new Date(dto.deadline)
+    const lockTime = dto.lockTime ? new Date(dto.lockTime) : deadline
+    const deadlineUnix = Math.floor(deadline.getTime() / 1000)
+
+    // Parent post + slate market (the contest container).
+    const post = await this.postModel.create({
+      authorId: new Types.ObjectId(adminId),
+      type: "market",
+      content: dto.name.trim(),
+    })
+    const slate = await this.marketModel.create({
+      postId: post._id,
+      authorId: new Types.ObjectId(adminId),
+      question: dto.name.trim(),
+      category: "pvp",
+      marketType: "parent",
+      deadline,
+      lockTime,
+      resolutionSource: dto.resolutionSource.trim(),
+      yesCondition: "Slate",
+      noCondition: "Slate",
+      status: "tradable",
+    })
+
+    const createdMarketIds: string[] = []
+    try {
+      for (const prop of dto.props) {
+        const market = await this.worldCupMarketService.createMarket({
+          creatorUserId: adminId,
+          fixtureId: prop.fixtureId,
+          statKey: prop.statKey,
+          statKeyB: prop.statKeyB,
+          statPeriod: prop.statPeriod,
+          outcomeCount: prop.outcomeCount,
+          rules: prop.rules,
+          outcomes: prop.outcomes,
+          question: prop.question,
+          deadlineUnix,
+          parentMarketId: slate._id.toString(),
+        })
+        createdMarketIds.push(market._id.toString())
+      }
+    } catch (error: any) {
+      // Roll back the slate container if any prop fails (children roll back
+      // themselves inside createMarket).
+      await this.marketModel.findByIdAndDelete(slate._id)
+      await this.postModel.findByIdAndDelete(post._id)
+      throw new BadRequestException(`Slate creation failed: ${error.message}`)
+    }
+
+    this.socketGateway.broadcastToRoom("feed", "feed-updated", {})
+    return {
+      slateId: slate._id.toString(),
+      name: slate.question,
+      marketIds: createdMarketIds,
     }
   }
 
@@ -884,6 +950,7 @@ export class PvpService {
         options: children.map((c) => ({
           id: c._id.toString(),
           optionName: c.optionName,
+          question: c.question,
           status: c.status,
           usdcYesAmount: c.usdcYesAmount,
           usdcNoAmount: c.usdcNoAmount,
@@ -895,6 +962,10 @@ export class PvpService {
           outcomeCount: c.outcomeCount,
           outcomes: c.outcomes,
           outcomePrices: c.outcomePrices,
+          // Per-fixture context so a cross-game slate lineup can show which
+          // match each prop belongs to.
+          txlineFixtureId: c.txlineFixtureId ?? null,
+          txlineMatchup: c.txlineMatchup ?? null,
         })),
       })
     }
@@ -1001,6 +1072,7 @@ export class PvpService {
         options: children.map((c) => ({
           id: c._id.toString(),
           optionName: c.optionName,
+          question: c.question,
           status: c.status,
           usdcYesAmount: c.usdcYesAmount,
           usdcNoAmount: c.usdcNoAmount,
@@ -1012,6 +1084,10 @@ export class PvpService {
           outcomeCount: c.outcomeCount,
           outcomes: c.outcomes,
           outcomePrices: c.outcomePrices,
+          // Per-fixture context so a cross-game slate lineup can show which
+          // match each prop belongs to.
+          txlineFixtureId: c.txlineFixtureId ?? null,
+          txlineMatchup: c.txlineMatchup ?? null,
         })),
       })
     }
@@ -1280,6 +1356,47 @@ export class PvpService {
       }
     }
 
+    // Back every pick with real USDC in its market's parimutuel pool — one
+    // Solana transaction (all picks), signed by the user's Circle wallet.
+    const backer = await this.userModel.findById(userId)
+    if (!backer?.solanaWalletAddress) {
+      throw new BadRequestException("No Solana wallet provisioned.")
+    }
+    const wallet = new PublicKey(backer.solanaWalletAddress)
+    const toBaseUnits = (usdc: number): bigint => BigInt(Math.round(usdc * 1e6))
+    const backInstructions: TransactionInstruction[] = []
+    for (const pick of dto.picks) {
+      const child = childMarkets.find((m) => m._id.toString() === pick.marketId)!
+      if (child.txlineFixtureId == null || child.solanaMarketNonce == null) {
+        throw new BadRequestException(`Prop ${pick.marketId} is not on-chain.`)
+      }
+      const outcome = (child.outcomes ?? []).indexOf(pick.selection)
+      if (outcome < 0) {
+        throw new BadRequestException(
+          `Invalid selection "${pick.selection}" for prop ${pick.marketId}.`,
+        )
+      }
+      backInstructions.push(
+        await this.solanaService.buildStakeInstruction(
+          child.txlineFixtureId,
+          child.solanaMarketNonce,
+          wallet,
+          outcome,
+          toBaseUnits(pick.amountUsdc),
+        ),
+      )
+    }
+    let backTxSig: string
+    try {
+      backTxSig = await this.circleSolanaWalletService.signAndBroadcast(
+        userId,
+        backInstructions,
+      )
+      this.logger.log(`PvP lineup backed by ${userId} (tx ${backTxSig})`)
+    } catch (e: any) {
+      throw new BadRequestException(`Failed to back lineup: ${e.message}`)
+    }
+
     // Create the ticket
     let ticket
     try {
@@ -1289,8 +1406,10 @@ export class PvpService {
         picks: dto.picks.map((p) => ({
           marketId: new Types.ObjectId(p.marketId),
           selection: p.selection,
+          amountUsdc: p.amountUsdc,
           isCorrect: null,
         })),
+        backTxSig,
         status: "queued",
         doubleBoostActive,
         xpBoostMultiplier,
@@ -1424,6 +1543,9 @@ export class PvpService {
         continue // Top 10 can only match with Top 10, non-Top 10 can only match with non-Top 10
       }
 
+      // Slate model: lineups can differ across the slate's props, so we no
+      // longer require overlapping/opposing picks. Divergence is kept only as a
+      // soft tie-breaker (more disagreement = a more interesting duel).
       let divergence = 0
       for (const pick of ticket.picks) {
         const candidatePick = candidate.picks.find(
@@ -1432,10 +1554,6 @@ export class PvpService {
         if (candidatePick && candidatePick.selection !== pick.selection) {
           divergence += 1
         }
-      }
-
-      if (divergence < 1) {
-        continue // Skip exact same picks to avoid pre-determined draws!
       }
 
       const candidateXp = candidateUser?.arenaXp ?? 0
@@ -2147,7 +2265,11 @@ export class PvpService {
           )
           return {
             marketId: p.marketId.toString(),
-            optionName: matchChild?.optionName || "Unknown Proposition",
+            optionName:
+              matchChild?.optionName ||
+              matchChild?.question ||
+              "Unknown Proposition",
+            matchup: matchChild?.txlineMatchup ?? null,
             selection: p.selection,
             isCorrect: p.isCorrect,
             yesCondition: matchChild?.yesCondition || "YES",
@@ -2178,7 +2300,11 @@ export class PvpService {
                   )
                   return {
                     marketId: p.marketId.toString(),
-                    optionName: matchChild?.optionName || "Unknown Proposition",
+                    optionName:
+              matchChild?.optionName ||
+              matchChild?.question ||
+              "Unknown Proposition",
+            matchup: matchChild?.txlineMatchup ?? null,
                     selection: p.selection,
                     isCorrect: p.isCorrect,
                     yesCondition: matchChild?.yesCondition || "YES",
