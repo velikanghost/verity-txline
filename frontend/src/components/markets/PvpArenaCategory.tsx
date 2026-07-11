@@ -179,7 +179,9 @@ interface ArenaCategoryProps {
   accentColor: string
   volume: number
   hasSelection: boolean
-  onAddLiquidity: () => void
+  /** Show the "+ LP" action. Off for pure-parimutuel markets (no LPs). */
+  showLp?: boolean
+  onAddLiquidity?: () => void
   children: React.ReactNode
 }
 
@@ -190,6 +192,7 @@ export default function ArenaCategory({
   accentColor,
   volume,
   hasSelection,
+  showLp = true,
   onAddLiquidity,
   children,
 }: ArenaCategoryProps) {
@@ -266,13 +269,15 @@ export default function ArenaCategory({
           <span className="text-[10px] text-ash font-mono">
             ${volume.toLocaleString()} Vol.
           </span>
-          <button
-            type="button"
-            onClick={onAddLiquidity}
-            className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border border-border dark:border-zinc-800 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-stone-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer shadow-xs bg-stone-50/50 dark:bg-zinc-900/20"
-          >
-            + LP
-          </button>
+          {showLp && (
+            <button
+              type="button"
+              onClick={onAddLiquidity}
+              className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border border-border dark:border-zinc-800 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-stone-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer shadow-xs bg-stone-50/50 dark:bg-zinc-900/20"
+            >
+              + LP
+            </button>
+          )}
         </div>
       </div>
 

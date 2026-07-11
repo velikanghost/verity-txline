@@ -1,5 +1,5 @@
-import PortfolioDashboard from "@/components/porfolio/PortfolioDashboard"
+import ProfilePortfolio from "@/components/profile/ProfilePortfolio"
 
 export default function WalletPage() {
-  return <PortfolioDashboard />
+  return <ProfilePortfolio initialView="portfolio" />
 }

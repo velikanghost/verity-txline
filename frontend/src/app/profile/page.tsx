@@ -1,5 +1,5 @@
-import ProfileEditor from "@/components/profile/ProfileEditor"
+import ProfilePortfolio from "@/components/profile/ProfilePortfolio"
 
 export default function ProfilePage() {
-  return <ProfileEditor />
+  return <ProfilePortfolio initialView="profile" />
 }

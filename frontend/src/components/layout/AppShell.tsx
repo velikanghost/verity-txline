@@ -1,21 +1,16 @@
 "use client"
 
 import Sidebar from "@/components/layout/Sidebar"
-import RightPanel from "@/components/layout/RightPanel"
 import MobileNav from "@/components/layout/MobileNav"
 import MobileLeaderboardButton from "@/components/layout/MobileLeaderboardButton"
-import MobileHeader from "@/components/layout/MobileHeader"
+import AppHeader from "@/components/layout/AppHeader"
 import { useSocket } from "@/hooks/useSocket"
 import { useWalletProfile } from "@/hooks/useWalletProfile"
 import { useEffect } from "react"
-import { usePathname } from "next/navigation"
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { profile } = useWalletProfile()
   const { joinRoom, leaveRoom } = useSocket()
-  const pathname = usePathname()
-
-  const isFullWidthPage = pathname === "/markets" || pathname === "/portfolio"
 
   useEffect(() => {
     if (profile?.id) {
@@ -33,18 +28,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Sidebar />
         </div>
 
-        <main
-          className={`min-w-0 flex-1 ${isFullWidthPage ? "max-w-[1000px]" : "max-w-[672px]"} pb-24 sm:pb-0`}
-        >
-          <MobileHeader />
+        {/* Single full-width column — every page owns its own layout. */}
+        <main className="min-w-0 flex-1 max-w-[1080px] pb-24 sm:pb-0">
+          <AppHeader />
           {children}
         </main>
-
-        {!isFullWidthPage && (
-          <aside className="sticky top-0 hidden h-screen w-[340px] shrink-0 flex-col py-4 lg:flex">
-            <RightPanel />
-          </aside>
-        )}
       </div>
       <MobileLeaderboardButton />
       <MobileNav />

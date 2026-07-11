@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, Check, X, Clock, Swords, Trophy } from "lucide-react"
+import { Check, X, Clock, Swords, Trophy } from "lucide-react"
 
 interface Pick {
   marketId: string
@@ -75,13 +75,7 @@ function PickRow({ pick }: { pick: Pick }) {
   )
 }
 
-export default function DuelPanel({
-  status,
-  onBack,
-}: {
-  status: DuelStatus
-  onBack: () => void
-}) {
+export default function DuelPanel({ status }: { status: DuelStatus }) {
   const myScore = correctCount(status.ticket.picks)
   const oppScore = status.opponent ? correctCount(status.opponent.picks) : 0
   const resolved = status.status === "resolved"
@@ -90,13 +84,6 @@ export default function DuelPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 self-start text-xs font-bold font-mono uppercase tracking-wider text-ash hover:text-charcoal-primary dark:hover:text-white transition-colors clickable"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" /> All slates
-      </button>
-
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-black text-charcoal-primary dark:text-white leading-tight">
           {status.event?.question || "Your duel"}

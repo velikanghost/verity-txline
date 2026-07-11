@@ -8,7 +8,6 @@ import MarketCard from "@/components/post/MarketCard"
 import PostCard from "@/components/post/PostCard"
 import CommentsThread from "@/components/social/CommentsThread"
 import { useFeed } from "@/hooks/useFeed"
-import { useSetRightPanelSlot } from "@/hooks/useRightPanelSlot"
 import { useWalletProfile } from "@/hooks/useWalletProfile"
 import { useSocket } from "@/hooks/useSocket"
 import {
@@ -62,14 +61,6 @@ export default function PostDetailView({ postId }: PostDetailViewProps) {
       )
       .slice(0, 3)
   }, [item, items, postId])
-
-  useSetRightPanelSlot(
-    <RelatedMarketsPanel
-      items={relatedMarkets}
-      onOpenMarket={(market) => router.push(`/markets/${market.id}`)}
-    />,
-    `${postId}-${relatedMarkets.map((related) => related.id).join(",")}`,
-  )
 
   if (itemLoading) {
     return (
@@ -140,12 +131,10 @@ export default function PostDetailView({ postId }: PostDetailViewProps) {
         loading={commentsLoading}
       />
 
-      <div className="lg:hidden">
-        <RelatedMarketsPanel
-          items={relatedMarkets}
-          onOpenMarket={(market) => router.push(`/markets/${market.id}`)}
-        />
-      </div>
+      <RelatedMarketsPanel
+        items={relatedMarkets}
+        onOpenMarket={(market) => router.push(`/markets/${market.id}`)}
+      />
     </div>
   )
 }

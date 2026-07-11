@@ -7,7 +7,6 @@ import {
   Search,
   Bell,
   User,
-  Wallet,
   CircleHelp,
   Swords,
   Trophy,
@@ -25,7 +24,6 @@ const NAV_ITEMS = [
   { icon: Sparkles, label: "Missions", href: "/missions" },
   { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
   { icon: Bell, label: "Notifications", href: "/notifications" },
-  { icon: Wallet, label: "Portfolio", href: "/portfolio" },
   { icon: User, label: "Profile", href: "/profile" },
 ]
 

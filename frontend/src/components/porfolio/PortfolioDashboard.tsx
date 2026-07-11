@@ -8,11 +8,10 @@ import {
   ExternalLink,
   Sparkles,
   ArrowRight,
-  TrendingUp,
 } from "lucide-react"
 import { useDailyVotes } from "@/hooks/useDailyVotes"
-import { useFeed } from "@/hooks/useFeed"
 import { useUserPortfolio } from "@/hooks/useUserPortfolio"
+import { explorerAddress } from "@/lib/solana"
 import {
   useUserTradesQuery,
   useAccruedLpFeesQuery,
@@ -83,10 +82,6 @@ export default function PortfolioDashboard() {
   const { dailyVotes, isLoading: isDailyVotesLoading } = useDailyVotes(
     profile?.id,
   )
-  const { items: feedItems, loading: isFeedLoading } = useFeed(undefined, true)
-
-  const marketItems = feedItems.filter((item) => item.market)
-  const trending = marketItems.slice(0, 3)
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "tokens" | "wins" | "activity"
@@ -143,8 +138,8 @@ export default function PortfolioDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-3 sm:py-4">
-        <div className="lg:col-span-2 flex flex-col gap-4">
+      <section className="py-3 sm:py-4">
+        <div className="flex flex-col gap-4">
           <section className="verity-card relative overflow-hidden p-4 sm:p-5">
             <div className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-sunburst-yellow/30" />
             <p className="relative font-mono text-xs font-semibold uppercase tracking-[0.16em] text-ember-orange">
@@ -160,10 +155,18 @@ export default function PortfolioDashboard() {
           </section>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="md:col-span-2 verity-card p-4 sm:p-6 bg-surface-solid border border-border relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute right-4 top-7 flex flex-col items-end gap-1.5">
-                <div className="text-right mt-1">
-                  <span className="block font-mono text-[8px] text-ash uppercase tracking-wider">
+            <div className="md:col-span-2 verity-card p-4 sm:p-6 bg-surface-solid border border-border overflow-hidden flex flex-col justify-between">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ash">
+                    Total Portfolio Value
+                  </span>
+                  <h2 className="mt-1 font-mono text-4xl font-semibold tracking-[-0.9px] text-midnight">
+                    ${stats.netWorth.toFixed(2)}
+                  </h2>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="block font-mono text-[9px] text-ash uppercase tracking-wider">
                     Daily Signals
                   </span>
                   <span className="font-mono text-xs font-bold text-charcoal-primary">
@@ -173,16 +176,8 @@ export default function PortfolioDashboard() {
                   </span>
                 </div>
               </div>
-              <div>
-                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ash">
-                  Total Portfolio Value
-                </span>
-                <h2 className="sm:mt-2 font-mono text-4xl font-semibold tracking-[-0.9px] text-midnight">
-                  ${stats.netWorth.toFixed(2)}
-                </h2>
-              </div>
 
-              <div className="mt-2 sm:mt-6 grid grid-cols-2 md:grid-cols-4 gap-1 sm:gap-4 border-t border-stone-surface pt-2 sm:pt-4">
+              <div className="mt-4 sm:mt-6 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 sm:gap-4 border-t border-stone-surface pt-4">
                 <div>
                   <span className="block font-mono text-[9px] font-semibold text-ash uppercase tracking-wider">
                     USDC Balance
@@ -272,7 +267,7 @@ export default function PortfolioDashboard() {
               </Link>
 
               <Link
-                href={`https://testnet.arcscan.app/address/${profile?.walletAddress || ""}`}
+                href={explorerAddress(profile?.walletAddress || "")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 verity-card p-2.5 sm:p-4 flex flex-col items-center justify-center gap-2 bg-stone-surface hover:bg-stone-surface/80 border border-border rounded-[12px] transition-all cursor-pointer group text-center"
@@ -280,88 +275,10 @@ export default function PortfolioDashboard() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-graphite/10 text-graphite transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
                   <ExternalLink className="h-5 w-5" />
                 </div>
-                <span className="text-xs font-semibold text-charcoal-primary tracking-[-0.1px] truncate w-full px-1">
+                <span className="text-xs font-semibold text-charcoal-primary tracking-[-0.1px]">
                   Explorer
                 </span>
               </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Section (spanning 1 column on desktop, holds Trending Markets) */}
-        <div className="hidden lg:block lg:col-span-1">
-          <div className="verity-card flex flex-col overflow-hidden h-full">
-            <div className="border-b border-dashed border-stone-surface p-4">
-              <h2 className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-charcoal-primary">
-                <TrendingUp className="h-4 w-4 text-meadow-green" />
-                Trending Markets
-              </h2>
-            </div>
-
-            <div className="flex flex-col grow justify-between">
-              {isFeedLoading ? (
-                <div className="flex flex-col animate-pulse">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col gap-2 border-b border-dashed border-stone-surface p-4"
-                    >
-                      <div className="h-3 w-20 rounded bg-stone-surface" />
-                      <div className="h-4 w-5/6 rounded bg-stone-surface" />
-                      <div className="flex justify-between items-center mt-1">
-                        <div className="h-3.5 w-12 rounded bg-stone-surface" />
-                        <div className="h-3.5 w-16 rounded bg-stone-surface" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : trending.length > 0 ? (
-                <div className="flex flex-col">
-                  {trending.map((item) => {
-                    const market = item.market
-                    const yes = market
-                      ? calculateYesPercent(
-                          Number(market.usdc_yes_amount),
-                          Number(market.usdc_no_amount),
-                        )
-                      : 50
-                    const volume = market
-                      ? Number(market.usdc_yes_amount) +
-                        Number(market.usdc_no_amount)
-                      : 0
-
-                    const isPvp = market?.category?.toLowerCase() === "pvp"
-                    const href = isPvp
-                      ? "/markets?tab=pvp-arena"
-                      : `/markets/${market?.id}`
-
-                    return (
-                      <Link
-                        href={href}
-                        className="flex cursor-pointer flex-col gap-2 border-b border-dashed border-stone-surface p-4 transition-colors hover:bg-parchment-card"
-                        key={item.id}
-                      >
-                        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ash">
-                          Trending in {market?.category || "Markets"}
-                        </span>
-                        <p className="line-clamp-2 text-sm font-semibold leading-snug tracking-[-0.18px] text-charcoal-primary">
-                          {market?.question}
-                        </p>
-                        <div className="mt-1 flex items-center justify-between">
-                          <span className="font-mono text-xs font-semibold text-meadow-green">
-                            {yes.toFixed(0)}% YES
-                          </span>
-                          <span className="font-mono text-xs text-ash">
-                            {volume.toLocaleString()} USDC
-                          </span>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="p-4 text-sm text-ash">No live markets yet.</div>
-              )}
             </div>
           </div>
         </div>
@@ -868,10 +785,4 @@ export default function PortfolioDashboard() {
       />
     </div>
   )
-}
-
-function calculateYesPercent(yes: number, no: number) {
-  const total = yes + no
-  if (total === 0) return 50
-  return (yes / total) * 100
 }
