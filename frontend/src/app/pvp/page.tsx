@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Swords } from "lucide-react";
-import { useAuth } from "@/components/providers/AuthModals";
+import { useCallback, useMemo, useState } from "react";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
-import { useUsdcBalance } from "@/hooks/useUsdcBalance";
+import { DuelNavIcon } from "@/components/icons/ArcadeNavIcons";
 import {
   useActivePvpEventsQuery,
   useMyActivePvpTicketsQuery,
@@ -20,9 +18,7 @@ import DuelHistory from "@/components/markets/DuelHistory";
 type MobileTab = "arena" | "stats" | "history";
 
 export default function PvpArenaPage() {
-  const { authenticated } = useAuth();
   const { profile } = useWalletProfile();
-  const { formattedBalance } = useUsdcBalance();
 
   const { data: activeSlates = [], isLoading: slatesLoading } =
     useActivePvpEventsQuery();
@@ -42,15 +38,11 @@ export default function PvpArenaPage() {
 
   // Merge open slates with any where the user still has an active lineup.
   const slates = useMemo(() => {
-    const seen = new Set<string>();
-    const merged: any[] = [];
+    const merged = new Map<string, (typeof activeSlates)[number]>();
     for (const s of [...activeSlates, ...myTicketSlates]) {
-      if (!seen.has(s.id)) {
-        seen.add(s.id);
-        merged.push(s);
-      }
+      if (!merged.has(s.id)) merged.set(s.id, s);
     }
-    return merged.sort((a, b) => {
+    return Array.from(merged.values()).sort((a, b) => {
       const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return db - da;
@@ -60,45 +52,40 @@ export default function PvpArenaPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>("arena");
 
-  // Default to the first slate once loaded.
-  useEffect(() => {
-    if (!selectedId && slates.length > 0) setSelectedId(slates[0].id);
-  }, [slates, selectedId]);
-
-  const selectedSlate = slates.find((s) => s.id === selectedId) || null;
+  const effectiveSelectedId = selectedId || slates[0]?.id || null;
+  const selectedSlate =
+    slates.find((s) => s.id === effectiveSelectedId) || null;
   const { data: pvpStatus, refetch: refetchStatus } =
-    usePvpStatusQuery(selectedId);
+    usePvpStatusQuery(effectiveSelectedId);
   const hasLineup = Boolean(pvpStatus && pvpStatus.ticket);
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 py-6 font-sans">
+    <div className="mx-auto w-full max-w-[1240px] py-4 font-sans sm:px-4 sm:py-6">
       {/* Header */}
-      <div className="verity-card game-grid relative mb-5 flex flex-wrap items-center justify-between gap-3 overflow-hidden p-5 sm:p-6">
+      <div className="duel-hero game-grid relative mb-5 flex items-center gap-3 overflow-hidden rounded-[26px] border border-white/[0.09] p-5 sm:p-6">
         <div
           className="absolute -right-8 -top-12 h-32 w-32 rounded-full bg-[#ff6b4a]/22 blur-3xl"
           aria-hidden="true"
         />
         <div className="flex items-center gap-2.5">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ff6b4a] to-[#d94a32] text-white shadow-[0_8px_24px_rgba(255,107,74,.26)]">
-            <Swords className="h-5 w-5" aria-hidden="true" />
+          <span
+            className="-ml-2 flex h-14 w-[70px] shrink-0 items-center justify-center"
+            aria-hidden="true"
+          >
+            <DuelNavIcon active className="h-14 w-[70px]" />
           </span>
           <div>
             <p className="font-mono text-[8px] font-black uppercase tracking-[0.18em] text-[#ff927b]">
               Head-to-head mode
             </p>
             <h1 className="mt-1 text-2xl font-black leading-none text-charcoal-primary dark:text-white">
-              PvP Arena
+              Duel Station
             </h1>
             <p className="mt-1 text-[11px] font-medium text-ash">
-              Build a cross-game lineup. Out-predict your opponent.
+              Build your lineup. Read the field. Beat the other player.
             </p>
           </div>
         </div>
-        {authenticated && (
-          <div className="rounded-xl border border-[#35e881]/15 bg-[#35e881]/10 px-3 py-2 font-mono text-xs font-black text-[#58f09a]">
-            {formattedBalance} USDC
-          </div>
-        )}
       </div>
 
       {/* Mobile sub-tabs */}
@@ -130,7 +117,7 @@ export default function PvpArenaPage() {
           <SlateCarousel
             slates={slates}
             loading={slatesLoading}
-            selectedId={selectedId}
+            selectedId={effectiveSelectedId}
             onSelect={setSelectedId}
           />
 

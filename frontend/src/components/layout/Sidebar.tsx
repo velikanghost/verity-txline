@@ -2,31 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Bell,
-  User,
-  Swords,
-  Trophy,
-  Sparkles,
-  Gamepad2,
-} from "lucide-react";
+import { Bell, User, Swords, Search, Gamepad2 } from "lucide-react";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import SidebarProfile from "@/components/layout/SidebarProfile";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
-import {
-  useNotificationsQuery,
-  useMissionsQuery,
-} from "@/store/verity/verityQueries";
+import { useNotificationsQuery } from "@/store/verity/verityQueries";
 import { useAuth } from "@/components/providers/AuthModals";
 
 const NAV_ITEMS = [
-  { icon: Home, label: "Arena", href: "/" },
-  { icon: Swords, label: "PvP Duels", href: "/pvp" },
-  { icon: Sparkles, label: "Quests", href: "/missions" },
-  { icon: Trophy, label: "Rankings", href: "/leaderboard" },
+  { icon: Swords, label: "Duels", href: "/pvp" },
+  { icon: Search, label: "Search", href: "/search" },
+  { icon: User, label: "Player", href: "/profile" },
   { icon: Bell, label: "Alerts", href: "/notifications" },
-  { icon: User, label: "Player Card", href: "/profile" },
 ];
 
 export default function Sidebar() {
@@ -37,10 +24,6 @@ export default function Sidebar() {
   const { data: notifications = [] } = useNotificationsQuery(profile?.id || "");
   const unreadCount = notifications.filter(
     (notification) => !notification.read,
-  ).length;
-  const { data: missions = [] } = useMissionsQuery(profile?.id);
-  const incompleteMissionsCount = missions.filter(
-    (mission) => !mission.completed,
   ).length;
 
   return (
@@ -101,11 +84,6 @@ export default function Sidebar() {
                   {item.href === "/notifications" && unreadCount > 0 && (
                     <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-coral-red text-[8px] font-bold text-white shadow-sm ring-1.5 ring-surface-solid">
                       {unreadCount}
-                    </span>
-                  )}
-                  {item.href === "/missions" && incompleteMissionsCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-coral-red text-[8px] font-bold text-white shadow-sm ring-1.5 ring-surface-solid">
-                      {incompleteMissionsCount}
                     </span>
                   )}
                 </div>

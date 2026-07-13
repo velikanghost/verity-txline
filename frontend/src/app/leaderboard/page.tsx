@@ -8,7 +8,11 @@ import Link from "next/link";
 
 type LeaderboardTab = "xp" | "referrers" | "points-system";
 
-export default function LeaderboardPage() {
+export function LeaderboardContent({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp");
   const { profile: loggedInProfile } = useWalletProfile();
   const {
@@ -66,23 +70,27 @@ export default function LeaderboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4 py-4 max-w-[672px] mx-auto">
+    <div
+      className={`mx-auto flex max-w-[672px] flex-col gap-4 ${embedded ? "pb-4" : "py-4"}`}
+    >
       {/* Header Banner */}
-      <section className="verity-card game-grid relative overflow-hidden p-5 sm:p-6">
-        <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#1479ff]/22 blur-3xl" />
-        <div className="relative max-w-[480px]">
-          <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#59a2ff]">
-            Global player rankings
-          </p>
-          <h1 className="text-[32px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight dark:text-white sm:text-[40px]">
-            Who rules the arena?
-          </h1>
-          <p className="mt-3 text-[14px] leading-[1.47] tracking-[-0.2px] text-graphite dark:text-zinc-400">
-            Track XP, duel records, and the players climbing toward World Cup
-            glory.
-          </p>
-        </div>
-      </section>
+      {!embedded && (
+        <section className="verity-card game-grid relative overflow-hidden p-5 sm:p-6">
+          <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#1479ff]/22 blur-3xl" />
+          <div className="relative max-w-[480px]">
+            <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#59a2ff]">
+              Global player rankings
+            </p>
+            <h1 className="text-[32px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight dark:text-white sm:text-[40px]">
+              Who rules the arena?
+            </h1>
+            <p className="mt-3 text-[14px] leading-[1.47] tracking-[-0.2px] text-graphite dark:text-zinc-400">
+              Track XP, duel records, and the players climbing toward World Cup
+              glory.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-border dark:border-zinc-800 gap-2 overflow-x-auto pb-px">
@@ -367,6 +375,10 @@ export default function LeaderboardPage() {
       </div>
     </div>
   );
+}
+
+export default function LeaderboardPage() {
+  return <LeaderboardContent />;
 }
 
 function UserLeaderboardRow({

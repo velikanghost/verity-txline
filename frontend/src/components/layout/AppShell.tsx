@@ -2,7 +2,6 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import MobileNav from "@/components/layout/MobileNav";
-import MobileLeaderboardButton from "@/components/layout/MobileLeaderboardButton";
 import AppHeader from "@/components/layout/AppHeader";
 import CinematicBackdrop from "@/components/layout/CinematicBackdrop";
 import { useSocket } from "@/hooks/useSocket";
@@ -31,12 +30,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Single full-width column — every page owns its own layout. */}
-        <main className="min-w-0 flex-1 max-w-[1080px] pb-24 sm:pb-0">
+        <main className="min-w-0 flex-1 max-w-[1080px] pb-28 sm:pb-0">
           <AppHeader />
           {children}
         </main>
       </div>
-      <MobileLeaderboardButton />
       <MobileNav />
     </>
   );

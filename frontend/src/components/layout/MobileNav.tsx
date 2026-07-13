@@ -1,227 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Home, User, Wallet, Plus, Swords, X } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/components/providers/AuthModals";
-import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { usePathname } from "next/navigation";
 import {
-  useMissionsQuery,
-  useAccruedLpFeesQuery,
-  useClaimLpFeesMutation,
-} from "@/store/verity/verityQueries";
-import { useDrawerStore } from "@/store/drawerStore";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerClose,
-} from "@/components/ui/drawer";
-import toast from "@/lib/toast";
+  DuelNavIcon,
+  HomeNavIcon,
+  PlayerNavIcon,
+  SearchNavIcon,
+} from "@/components/icons/ArcadeNavIcons";
+
+const NAV_ITEMS = [
+  { icon: HomeNavIcon, label: "Home", href: "/" },
+  { icon: DuelNavIcon, label: "Duel", href: "/pvp" },
+  { icon: SearchNavIcon, label: "Search", href: "/search" },
+  { icon: PlayerNavIcon, label: "Player", href: "/profile" },
+] as const;
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { authenticated, login } = useAuth();
-  const { profile } = useWalletProfile();
-  const { data: missions = [] } = useMissionsQuery(profile?.id);
-
-  const { isQuickActionsOpen, openQuickActions, closeQuickActions } =
-    useDrawerStore();
-
-  // Fetch Accrued LP fees for the quick actions drawer
-  const { data: accruedData, refetch: refetchAccrued } = useAccruedLpFeesQuery(
-    profile?.id,
-  );
-  const accruedLpFees = accruedData?.accruedFeesUsdc || 0;
-  const { mutateAsync: claimLpFees, isPending: isClaiming } =
-    useClaimLpFeesMutation();
-
-  const incompleteMissionsCount = missions.filter(
-    (mission) => !mission.completed,
-  ).length;
-
-  const handleClaimLpFees = async () => {
-    try {
-      await claimLpFees();
-      toast.success("LP fees claimed successfully!");
-      void refetchAccrued();
-    } catch (error: unknown) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to claim LP fees.",
-      );
-    }
-  };
-
-  const navigateTo = (href: string) => {
-    closeQuickActions();
-    router.push(href);
-  };
-
-  const MOBILE_NAV_ITEMS = [
-    { icon: Home, label: "Arena", href: "/" },
-    { icon: Swords, label: "Duels", href: "/pvp" },
-    { icon: null, label: "Actions", href: "#actions" }, // Center placeholder
-    { icon: Sparkles, label: "Quests", href: "/missions" },
-    { icon: Wallet, label: "Vault", href: "/portfolio" },
-  ];
 
   return (
-    <>
-      <nav className="fixed inset-x-3 bottom-3 z-40 rounded-[24px] border border-white/10 bg-[#0d1121]/95 px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 shadow-[0_18px_55px_rgba(5,7,18,.42)] backdrop-blur sm:hidden">
-        <div className="relative mx-auto grid max-w-[672px] grid-cols-5 gap-1">
-          {MOBILE_NAV_ITEMS.map((item, idx) => {
-            // Render the central "+" button
-            if (idx === 2) {
-              return (
-                <button
-                  key="center-actions"
-                  onClick={() => {
-                    if (!authenticated) {
-                      login();
-                    } else {
-                      openQuickActions();
-                    }
-                  }}
-                  className="-mt-4 flex shrink-0 cursor-pointer flex-col items-center justify-center"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1479ff] to-[#0862d3] text-white shadow-[0_9px_26px_rgba(20,121,255,.38)] transition-all hover:-translate-y-0.5 active:scale-95">
-                    <Plus className="h-6 w-6 stroke-[3px]" />
-                  </div>
-                  <span className="font-game mt-1.5 text-[10px] font-black text-white">
-                    Play
-                  </span>
-                </button>
-              );
-            }
+    <nav
+      aria-label="Primary navigation"
+      className="arcade-mobile-nav fixed inset-x-4 bottom-3 z-40 mx-auto max-w-[430px] sm:hidden"
+    >
+      <div className="grid grid-cols-4 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-1">
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const Icon = item.icon;
 
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname === item.href?.split("?")[0];
-            const isAuthRequired =
-              item.href === "/portfolio" || item.href === "/missions";
-
-            return (
-              <Link
-                className={`font-game flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-black transition-colors ${
-                  isActive
-                    ? "bg-white/[0.08] text-white"
-                    : "text-[#707997] hover:bg-white/[0.05] hover:text-white"
-                }`}
-                href={item.href || "/"}
-                onClick={(e) => {
-                  if (isAuthRequired && !authenticated) {
-                    e.preventDefault();
-                    login();
-                  }
-                }}
-                key={item.label}
-              >
-                <div className="relative flex items-center justify-center shrink-0">
-                  {item.icon && <item.icon className="h-5 w-5" />}
-                  {item.href === "/missions" && incompleteMissionsCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff6d58] text-[8px] font-bold text-white shadow-sm ring-1.5 ring-[#0d1121]">
-                      {incompleteMissionsCount}
-                    </span>
-                  )}
-                </div>
-                <span className="max-w-full truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Reusable Drawer for Quick Actions */}
-      <Drawer
-        open={isQuickActionsOpen}
-        onOpenChange={(open) => !open && closeQuickActions()}
-      >
-        <DrawerContent className="max-h-[85vh] rounded-t-3xl border-t border-stone-surface bg-warm-canvas pb-8 px-4 outline-none">
-          {/* Header styled as flex row directly to prevent styles overriding */}
-          <div className="relative flex flex-row items-center justify-between border-b border-stone-surface pb-4 pt-2 mb-4 px-4 flex-shrink-0">
-            <DrawerTitle className="font-heading text-lg font-bold text-charcoal-primary flex items-center gap-2 m-0">
-              <span className="inline-block h-3.5 w-3.5 rounded-full bg-sunburst-yellow" />
-              Quick Actions Hub
-            </DrawerTitle>
-            <DrawerClose className="rounded-full p-1.5 hover:bg-stone-surface text-ash hover:text-charcoal-primary transition-colors">
-              <X className="h-4.5 w-4.5" />
-            </DrawerClose>
-          </div>
-
-          {/* Accrued LP fees panel */}
-          <div className="mx-2 mb-6 rounded-2xl bg-white-surface dark:bg-zinc-950 p-4 border border-stone-surface flex items-center justify-between shadow-subtle">
-            <div>
-              <span className="block text-[10px] font-mono font-bold uppercase tracking-wider text-ash">
-                Accrued LP Fees
-              </span>
-              <strong className="text-xl font-bold font-mono text-charcoal-primary mt-1 block">
-                ${accruedLpFees.toFixed(4)} USDC
-              </strong>
-            </div>
-            {accruedLpFees > 0 && (
-              <button
-                onClick={handleClaimLpFees}
-                disabled={isClaiming}
-                className="bg-meadow-green text-white hover:bg-meadow-green/90 rounded-full px-5 py-2 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {isClaiming ? "Claiming..." : "Claim Fees"}
-              </button>
-            )}
-          </div>
-
-          {/* Quick Shortcuts Grid */}
-          <div className="grid grid-cols-2 gap-3 px-2">
-            <button
-              onClick={() => navigateTo("/missions")}
-              className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white-surface dark:bg-zinc-950 hover:bg-stone-surface/30 border border-stone-surface text-center transition-all group active:scale-98 cursor-pointer"
+          return (
+            <Link
+              aria-current={isActive ? "page" : undefined}
+              className={`arcade-nav-item ${isActive ? "is-active" : ""}`}
+              href={item.href}
+              key={item.label}
             >
-              <div className="h-10 w-10 rounded-full bg-sunburst-yellow/10 text-sunburst-yellow flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-bold text-charcoal-primary">
-                View Missions
+              <span className="arcade-nav-object" aria-hidden="true">
+                <Icon className="h-[54px] w-[64px]" active={isActive} />
               </span>
-              <span className="text-[10px] text-ash mt-0.5">
-                {incompleteMissionsCount > 0
-                  ? `${incompleteMissionsCount} pending tasks`
-                  : "All completed!"}
-              </span>
-            </button>
-
-            <button
-              onClick={() => navigateTo("/pvp")}
-              className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white-surface dark:bg-zinc-950 hover:bg-stone-surface/30 border border-stone-surface text-center transition-all group active:scale-98 cursor-pointer"
-            >
-              <div className="h-10 w-10 rounded-full bg-ember-orange/10 text-ember-orange flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <Swords className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-bold text-charcoal-primary">
-                PvP Arena Queue
-              </span>
-              <span className="text-[10px] text-ash mt-0.5">
-                Enter head-to-head lobby
-              </span>
-            </button>
-
-            <button
-              onClick={() => navigateTo("/profile")}
-              className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white-surface dark:bg-zinc-950 hover:bg-stone-surface/30 border border-stone-surface text-center transition-all group active:scale-98 cursor-pointer"
-            >
-              <div className="h-10 w-10 rounded-full bg-meadow-green/10 text-meadow-green flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                <User className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-bold text-charcoal-primary">
-                My Profile
-              </span>
-              <span className="text-[10px] text-ash mt-0.5">
-                Edit username or details
-              </span>
-            </button>
-          </div>
-        </DrawerContent>
-      </Drawer>
-    </>
+              <span className="arcade-nav-label">{item.label}</span>
+              <span className="arcade-nav-signal" aria-hidden="true" />
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

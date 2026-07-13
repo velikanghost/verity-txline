@@ -20,6 +20,8 @@ function getSceneAccent(pathname: string) {
   if (pathname.startsWith("/pvp") || pathname.startsWith("/markets")) {
     return "#ff6b4a";
   }
+  if (pathname.startsWith("/search")) return "#35e881";
+  if (pathname.startsWith("/profile")) return "#ffc844";
   if (pathname.startsWith("/missions")) return "#ffc844";
   if (pathname.startsWith("/leaderboard")) return "#1479ff";
   if (pathname.startsWith("/portfolio")) return "#35e881";

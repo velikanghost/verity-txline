@@ -4,22 +4,22 @@ import {
   Check,
   Flag,
   Radio,
+  Search,
   ShieldCheck,
   Sparkles,
-  Swords,
   Trophy,
   Zap,
 } from "lucide-react";
 
 const GAME_STEPS = [
-  { label: "Make your call", detail: "Choose a live fixture", icon: Flag },
-  { label: "Watch it play", detail: "Follow TxLINE signals", icon: Radio },
+  { label: "Build your lineup", detail: "Lock in your match reads", icon: Flag },
+  { label: "Enter the queue", detail: "Get paired with a rival", icon: Radio },
   {
-    label: "Proof lands",
-    detail: "Result verified on-chain",
+    label: "Go head-to-head",
+    detail: "Out-predict the other player",
     icon: ShieldCheck,
   },
-  { label: "Reward unlocked", detail: "Claim USDC winnings", icon: Trophy },
+  { label: "Proof lands", detail: "Victory and reward verified", icon: Trophy },
 ];
 
 export function WorldCupHero() {
@@ -49,7 +49,7 @@ export function WorldCupHero() {
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#35e881]" />
           </span>
           <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-white/65">
-            World Cup mode is live
+            World Cup PvP is live
           </span>
         </div>
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5">
@@ -68,42 +68,42 @@ export function WorldCupHero() {
           <div className="mb-4 inline-flex -rotate-2 items-center gap-2 rounded-xl border border-[#1479ff]/35 bg-[#1479ff]/10 px-3 py-1.5 text-[#7bb5ff] shadow-[0_0_22px_rgba(20,121,255,.12)]">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="font-game text-sm font-bold">
-              Your tournament starts here
+              Your arena opens here
             </span>
           </div>
 
           <h1 className="font-game max-w-2xl text-[2.85rem] font-black leading-[0.93] tracking-[-0.055em] sm:text-6xl lg:text-[4.45rem]">
-            Pick your side.
+            Read the field.
             <span className="game-text-gradient block pb-1">
-              Prove your read.
+              Beat the player.
             </span>
           </h1>
 
           <p className="mt-5 max-w-xl text-sm font-medium leading-6 text-[#aeb4d0] sm:text-base sm:leading-7">
-            Enter the World Cup arena, back the moments you believe in, and
-            level up with every sharp prediction. Every final result is settled
-            with a real TxLINE proof on Solana.
+            Build a World Cup lineup, meet another fan head-to-head, and prove
+            who reads the match better. Every duel result is settled with a
+            real TxLINE proof on Solana.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="#markets"
+              href="/pvp"
               className="game-button-primary clickable inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-6 font-game text-base font-black text-white"
             >
-              Play a match
+              Enter Duel Station
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
-              href="/pvp"
+              href="/search"
               className="clickable inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-6 font-game text-base font-black text-white hover:bg-white/10"
             >
-              <Swords className="h-4 w-4 text-[#ff8064]" aria-hidden="true" />
-              Challenge a fan
+              <Search className="h-4 w-4 text-[#35e881]" aria-hidden="true" />
+              Scan open duels
             </Link>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-white/45">
-            {["Live match data", "Proof-verified", "USDC rewards"].map(
+            {["Head-to-head", "Proof-verified", "USDC rewards"].map(
               (item) => (
                 <span key={item} className="flex items-center gap-1.5">
                   <Check
@@ -130,13 +130,13 @@ export function WorldCupHero() {
           <div className="relative flex items-start justify-between gap-3">
             <div>
               <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[#7e87aa]">
-                Main quest
+                Duel run
               </p>
               <h2 className="font-game mt-1 text-2xl font-black">
-                Road to glory
+                Road to victory
               </h2>
               <p className="mt-1 text-xs font-medium text-[#858eae]">
-                Final whistle to verified reward
+                Lineup to verified win
               </p>
             </div>
             <span className="rounded-xl border border-[#35e881]/20 bg-[#35e881]/10 px-2.5 py-1 font-mono text-[9px] font-black uppercase tracking-wider text-[#58f09a]">
