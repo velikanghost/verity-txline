@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useQuery } from "@tanstack/react-query"
-import { Input } from "@/components/ui/input"
-import { apiRequest, ApiError } from "@/store/apiClient"
-import type { Profile } from "@/lib/verity"
+import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { apiRequest, ApiError } from "@/store/apiClient";
+import type { Profile } from "@/lib/verity";
 import {
   X,
   Mail,
@@ -15,8 +15,8 @@ import {
   ChevronRight,
   Copy,
   Check,
-} from "lucide-react"
-import { useAuthStore } from "@/store/authStore"
+} from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
 export function useProfileQuery() {
   return useQuery<Profile | null>({
@@ -25,28 +25,28 @@ export function useProfileQuery() {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("verity_auth_token")
-          : null
-      if (!token) return null
+          : null;
+      if (!token) return null;
       try {
-        return await apiRequest<Profile>("/auth/me")
+        return await apiRequest<Profile>("/auth/me");
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
-          localStorage.removeItem("verity_auth_token")
-          return null
+          localStorage.removeItem("verity_auth_token");
+          return null;
         }
-        throw err
+        throw err;
       }
     },
     staleTime: 60 * 1000,
-  })
+  });
 }
 
 export function useAuth() {
-  const { data: user, isLoading: loading } = useProfileQuery()
-  const authenticated = !!user
+  const { data: user, isLoading: loading } = useProfileQuery();
+  const authenticated = !!user;
 
-  const login = useAuthStore((s) => s.login)
-  const logout = useAuthStore((s) => s.logout)
+  const login = useAuthStore((s) => s.login);
+  const logout = useAuthStore((s) => s.logout);
 
   return {
     user: user ?? null,
@@ -54,47 +54,47 @@ export function useAuth() {
     loading,
     login,
     logout,
-  }
+  };
 }
 
 export default function AuthModals() {
-  const authModalStep = useAuthStore((s) => s.authModalStep)
-  const email = useAuthStore((s) => s.email)
-  const otpCode = useAuthStore((s) => s.otpCode)
-  const usernameInput = useAuthStore((s) => s.usernameInput)
-  const referrerInput = useAuthStore((s) => s.referrerInput)
-  const isSubmittingOtp = useAuthStore((s) => s.isSubmittingOtp)
-  const isRequestingOtp = useAuthStore((s) => s.isRequestingOtp)
-  const authError = useAuthStore((s) => s.authError)
-  const copied = useAuthStore((s) => s.copied)
+  const authModalStep = useAuthStore((s) => s.authModalStep);
+  const email = useAuthStore((s) => s.email);
+  const otpCode = useAuthStore((s) => s.otpCode);
+  const usernameInput = useAuthStore((s) => s.usernameInput);
+  const referrerInput = useAuthStore((s) => s.referrerInput);
+  const isSubmittingOtp = useAuthStore((s) => s.isSubmittingOtp);
+  const isRequestingOtp = useAuthStore((s) => s.isRequestingOtp);
+  const authError = useAuthStore((s) => s.authError);
+  const copied = useAuthStore((s) => s.copied);
 
-  const setAuthModalStep = useAuthStore((s) => s.setAuthModalStep)
-  const setEmail = useAuthStore((s) => s.setEmail)
-  const setOtpCode = useAuthStore((s) => s.setOtpCode)
-  const setUsernameInput = useAuthStore((s) => s.setUsernameInput)
-  const setReferrerInput = useAuthStore((s) => s.setReferrerInput)
-  const setCopied = useAuthStore((s) => s.setCopied)
+  const setAuthModalStep = useAuthStore((s) => s.setAuthModalStep);
+  const setEmail = useAuthStore((s) => s.setEmail);
+  const setOtpCode = useAuthStore((s) => s.setOtpCode);
+  const setUsernameInput = useAuthStore((s) => s.setUsernameInput);
+  const setReferrerInput = useAuthStore((s) => s.setReferrerInput);
+  const setCopied = useAuthStore((s) => s.setCopied);
 
-  const handleRequestOtp = useAuthStore((s) => s.handleRequestOtp)
-  const handleVerifyOtp = useAuthStore((s) => s.handleVerifyOtp)
-  const handleSaveOnboarding = useAuthStore((s) => s.handleSaveOnboarding)
+  const handleRequestOtp = useAuthStore((s) => s.handleRequestOtp);
+  const handleVerifyOtp = useAuthStore((s) => s.handleVerifyOtp);
+  const handleSaveOnboarding = useAuthStore((s) => s.handleSaveOnboarding);
 
-  const { user } = useAuth()
-  const walletAddr = user?.walletAddress || ""
+  const { user } = useAuth();
+  const walletAddr = user?.walletAddress || "";
 
   const handleCopyAddress = () => {
-    if (!walletAddr) return
-    navigator.clipboard.writeText(walletAddr)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    if (!walletAddr) return;
+    navigator.clipboard.writeText(walletAddr);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <>
       {/* 1. PASSWORDLESS EMAIL OTP AUTHENTICATION MODAL */}
       {authModalStep !== "idle" && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-midnight/40 backdrop-blur-md px-4 py-6 animate-fade-in">
-          <div className="w-full max-w-[440px] overflow-hidden rounded-[12px] border border-border bg-surface-solid p-6 shadow-2xl transition-all duration-300">
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
+          <div className="game-modal-surface w-full max-w-[440px] overflow-hidden p-6 transition-all duration-300">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-stone-surface pb-4 mb-5">
               <div className="flex items-center gap-3">
@@ -365,5 +365,5 @@ export default function AuthModals() {
         </div>
       )}
     </>
-  )
+  );
 }

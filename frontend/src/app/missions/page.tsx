@@ -1,67 +1,67 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
+import React, { useState, useEffect } from "react";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
 import {
   useMissionsQuery,
   useLinkTwitterMutation,
   useCompleteMissionMutation,
-} from "@/store/verity/verityQueries"
-import { Send, X, Loader2 } from "lucide-react"
-import toast from "@/lib/toast"
+} from "@/store/verity/verityQueries";
+import { Send, X, Loader2 } from "lucide-react";
+import toast from "@/lib/toast";
 
 export default function MissionsPage() {
-  const { profile } = useWalletProfile()
+  const { profile } = useWalletProfile();
   const { data: missions, isLoading: isMissionsLoading } = useMissionsQuery(
     profile?.id,
-  )
+  );
   const { mutateAsync: linkTwitter, isPending: isLinking } =
-    useLinkTwitterMutation()
-  const { mutateAsync: completeMission } = useCompleteMissionMutation()
+    useLinkTwitterMutation();
+  const { mutateAsync: completeMission } = useCompleteMissionMutation();
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [twitterInput, setTwitterInput] = useState("")
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [twitterInput, setTwitterInput] = useState("");
   const [verifyingMissionId, setVerifyingMissionId] = useState<string | null>(
     null,
-  )
+  );
 
   // Retrieve started missions from localStorage to persist state across reloads/redirects
   const [startedMissions, setStartedMissions] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        const saved = localStorage.getItem("verity_started_missions")
-        return saved ? JSON.parse(saved) : []
+        const saved = localStorage.getItem("verity_started_missions");
+        return saved ? JSON.parse(saved) : [];
       } catch {
-        return []
+        return [];
       }
     }
-    return []
-  })
+    return [];
+  });
 
   useEffect(() => {
     localStorage.setItem(
       "verity_started_missions",
       JSON.stringify(startedMissions),
-    )
-  }, [startedMissions])
+    );
+  }, [startedMissions]);
 
   const handleLinkTwitter = async () => {
-    const trimmed = twitterInput.trim().replace(/^@/, "")
+    const trimmed = twitterInput.trim().replace(/^@/, "");
     if (!trimmed) {
-      toast.error("Please enter a valid X/Twitter username.")
-      return
+      toast.error("Please enter a valid X/Twitter username.");
+      return;
     }
 
     try {
-      await linkTwitter({ twitterUsername: trimmed })
-      toast.success("X account linked!")
-      setIsModalOpen(false)
+      await linkTwitter({ twitterUsername: trimmed });
+      toast.success("X account linked!");
+      setIsModalOpen(false);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to link X account.",
-      )
+      );
     }
-  }
+  };
 
   const handleStart = (
     missionId: string,
@@ -70,96 +70,96 @@ export default function MissionsPage() {
   ) => {
     if (missionType !== "activity" && actionUrl) {
       if (actionUrl.startsWith("http://") || actionUrl.startsWith("https://")) {
-        window.open(actionUrl, "_blank", "noopener,noreferrer")
+        window.open(actionUrl, "_blank", "noopener,noreferrer");
       } else {
-        window.location.href = actionUrl
+        window.location.href = actionUrl;
       }
     }
     if (!startedMissions.includes(missionId)) {
-      setStartedMissions((prev) => [...prev, missionId])
+      setStartedMissions((prev) => [...prev, missionId]);
     }
-  }
+  };
 
   const handleClaim = async (
     missionId: string,
     verificationKey: string | null | undefined,
   ) => {
     if (verificationKey?.startsWith("twitter_") && !profile?.twitterUsername) {
-      toast.error("Please link your X account first.")
+      toast.error("Please link your X account first.");
       // Revert button state back to "Start" since linking is required first
-      setStartedMissions((prev) => prev.filter((id) => id !== missionId))
-      setTwitterInput("")
-      setIsModalOpen(true)
-      return
+      setStartedMissions((prev) => prev.filter((id) => id !== missionId));
+      setTwitterInput("");
+      setIsModalOpen(true);
+      return;
     }
 
-    setVerifyingMissionId(missionId)
+    setVerifyingMissionId(missionId);
     try {
-      await completeMission(missionId)
-      toast.success("Mission completed!")
-      setVerifyingMissionId(null)
+      await completeMission(missionId);
+      toast.success("Mission completed!");
+      setVerifyingMissionId(null);
       // Cleanup local started tracking once successfully completed on backend
-      setStartedMissions((prev) => prev.filter((id) => id !== missionId))
+      setStartedMissions((prev) => prev.filter((id) => id !== missionId));
     } catch (err: any) {
       toast.error(
         err instanceof Error
           ? err.message
           : "Verification failed. Please try again.",
-      )
-      setVerifyingMissionId(null)
+      );
+      setVerifyingMissionId(null);
       // Revert button state back to "Start"
-      setStartedMissions((prev) => prev.filter((id) => id !== missionId))
+      setStartedMissions((prev) => prev.filter((id) => id !== missionId));
     }
-  }
+  };
 
   // Dynamic descriptions for missions based on verificationKey
   const getMissionDescription = (mission: any): string => {
-    const key = mission.verificationKey
-    const question = mission.marketQuestion
+    const key = mission.verificationKey;
+    const question = mission.marketQuestion;
     switch (key) {
       case "has_voted":
         return question
           ? `Place a vote on the "${question}" market.`
-          : "Place a vote on any active prediction market."
+          : "Place a vote on any active prediction market.";
       case "has_commented":
         return question
           ? `Post a comment on the "${question}" market feed.`
-          : "Post a comment on any market feed."
+          : "Post a comment on any market feed.";
       case "has_liked":
         return question
           ? `Like the "${question}" market post.`
-          : "Like any post or market in the feed."
+          : "Like any post or market in the feed.";
       case "has_traded":
         return question
           ? `Place a trade (buy shares) on the "${question}" market.`
-          : "Place a trade (buy shares) on any open match today."
+          : "Place a trade (buy shares) on any open match today.";
       case "has_added_liquidity":
         return question
           ? `Provide liquidity to the "${question}" market pool.`
-          : "Provide liquidity to any market pool."
+          : "Provide liquidity to any market pool.";
       case "has_created_market":
-        return "Propose and create a new prediction market."
+        return "Propose and create a new prediction market.";
       case "has_set_profile":
-        return "Complete your profile onboarding."
+        return "Complete your profile onboarding.";
       case "twitter_follow":
-        return "Follow the target account on X/Twitter."
+        return "Follow the target account on X/Twitter.";
       case "twitter_retweet":
-        return "Repost the specified post on X/Twitter."
+        return "Repost the specified post on X/Twitter.";
       case "twitter_comment":
-        return "Reply to the specified post on X/Twitter."
+        return "Reply to the specified post on X/Twitter.";
       case "twitter_retweet_and_comment":
-        return "Repost and reply to the specified post on X/Twitter."
+        return "Repost and reply to the specified post on X/Twitter.";
       default:
-        return mission.title
+        return mission.title;
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-[1240px] mx-auto py-4 font-sans flex flex-col gap-6">
       {/* Top Header Card */}
-      <section className="verity-card relative overflow-hidden p-5 flex flex-col sm:flex-row justify-between items-center gap-6">
+      <section className="verity-card game-grid relative flex flex-col items-center justify-between gap-6 overflow-hidden p-5 sm:flex-row sm:p-6">
         {/* Background shapes rhyming with Home */}
-        <div className="absolute -right-3 -top-3 h-20 w-20 rounded-full bg-sunburst-yellow/30 dark:bg-sunburst-yellow/10" />
+        <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#ffc844]/18 blur-3xl" />
         <div className="absolute right-32 top-7 hidden sm:block">
           <span className="verity-blob block h-12 w-14 rotate-6 bg-sky-blue">
             <span className="verity-blob-smile" />
@@ -167,14 +167,14 @@ export default function MissionsPage() {
         </div>
 
         <div className="relative z-10 flex-1 space-y-2 text-center sm:text-left pr-0 sm:pr-4">
-          <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ember-orange">
-            Missions
+          <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#ffc844]">
+            Quest board
           </p>
           <h1 className="text-[30px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight dark:text-white sm:text-[44px] sm:tracking-[-1.14px]">
-            Earn More XP.
+            Complete quests. Level up.
           </h1>
           <p className="mt-3 text-[15px] leading-[1.47] tracking-[-0.2px] text-graphite dark:text-zinc-400 max-w-xl mx-auto sm:mx-0">
-            Complete quick social and platform activities to earn extra XP.
+            Clear daily challenges, collect XP, and upgrade your player card.
           </p>
         </div>
 
@@ -185,21 +185,21 @@ export default function MissionsPage() {
             <span className="text-[10px] font-mono text-ash uppercase font-bold tracking-wider flex items-center gap-1.5">
               Total XP
             </span>
-            <strong className="text-4xl font-bold font-family text-[#FF4D00] block mt-1">
+            <strong className="font-game mt-1 block text-4xl font-black text-[#ffc844]">
               {profile?.arenaXp ?? 0}
             </strong>
           </div>
 
           {profile?.twitterUsername ? (
             <div className="text-[10px] font-mono text-ash flex items-center gap-1.5 bg-[#FAF9F6] dark:bg-zinc-900/40 border border-stone-200/20 dark:border-zinc-850/10 px-3 py-1.5 rounded-xl">
-              <Send className="h-3 w-3 text-indigo-500" />
+              <Send className="h-3 w-3 text-sky-blue" />
               <span>X: @{profile.twitterUsername}</span>
             </div>
           ) : (
             <button
               onClick={() => {
-                setTwitterInput("")
-                setIsModalOpen(true)
+                setTwitterInput("");
+                setIsModalOpen(true);
               }}
               className="text-[10px] font-mono text-ember-orange hover:bg-ember-orange/10 transition-colors flex items-center gap-1.5 bg-[#FAF9F6] dark:bg-zinc-900/40 border border-stone-200/20 dark:border-zinc-850/10 px-3.5 py-2 rounded-xl cursor-pointer font-semibold outline-none"
             >
@@ -247,15 +247,15 @@ export default function MissionsPage() {
         /* Missions List Grid */
         <div className="flex flex-col gap-3.5 w-full">
           {missions.map((mission) => {
-            const isCompleted = mission.completed
-            const isStarted = startedMissions.includes(mission.id)
+            const isCompleted = mission.completed;
+            const isStarted = startedMissions.includes(mission.id);
 
             // Dot color logic: Grey if completed, green if started/claimable, orange if unstarted
-            let dotColor = "bg-[#FF4D00]" // orange
+            let dotColor = "bg-[#FF4D00]"; // orange
             if (isCompleted) {
-              dotColor = "bg-stone-300 dark:bg-zinc-700"
+              dotColor = "bg-stone-300 dark:bg-zinc-700";
             } else if (isStarted) {
-              dotColor = "bg-[#00E35B]" // green
+              dotColor = "bg-[#00E35B]"; // green
             }
 
             return (
@@ -322,7 +322,13 @@ export default function MissionsPage() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => handleStart(mission.id, mission.actionUrl, mission.missionType)}
+                      onClick={() =>
+                        handleStart(
+                          mission.id,
+                          mission.actionUrl,
+                          mission.missionType,
+                        )
+                      }
                       className="text-[#FF4D00] hover:underline font-semibold text-sm bg-transparent border-none outline-none cursor-pointer p-1"
                     >
                       Start
@@ -330,14 +336,14 @@ export default function MissionsPage() {
                   )}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
 
       {/* Twitter Linking Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-midnight/35 px-4 py-6 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-sm animate-in fade-in duration-200">
           {/* Backdrop overlay */}
           <div
             className="absolute inset-0"
@@ -345,11 +351,11 @@ export default function MissionsPage() {
           />
 
           {/* Modal Card */}
-          <div className="verity-card relative z-10 w-full max-w-[420px] flex flex-col overflow-hidden bg-white-surface p-6 shadow-2xl border border-stone-200/40 dark:border-zinc-800/40 animate-in fade-in-50 zoom-in-95 duration-150">
+          <div className="game-modal-surface relative z-10 flex w-full max-w-[420px] flex-col overflow-hidden p-6 animate-in fade-in-50 zoom-in-95 duration-150">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-dashed border-stone-surface">
               <span className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-ash flex items-center gap-1.5">
-                <Send className="h-3.5 w-3.5 text-indigo-500" />
+                <Send className="h-3.5 w-3.5 text-sky-blue" />
                 Link X Account
               </span>
               <button
@@ -419,5 +425,5 @@ export default function MissionsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

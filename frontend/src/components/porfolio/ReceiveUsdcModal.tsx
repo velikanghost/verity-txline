@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { X, Copy, Check } from "lucide-react"
+import React, { useState } from "react";
+import { X, Copy, Check } from "lucide-react";
 
 interface ReceiveUsdcModalProps {
-  isOpen: boolean
-  onClose: () => void
-  walletAddress: string
+  isOpen: boolean;
+  onClose: () => void;
+  walletAddress: string;
 }
 
 export default function ReceiveUsdcModal({
@@ -14,23 +14,23 @@ export default function ReceiveUsdcModal({
   onClose,
   walletAddress,
 }: ReceiveUsdcModalProps) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleCopy = () => {
     if (walletAddress) {
-      navigator.clipboard.writeText(walletAddress)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
-  }
+  };
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(walletAddress)}&color=121212&bgcolor=ffffff`
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(walletAddress)}&color=121212&bgcolor=ffffff`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-midnight/40 backdrop-blur-md px-4 py-6 animate-fade-in">
-      <div className="verity-card w-full max-w-[400px] bg-white-surface p-6 shadow-sm border border-border relative text-center flex flex-col items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
+      <div className="game-modal-surface relative flex w-full max-w-[400px] flex-col items-center p-6 text-center">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-ash hover:text-charcoal-primary transition-colors cursor-pointer"
@@ -78,5 +78,5 @@ export default function ReceiveUsdcModal({
         </p>
       </div>
     </div>
-  )
+  );
 }

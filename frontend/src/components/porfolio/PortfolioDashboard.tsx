@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
+import { useMemo, useState } from "react";
 import {
   ArrowUpRight,
   Send,
@@ -8,25 +8,25 @@ import {
   ExternalLink,
   Sparkles,
   ArrowRight,
-} from "lucide-react"
-import { useDailyVotes } from "@/hooks/useDailyVotes"
-import { useUserPortfolio } from "@/hooks/useUserPortfolio"
-import { explorerAddress } from "@/lib/solana"
+} from "lucide-react";
+import { useDailyVotes } from "@/hooks/useDailyVotes";
+import { useUserPortfolio } from "@/hooks/useUserPortfolio";
+import { explorerAddress } from "@/lib/solana";
 import {
   useUserTradesQuery,
   useAccruedLpFeesQuery,
   useClaimLpFeesMutation,
-} from "@/store/verity/verityQueries"
-import toast from "@/lib/toast"
-import Link from "next/link"
-import { useAuth } from "@/components/providers/AuthModals"
-import SendUsdcModal from "./SendUsdcModal"
-import ReceiveUsdcModal from "./ReceiveUsdcModal"
-import { useClaimWinnings } from "@/hooks/useClaimWinnings"
-import { apiRequest } from "@/store/apiClient"
+} from "@/store/verity/verityQueries";
+import toast from "@/lib/toast";
+import Link from "next/link";
+import { useAuth } from "@/components/providers/AuthModals";
+import SendUsdcModal from "./SendUsdcModal";
+import ReceiveUsdcModal from "./ReceiveUsdcModal";
+import { useClaimWinnings } from "@/hooks/useClaimWinnings";
+import { apiRequest } from "@/store/apiClient";
 
 export default function PortfolioDashboard() {
-  const { login } = useAuth()
+  const { login } = useAuth();
   const {
     positions,
     isLoading: isPortfolioLoading,
@@ -34,60 +34,60 @@ export default function PortfolioDashboard() {
     usdcBalance,
     profile,
     refetch,
-  } = useUserPortfolio()
-  const userId = profile?.id || ""
+  } = useUserPortfolio();
+  const userId = profile?.id || "";
   const { data: trades, isLoading: isTradesLoading } =
-    useUserTradesQuery(userId)
-  const { data: accruedData } = useAccruedLpFeesQuery(userId)
+    useUserTradesQuery(userId);
+  const { data: accruedData } = useAccruedLpFeesQuery(userId);
   const { mutateAsync: claimLpFees, isPending: isClaiming } =
-    useClaimLpFeesMutation()
+    useClaimLpFeesMutation();
 
-  const accruedLpFees = accruedData?.accruedFeesUsdc || 0
+  const accruedLpFees = accruedData?.accruedFeesUsdc || 0;
 
   const handleClaimLpFees = async () => {
     try {
-      const result = await claimLpFees()
+      const result = await claimLpFees();
       toast.success(
         `Successfully claimed ${result.amountClaimed.toFixed(4)} USDC in LP fees!`,
-      )
-      refetch()
+      );
+      refetch();
     } catch (err: any) {
-      toast.error(err?.message || "Failed to claim LP fees.")
+      toast.error(err?.message || "Failed to claim LP fees.");
     }
-  }
+  };
 
-  const { redeemMultipleWinnings } = useClaimWinnings()
-  const [isClaimingAll, setIsClaimingAll] = useState(false)
+  const { redeemMultipleWinnings } = useClaimWinnings();
+  const [isClaimingAll, setIsClaimingAll] = useState(false);
 
   const handleClaimAll = async () => {
-    if (winningPositions.length === 0) return
-    const marketIds = winningPositions.map((pos) => pos.market_id)
-    setIsClaimingAll(true)
+    if (winningPositions.length === 0) return;
+    const marketIds = winningPositions.map((pos) => pos.market_id);
+    setIsClaimingAll(true);
     try {
-      await redeemMultipleWinnings(marketIds)
-      toast.success("Winnings claimed successfully!")
+      await redeemMultipleWinnings(marketIds);
+      toast.success("Winnings claimed successfully!");
       await Promise.all(
         marketIds.map((marketId) =>
           apiRequest(`/markets/${marketId}/positions?profileId=${userId}`),
         ),
-      )
-      refetch()
+      );
+      refetch();
     } catch (err: any) {
-      console.error(err)
-      toast.error(err?.message || "Failed to claim winnings.")
+      console.error(err);
+      toast.error(err?.message || "Failed to claim winnings.");
     } finally {
-      setIsClaimingAll(false)
+      setIsClaimingAll(false);
     }
-  }
+  };
   const { dailyVotes, isLoading: isDailyVotesLoading } = useDailyVotes(
     profile?.id,
-  )
+  );
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "tokens" | "wins" | "activity"
-  >("overview")
-  const [isSendOpen, setIsSendOpen] = useState(false)
-  const [isRecvOpen, setIsRecvOpen] = useState(false)
+  >("overview");
+  const [isSendOpen, setIsSendOpen] = useState(false);
+  const [isRecvOpen, setIsRecvOpen] = useState(false);
 
   const winningPositions = useMemo(() => {
     return positions.filter(
@@ -95,10 +95,10 @@ export default function PortfolioDashboard() {
         pos.status === "resolved" &&
         pos.resolved_outcome?.toUpperCase() === pos.side?.toUpperCase() &&
         pos.shares > 0,
-    )
-  }, [positions])
+    );
+  }, [positions]);
 
-  const isConnected = !!profile
+  const isConnected = !!profile;
 
   if (!isConnected) {
     return (
@@ -119,10 +119,10 @@ export default function PortfolioDashboard() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
-  const isLoading = isPortfolioLoading || isTradesLoading
+  const isLoading = isPortfolioLoading || isTradesLoading;
 
   if (isLoading) {
     return (
@@ -130,27 +130,27 @@ export default function PortfolioDashboard() {
         <div className="h-40 rounded-[12px] bg-stone-surface" />
         <div className="h-64 rounded-[12px] bg-stone-surface" />
       </div>
-    )
+    );
   }
 
-  const recentTrades = trades ? trades.slice(0, 5) : []
-  const recentPositions = positions.slice(0, 3)
+  const recentTrades = trades ? trades.slice(0, 5) : [];
+  const recentPositions = positions.slice(0, 3);
 
   return (
     <div className="flex flex-col gap-6">
       <section className="py-3 sm:py-4">
         <div className="flex flex-col gap-4">
-          <section className="verity-card relative overflow-hidden p-4 sm:p-5">
-            <div className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-sunburst-yellow/30" />
-            <p className="relative font-mono text-xs font-semibold uppercase tracking-[0.16em] text-ember-orange">
-              Portfolio
+          <section className="verity-card game-grid relative overflow-hidden p-5 sm:p-6">
+            <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#35e881]/16 blur-3xl" />
+            <p className="relative font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#35e881]">
+              Player vault
             </p>
             <h1 className="relative mt-1 text-[30px] font-semibold leading-[1.08] tracking-[-0.7px] text-midnight sm:text-[34px] sm:tracking-[-0.9px]">
-              Prediction Portfolio
+              Your rewards vault
             </h1>
             <p className="relative mt-2 max-w-[520px] text-[15px] leading-[1.47] tracking-[-0.2px] text-graphite">
-              Manage your stakes, view prediction P&L, perform USDC transfers,
-              and track daily signals.
+              Manage match entries, claim winnings, move USDC, and inspect your
+              game history.
             </p>
           </section>
 
@@ -288,7 +288,7 @@ export default function PortfolioDashboard() {
       <section className="border-b border-border">
         <div className="flex gap-6">
           {(["overview", "tokens", "wins", "activity"] as const).map((tab) => {
-            const label = tab === "wins" ? "Wins" : tab
+            const label = tab === "wins" ? "Wins" : tab;
             return (
               <button
                 key={tab}
@@ -309,7 +309,7 @@ export default function PortfolioDashboard() {
                   <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-ember-orange rounded-full animate-fade-in" />
                 )}
               </button>
-            )
+            );
           })}
         </div>
       </section>
@@ -349,16 +349,16 @@ export default function PortfolioDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {recentPositions.map((pos) => {
-                    const isYes = pos.side === "YES"
+                    const isYes = pos.side === "YES";
                     const isClaimable =
                       pos.status === "resolved" &&
                       pos.resolved_outcome?.toUpperCase() ===
                         pos.side?.toUpperCase() &&
-                      pos.shares > 0
+                      pos.shares > 0;
                     const displayPnL =
                       pos.status === "resolved"
                         ? (pos.realizedPnL ?? pos.unrealizedPnL)
-                        : pos.unrealizedPnL
+                        : pos.unrealizedPnL;
 
                     return (
                       <div
@@ -428,7 +428,7 @@ export default function PortfolioDashboard() {
                           </Link>
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               )}
@@ -457,7 +457,7 @@ export default function PortfolioDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {recentTrades.map((t) => {
-                    const isBuy = t.action === "BUY"
+                    const isBuy = t.action === "BUY";
                     return (
                       <div
                         key={t.id}
@@ -485,7 +485,7 @@ export default function PortfolioDashboard() {
                           </span>
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               )}
@@ -528,16 +528,16 @@ export default function PortfolioDashboard() {
                 </thead>
                 <tbody className="divide-y divide-stone-surface">
                   {positions.map((pos) => {
-                    const isYes = pos.side === "YES"
+                    const isYes = pos.side === "YES";
                     const isClaimable =
                       pos.status === "resolved" &&
                       pos.resolved_outcome?.toUpperCase() ===
                         pos.side?.toUpperCase() &&
-                      pos.shares > 0
+                      pos.shares > 0;
                     const displayPnL =
                       pos.status === "resolved"
                         ? (pos.realizedPnL ?? pos.unrealizedPnL)
-                        : pos.unrealizedPnL
+                        : pos.unrealizedPnL;
 
                     return (
                       <tr
@@ -601,7 +601,7 @@ export default function PortfolioDashboard() {
                           </Link>
                         </td>
                       </tr>
-                    )
+                    );
                   })}
                 </tbody>
               </table>
@@ -665,7 +665,7 @@ export default function PortfolioDashboard() {
                         </Link>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -685,7 +685,7 @@ export default function PortfolioDashboard() {
             ) : (
               <div className="flex flex-col divide-y divide-stone-surface">
                 {trades.map((t) => {
-                  const isBuy = t.action === "BUY"
+                  const isBuy = t.action === "BUY";
                   const dateStr = t.created_at
                     ? new Date(t.created_at).toLocaleDateString(undefined, {
                         month: "short",
@@ -693,7 +693,7 @@ export default function PortfolioDashboard() {
                         hour: "2-digit",
                         minute: "2-digit",
                       })
-                    : ""
+                    : "";
 
                   return (
                     <div
@@ -763,7 +763,7 @@ export default function PortfolioDashboard() {
                         )}
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -784,5 +784,5 @@ export default function PortfolioDashboard() {
         walletAddress={profile.walletAddress || ""}
       />
     </div>
-  )
+  );
 }

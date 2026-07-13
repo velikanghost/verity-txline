@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import ProfileForm from "@/components/profile/ProfileForm"
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import ProfileForm from "@/components/profile/ProfileForm";
 
 export default function EditProfilePage() {
-  const { profile, isLoading } = useWalletProfile()
+  const { profile, isLoading } = useWalletProfile();
 
   return (
     <div className="flex flex-col gap-4 py-4">
@@ -21,10 +21,10 @@ export default function EditProfilePage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-[-0.5px] text-midnight">
-            Edit Profile
+            Edit Player Card
           </h1>
           <p className="text-xs text-ash">
-            Update your public profile details and avatar.
+            Customize how other players see you in the arena.
           </p>
         </div>
       </div>
@@ -39,5 +39,5 @@ export default function EditProfilePage() {
         )}
       </section>
     </div>
-  )
+  );
 }

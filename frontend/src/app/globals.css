@@ -9,19 +9,19 @@
    BRAND / ACCENT COLORS — Static, same in both themes
    ─────────────────────────────────────────────────────────────────────────── */
 @theme {
-  --color-ember-orange: #ff3e00;
-  --color-meadow-green: #00ca48;
-  --color-sky-blue: #0090ff;
-  --color-sunburst-yellow: #ffbb26;
-  --color-coral-red: #ff2b3a;
-  --color-royal-blue: #2563eb;
+  --color-ember-orange: #ff6b4a;
+  --color-meadow-green: #35e881;
+  --color-sky-blue: #1479ff;
+  --color-sunburst-yellow: #ffc844;
+  --color-coral-red: #ff6b4a;
+  --color-royal-blue: #1479ff;
 
-  --color-brand-primary: #121212;
-  --color-brand-secondary: #00ca48;
-  --color-brand-accent: #ff3e00;
+  --color-brand-primary: #1479ff;
+  --color-brand-secondary: #35e881;
+  --color-brand-accent: #1479ff;
 
-  --color-upvote: #00ca48;
-  --color-downvote: #ff3e00;
+  --color-upvote: #35e881;
+  --color-downvote: #ff6b4a;
 
   /* ── Dynamic neutral palette — resolved via CSS custom properties ── */
   --color-warm-canvas: var(--warm-canvas);
@@ -67,37 +67,37 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Dynamic neutral palette — light values */
-  --warm-canvas: #fbfaf9;
-  --stone-surface: #f2f0ed;
-  --parchment-card: #f8f7f4;
-  --graphite: #474645;
-  --charcoal-primary: #343433;
-  --midnight: #121212;
-  --ash: #848281;
-  --fog: #c6c6c6;
-  --smoke: #a7a7a7;
-  --white-surface: #ffffff;
+  --warm-canvas: #07111f;
+  --stone-surface: #17263a;
+  --parchment-card: #101d2e;
+  --graphite: #b9c7d9;
+  --charcoal-primary: #f4f7ff;
+  --midnight: #ffffff;
+  --ash: #8394aa;
+  --fog: #2c4058;
+  --smoke: #58708a;
+  --white-surface: #0d1a2b;
 
   /* Semantic tokens — light */
   --background: var(--warm-canvas);
   --foreground: var(--charcoal-primary);
-  --surface: #ffffff;
-  --surface-solid: #ffffff;
-  --surface-muted: var(--parchment-card);
-  --surface-hover: var(--stone-surface);
-  --border: var(--stone-surface);
-  --border-strong: #dedbd6;
+  --surface: rgba(13, 26, 43, 0.94);
+  --surface-solid: #0d1a2b;
+  --surface-muted: #122238;
+  --surface-hover: rgba(255, 255, 255, 0.065);
+  --border: rgba(255, 255, 255, 0.085);
+  --border-strong: rgba(20, 121, 255, 0.38);
   --muted: var(--ash);
-  --inverse: var(--midnight);
+  --inverse: #1479ff;
   --inverse-text: #ffffff;
   --panel-border: var(--border);
-  --panel-shadow: color(display-p3 0.94902 0.941176 0.929412) 0px 0px 0px 1px
-    inset;
+  --panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --panel-shadow-hover:
-    rgba(0, 0, 0, 0.04) 0px 1px 6px 0px, rgba(0, 0, 0, 0.05) 0px 0px 24px 0px;
+    rgba(7, 9, 25, 0.26) 0px 12px 40px 0px,
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
 
   /* Blob face color */
-  --blob-face: #121212;
+  --blob-face: #ffffff;
 
   /* shadcn-compatible tokens */
   --card: var(--surface);
@@ -109,24 +109,24 @@
   --secondary: var(--surface-muted);
   --secondary-foreground: var(--foreground);
   --muted-foreground: var(--muted);
-  --accent: var(--color-ember-orange);
+  --accent: #1479ff;
   --accent-foreground: var(--foreground);
   --destructive: oklch(0.577 0.245 27.325);
   --input: var(--border);
-  --ring: var(--border-strong);
+  --ring: #1479ff;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --radius-card: 10px;
-  --radius-card-lg: 24px;
+  --radius-card: 22px;
+  --radius-card-lg: 28px;
   --radius-pill: 32px;
-  --shadow-subtle: color(display-p3 0.94902 0.941176 0.929412) 0px 0px 0px 1px
-    inset;
+  --shadow-subtle: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-sm:
-    rgba(0, 0, 0, 0.04) 0px 1px 6px 0px, rgba(0, 0, 0, 0.05) 0px 0px 24px 0px;
+    rgba(7, 9, 25, 0.26) 0px 12px 40px 0px,
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
   --sidebar: var(--surface);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -142,36 +142,36 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root[data-theme="dark"] {
   /* Dynamic neutral palette — dark values (aligned with Family Midnight) */
-  --warm-canvas: #121212;
-  --stone-surface: #1e1d1b;
-  --parchment-card: #181816;
-  --graphite: #b5b3b0;
-  --charcoal-primary: #e8e6e3;
-  --midnight: #f4f3ef;
-  --ash: #9a9896;
-  --fog: #4a4947;
-  --smoke: #6a6967;
-  --white-surface: #151513;
+  --warm-canvas: #040b14;
+  --stone-surface: #122033;
+  --parchment-card: #0a1625;
+  --graphite: #b4c2d5;
+  --charcoal-primary: #f4f7ff;
+  --midnight: #ffffff;
+  --ash: #7c8da4;
+  --fog: #263a51;
+  --smoke: #506983;
+  --white-surface: #091728;
 
   /* Semantic tokens — dark */
-  --background: #121212;
-  --foreground: #f4f3ef;
-  --surface: rgba(21, 21, 19, 0.95);
-  --surface-solid: #151513;
-  --surface-muted: #1c1c1a;
+  --background: #040b14;
+  --foreground: #f4f7ff;
+  --surface: rgba(9, 23, 40, 0.95);
+  --surface-solid: #091728;
+  --surface-muted: #0d1d31;
   --surface-hover: rgba(255, 255, 255, 0.06);
   --border: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.2);
   --muted: #a3a39b;
-  --inverse: #f4f3ef;
-  --inverse-text: #121212;
+  --inverse: #1479ff;
+  --inverse-text: #ffffff;
   --panel-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
   --panel-shadow-hover:
     rgba(255, 255, 255, 0.03) 0px 1px 6px 0px,
     rgba(255, 255, 255, 0.04) 0px 0px 24px 0px;
 
   /* Blob face color */
-  --blob-face: #f4f3ef;
+  --blob-face: #ffffff;
 
   /* shadcn-compatible tokens — dark */
   --card: var(--surface);
@@ -214,13 +214,13 @@ body {
   background:
     radial-gradient(
       circle at 12% 8%,
-      rgba(255, 187, 38, 0.16),
-      transparent 22rem
+      rgba(20, 121, 255, 0.17),
+      transparent 28rem
     ),
     radial-gradient(
       circle at 88% 18%,
-      rgba(0, 144, 255, 0.08),
-      transparent 18rem
+      rgba(39, 124, 255, 0.12),
+      transparent 24rem
     ),
     var(--background);
   color: var(--foreground);
@@ -232,13 +232,13 @@ body {
   background:
     radial-gradient(
       circle at 12% 8%,
-      rgba(255, 187, 38, 0.06),
-      transparent 22rem
+      rgba(20, 121, 255, 0.13),
+      transparent 28rem
     ),
     radial-gradient(
       circle at 88% 18%,
-      rgba(0, 144, 255, 0.04),
-      transparent 18rem
+      rgba(39, 124, 255, 0.08),
+      transparent 24rem
     ),
     var(--background);
 }
@@ -292,9 +292,14 @@ body {
    VERITY CARD — shadow adapts to theme
    ─────────────────────────────────────────────────────────────────────────── */
 .verity-card {
-  background: var(--surface);
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(145deg, rgba(27, 33, 62, 0.72), rgba(11, 15, 31, 0.94)),
+    var(--surface);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-subtle);
+  box-shadow:
+    0 16px 50px rgba(4, 6, 18, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .verity-card-hover {
@@ -534,6 +539,8 @@ body {
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   --font-family: "Fraunces", Georgia, ui-serif, serif;
   --font-inter: "Inter", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-game:
+    "Comic Sans MS", "Comic Sans", "Segoe Print", ui-rounded, cursive;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -567,6 +574,386 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   WORLD CUP GAME MODE
+   The handwritten face is intentionally reserved for expressive display copy.
+   Compact data continues to use Geist Mono for legibility.
+   ─────────────────────────────────────────────────────────────────────────── */
+.font-game {
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Segoe Print", ui-rounded, cursive;
+  letter-spacing: -0.035em;
+}
+
+.game-app main h1,
+.game-app main h2,
+.game-modal-surface h2,
+.game-modal-surface h3,
+[data-slot="drawer-title"] {
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Segoe Print", ui-rounded, cursive;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+}
+
+.game-app input:not([type="checkbox"]):not([type="radio"]),
+.game-app textarea,
+.game-app select {
+  border-color: var(--border);
+  background-color: rgba(5, 8, 20, 0.52);
+  color: var(--foreground);
+}
+
+.game-app input::placeholder,
+.game-app textarea::placeholder {
+  color: #68718f;
+}
+
+.game-app input:focus,
+.game-app textarea:focus,
+.game-app select:focus {
+  border-color: rgba(20, 121, 255, 0.58);
+  box-shadow: 0 0 0 3px rgba(20, 121, 255, 0.12);
+}
+
+.game-app table thead,
+.game-app [role="tablist"] {
+  background-color: rgba(5, 8, 20, 0.48);
+}
+
+.game-app table tbody tr {
+  border-color: var(--border);
+  transition: background-color 160ms ease;
+}
+
+.game-app table tbody tr:hover {
+  background-color: rgba(20, 121, 255, 0.065);
+}
+
+.game-modal-surface,
+[data-slot="drawer-content"] {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(
+      circle at 90% 5%,
+      rgba(20, 121, 255, 0.16),
+      transparent 13rem
+    ),
+    linear-gradient(145deg, #10243b, #07111f 72%) !important;
+  color: #f6f7ff !important;
+  box-shadow:
+    0 30px 100px rgba(2, 4, 13, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-slot="drawer-overlay"] {
+  background: rgba(2, 4, 13, 0.72) !important;
+  backdrop-filter: blur(8px);
+}
+
+.game-modal-surface > :first-child {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.game-app .bg-white,
+.game-app .bg-\[\#FAF9F6\] {
+  background-color: #0d1a2b !important;
+}
+
+.game-app .bg-black {
+  background: linear-gradient(135deg, #1479ff, #0862d3) !important;
+}
+
+.game-app .text-black {
+  color: #ffffff !important;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   CINEMATIC BACKDROP — persistent, route-aware World Cup proof atmosphere
+   ─────────────────────────────────────────────────────────────────────────── */
+.cinematic-backdrop {
+  pointer-events: none;
+  contain: strict;
+  isolation: isolate;
+}
+
+.cinematic-vignette {
+  background:
+    radial-gradient(
+      circle at 82% 46%,
+      color-mix(in srgb, var(--scene-accent) 13%, transparent),
+      transparent 31rem
+    ),
+    radial-gradient(
+      circle at 12% 88%,
+      rgba(41, 104, 255, 0.07),
+      transparent 25rem
+    ),
+    linear-gradient(to bottom, transparent 52%, rgba(2, 4, 13, 0.34));
+}
+
+.proof-ball-scene {
+  right: clamp(-13rem, -10vw, -5rem);
+  top: 17vh;
+  width: min(54vw, 720px);
+  aspect-ratio: 1;
+  opacity: 0.34;
+  filter: saturate(1.1);
+  animation: cinematic-ball-drift 14s ease-in-out infinite;
+  will-change: transform;
+}
+
+.proof-ball-halo {
+  background: color-mix(in srgb, var(--scene-accent) 15%, transparent);
+  filter: blur(70px);
+  animation: cinematic-halo-pulse 8s ease-in-out infinite;
+}
+
+.proof-ball-body {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cinematic-ball-rotate 58s linear infinite;
+}
+
+.proof-ball-orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cinematic-orbit-rotate 42s linear infinite;
+}
+
+.cinematic-light-sweep {
+  height: 150%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--scene-accent) 9%, transparent),
+    rgba(255, 255, 255, 0.04),
+    transparent
+  );
+  filter: blur(22px);
+  transform: skewX(-18deg);
+  animation: cinematic-light-pass 22s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.cinematic-particle {
+  opacity: 0;
+  box-shadow: 0 0 12px 2px
+    color-mix(in srgb, var(--scene-accent) 35%, transparent);
+  animation-name: cinematic-particle-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes cinematic-ball-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-2deg);
+  }
+  50% {
+    transform: translate3d(-18px, -24px, 0) rotate(1.5deg);
+  }
+}
+
+@keyframes cinematic-ball-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cinematic-orbit-rotate {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes cinematic-halo-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes cinematic-light-pass {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translate3d(-25vw, 0, 0) skewX(-18deg);
+  }
+  70% {
+    opacity: 0.55;
+  }
+  86%,
+  100% {
+    opacity: 0;
+    transform: translate3d(165vw, 0, 0) skewX(-18deg);
+  }
+}
+
+@keyframes cinematic-particle-float {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate3d(0, 12px, 0) scale(0.8);
+  }
+  45% {
+    opacity: 0.52;
+    transform: translate3d(var(--particle-drift), -24px, 0) scale(1.15);
+  }
+}
+
+@media (max-width: 639px) {
+  .proof-ball-scene {
+    right: -58vw;
+    top: 22vh;
+    width: 118vw;
+    opacity: 0.2;
+    filter: none;
+  }
+
+  .proof-ball-halo {
+    filter: blur(46px);
+  }
+
+  .cinematic-particle:nth-child(n + 7) {
+    display: none;
+  }
+
+  .cinematic-light-sweep {
+    opacity: 0.5;
+    filter: blur(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-ball-scene,
+  .proof-ball-body,
+  .proof-ball-orbit,
+  .proof-ball-halo,
+  .cinematic-light-sweep,
+  .cinematic-particle {
+    animation: none;
+  }
+
+  .cinematic-particle {
+    opacity: 0.18;
+  }
+}
+
+.game-hero {
+  background:
+    linear-gradient(135deg, rgba(10, 31, 53, 0.96), rgba(4, 12, 23, 0.99)),
+    #07111f;
+  box-shadow:
+    0 28px 90px rgba(10, 12, 30, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.game-panel {
+  background:
+    linear-gradient(145deg, rgba(18, 45, 72, 0.74), rgba(7, 17, 31, 0.94)),
+    #091728;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 18px 60px rgba(4, 6, 18, 0.18);
+}
+
+.game-grid {
+  background-image:
+    linear-gradient(rgba(20, 121, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 121, 255, 0.075) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.game-grid-fade {
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+.game-app main > div > .verity-card p.text-graphite,
+.game-app main section.verity-card > div p.text-graphite {
+  color: #bbc4df;
+}
+
+.game-text-gradient {
+  color: #59a2ff;
+  filter: drop-shadow(0 8px 24px rgba(20, 121, 255, 0.2));
+}
+
+.game-button-primary {
+  background: linear-gradient(135deg, #1479ff, #0862d3);
+  box-shadow:
+    0 10px 28px rgba(20, 121, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -2px 0 rgba(29, 18, 100, 0.32);
+}
+
+.game-button-primary:hover {
+  background: linear-gradient(135deg, #2b87ff, #096be7);
+  box-shadow:
+    0 13px 34px rgba(20, 121, 255, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -2px 0 rgba(29, 18, 100, 0.28);
+}
+
+.game-button-success {
+  background: linear-gradient(135deg, #35e881, #20bd64);
+  box-shadow:
+    0 10px 26px rgba(52, 220, 121, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.game-quest-card,
+.game-status-card {
+  box-shadow:
+    0 12px 35px rgba(16, 19, 41, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.game-quest-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 10% 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(20, 121, 255, 0.55),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.game-quest-card:hover::after {
+  opacity: 1;
+}
+
+.game-market-card {
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.game-market-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(20, 121, 255, 0.3);
+  box-shadow: 0 24px 70px rgba(10, 13, 29, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-market-card:hover {
+    transform: none;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

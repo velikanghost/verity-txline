@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { useMemo, useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { apiRequest } from "@/store/apiClient"
-import { toast } from "@/lib/toast"
-import { HelpCircle, ChevronRight, Check, Receipt, X } from "lucide-react"
+import { useMemo, useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { apiRequest } from "@/store/apiClient";
+import { toast } from "@/lib/toast";
+import { HelpCircle, ChevronRight, Check, Receipt, X } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
-} from "@/components/ui/drawer"
-import { useUsdcBalance } from "@/hooks/useUsdcBalance"
-import ArenaCategory, { getCategoryMeta } from "./PvpArenaCategory"
-import { getCountryFlag } from "./PvpMatchupCarousel"
-import { DraggableFAB } from "@/components/ui/draggable-fab"
+} from "@/components/ui/drawer";
+import { useUsdcBalance } from "@/hooks/useUsdcBalance";
+import ArenaCategory, { getCategoryMeta } from "./PvpArenaCategory";
+import { getCountryFlag } from "./PvpMatchupCarousel";
+import { DraggableFAB } from "@/components/ui/draggable-fab";
 
 export const cleanOutcomeName = (
   name: string,
   teamA: string,
   teamB: string,
 ) => {
-  const lowerName = name.toLowerCase().trim()
-  const lowerA = teamA.toLowerCase().trim()
-  const lowerB = teamB.toLowerCase().trim()
+  const lowerName = name.toLowerCase().trim();
+  const lowerA = teamA.toLowerCase().trim();
+  const lowerB = teamB.toLowerCase().trim();
 
   if (
     lowerName.includes("wins on penalties") ||
     lowerName.includes("wins shootout")
   ) {
-    if (lowerName.includes(lowerA)) return teamA
-    if (lowerName.includes(lowerB)) return teamB
+    if (lowerName.includes(lowerA)) return teamA;
+    if (lowerName.includes(lowerB)) return teamB;
   }
 
   if (lowerName === "no penalties" || lowerName.includes("no penalties")) {
-    return "No Penalty"
+    return "No Penalty";
   }
 
   if (
@@ -44,7 +44,7 @@ export const cleanOutcomeName = (
     lowerName === "btts - yes" ||
     lowerName === "btts-yes"
   ) {
-    return "YES"
+    return "YES";
   }
 
   if (
@@ -53,7 +53,7 @@ export const cleanOutcomeName = (
     lowerName === "btts - no" ||
     lowerName === "btts-no"
   ) {
-    return "NO"
+    return "NO";
   }
 
   if (
@@ -63,35 +63,35 @@ export const cleanOutcomeName = (
     lowerName === "match ends with equal fouls" ||
     lowerName === "draw"
   ) {
-    return "Draw"
+    return "Draw";
   }
 
   if (lowerName === "no goal in the match" || lowerName === "no goal") {
-    return "No Goal"
+    return "No Goal";
   }
 
   if (lowerName.includes("has more corners")) {
-    if (lowerName.includes(lowerA)) return teamA
-    if (lowerName.includes(lowerB)) return teamB
+    if (lowerName.includes(lowerA)) return teamA;
+    if (lowerName.includes(lowerB)) return teamB;
   }
   if (lowerName.includes("has more yellow cards")) {
-    if (lowerName.includes(lowerA)) return teamA
-    if (lowerName.includes(lowerB)) return teamB
+    if (lowerName.includes(lowerA)) return teamA;
+    if (lowerName.includes(lowerB)) return teamB;
   }
   if (lowerName.includes("commits more fouls")) {
-    if (lowerName.includes(lowerA)) return teamA
-    if (lowerName.includes(lowerB)) return teamB
+    if (lowerName.includes(lowerA)) return teamA;
+    if (lowerName.includes(lowerB)) return teamB;
   }
 
   // Totals: extract line
-  const overMatch = name.match(/over\s+(\d+(?:\.\d+)?)/i)
+  const overMatch = name.match(/over\s+(\d+(?:\.\d+)?)/i);
   if (overMatch) {
-    return `Over ${overMatch[1]}`
+    return `Over ${overMatch[1]}`;
   }
 
-  const underMatch = name.match(/under\s+(\d+(?:\.\d+)?)/i)
+  const underMatch = name.match(/under\s+(\d+(?:\.\d+)?)/i);
   if (underMatch) {
-    return `Under ${underMatch[1]}`
+    return `Under ${underMatch[1]}`;
   }
 
   const cleaned = name
@@ -102,28 +102,28 @@ export const cleanOutcomeName = (
     .replace(/\s+leads\s+at\s+halftime/i, "")
     .replace(/\s+keeps\s+a\s+clean\s+sheet/i, "")
     .replace(/\s+commits\s+more\s+fouls/i, "")
-    .trim()
+    .trim();
 
-  return cleaned
-}
+  return cleaned;
+};
 
 interface PvpTicketBuilderProps {
-  selectedPvpEvent: any
-  pvpEvents: any[]
-  pvpStatus: any
-  pvpSelections: Record<string, string>
-  betAmountPerSelection: number
-  isSubmitting: boolean
-  showTooltip: boolean
-  referralsData: any
-  parsedTeams: { teamA: string; teamB: string }
-  groupedOptions: Record<string, any[]>
-  onToggleSelection: (optId: string, selection: string) => void
-  onSetBetAmount: (amount: number) => void
-  onSetShowTooltip: (show: boolean) => void
-  onSubmitTicket: (couponCode?: string) => void
-  onProvideLiquidity: (amounts: Record<string, number>) => Promise<void>
-  onAddLiquidity: (marketId: string) => void
+  selectedPvpEvent: any;
+  pvpEvents: any[];
+  pvpStatus: any;
+  pvpSelections: Record<string, string>;
+  betAmountPerSelection: number;
+  isSubmitting: boolean;
+  showTooltip: boolean;
+  referralsData: any;
+  parsedTeams: { teamA: string; teamB: string };
+  groupedOptions: Record<string, any[]>;
+  onToggleSelection: (optId: string, selection: string) => void;
+  onSetBetAmount: (amount: number) => void;
+  onSetShowTooltip: (show: boolean) => void;
+  onSubmitTicket: (couponCode?: string) => void;
+  onProvideLiquidity: (amounts: Record<string, number>) => Promise<void>;
+  onAddLiquidity: (marketId: string) => void;
 }
 
 export default function PvpTicketBuilder({
@@ -144,153 +144,153 @@ export default function PvpTicketBuilder({
   onProvideLiquidity,
   onAddLiquidity,
 }: PvpTicketBuilderProps) {
-  const selectionCount = Object.keys(pvpSelections).length
-  const { rawBalance, formattedBalance } = useUsdcBalance()
+  const selectionCount = Object.keys(pvpSelections).length;
+  const { rawBalance, formattedBalance } = useUsdcBalance();
 
-  const activeBoostsList = referralsData?.activeBoosts || []
+  const activeBoostsList = referralsData?.activeBoosts || [];
   const downtimeBoostRemaining = activeBoostsList
     .filter((b: any) => b.source === "downtime")
-    .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0)
+    .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0);
   const missionBoostRemaining = activeBoostsList
     .filter((b: any) => b.source === "mission")
-    .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0)
+    .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0);
   const doubleBoostRemaining = activeBoostsList
     .filter((b: any) => b.source === "referral")
-    .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0)
+    .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0);
 
   // Coupon state
-  const [couponCode, setCouponCode] = useState("")
-  const [couponMultiplier, setCouponMultiplier] = useState<number | null>(null)
-  const [couponError, setCouponError] = useState<string | null>(null)
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<"single" | "liquidity">("single")
+  const [couponCode, setCouponCode] = useState("");
+  const [couponMultiplier, setCouponMultiplier] = useState<number | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"single" | "liquidity">("single");
   const [liquidityAmounts, setLiquidityAmounts] = useState<
     Record<string, string>
-  >({})
-  const [liquidityPerSelection, setLiquidityPerSelection] = useState<number>(0)
+  >({});
+  const [liquidityPerSelection, setLiquidityPerSelection] = useState<number>(0);
   const [desktopView, setDesktopView] = useState<"categories" | "selections">(
     "categories",
-  )
+  );
 
   useEffect(() => {
     if (selectionCount === 0) {
-      setDesktopView("categories")
+      setDesktopView("categories");
     }
-  }, [selectionCount])
+  }, [selectionCount]);
 
   useEffect(() => {
     if (liquidityPerSelection > 0) {
       setLiquidityAmounts((prev) => {
-        const next = { ...prev }
-        let changed = false
+        const next = { ...prev };
+        let changed = false;
         Object.keys(pvpSelections).forEach((optId) => {
           if (!next[optId]) {
-            next[optId] = liquidityPerSelection.toString()
-            changed = true
+            next[optId] = liquidityPerSelection.toString();
+            changed = true;
           }
-        })
-        return changed ? next : prev
-      })
+        });
+        return changed ? next : prev;
+      });
     }
-  }, [pvpSelections, liquidityPerSelection])
+  }, [pvpSelections, liquidityPerSelection]);
 
   useEffect(() => {
-    const code = couponCode.trim()
+    const code = couponCode.trim();
     if (!code) {
-      setCouponMultiplier(null)
-      setCouponError(null)
-      return
+      setCouponMultiplier(null);
+      setCouponError(null);
+      return;
     }
 
     const timer = setTimeout(async () => {
       try {
         const res = await apiRequest<{ success: boolean; multiplier: number }>(
           `/coupons/validate/${code}`,
-        )
-        setCouponMultiplier(res.multiplier)
-        setCouponError(null)
+        );
+        setCouponMultiplier(res.multiplier);
+        setCouponError(null);
       } catch (err: any) {
-        setCouponMultiplier(null)
-        setCouponError(err.message || "Invalid coupon")
+        setCouponMultiplier(null);
+        setCouponError(err.message || "Invalid coupon");
       }
-    }, 500)
+    }, 500);
 
-    return () => clearTimeout(timer)
-  }, [couponCode])
+    return () => clearTimeout(timer);
+  }, [couponCode]);
 
   const totalVolume = useMemo(() => {
-    if (!selectedPvpEvent?.options) return 0
+    if (!selectedPvpEvent?.options) return 0;
     return selectedPvpEvent.options.reduce(
       (sum: number, opt: any) => sum + Number(opt.liquidity ?? 0),
       0,
-    )
-  }, [selectedPvpEvent])
+    );
+  }, [selectedPvpEvent]);
 
   const formattedDate = useMemo(() => {
-    const timeStr = selectedPvpEvent?.lockTime || selectedPvpEvent?.deadline
-    if (!timeStr) return ""
-    const date = new Date(timeStr)
+    const timeStr = selectedPvpEvent?.lockTime || selectedPvpEvent?.deadline;
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
     const month = date.toLocaleDateString(undefined, {
       month: "short",
-    })
+    });
     const day = date.toLocaleDateString(undefined, {
       day: "numeric",
-    })
+    });
     const time = date.toLocaleTimeString(undefined, {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-    })
-    return `${month} ${day}, ${time}`
-  }, [selectedPvpEvent])
+    });
+    return `${month} ${day}, ${time}`;
+  }, [selectedPvpEvent]);
 
-  const progressPercent = Math.min((selectionCount / 3) * 100, 100)
+  const progressPercent = Math.min((selectionCount / 3) * 100, 100);
 
   const handleLiquidityAmountChange = (optId: string, value: string) => {
     setLiquidityAmounts((prev) => ({
       ...prev,
       [optId]: value,
-    }))
-  }
+    }));
+  };
 
   const handleProvideLiquiditySubmit = async () => {
-    let totalLiquidity = 0
-    const validAmounts: Record<string, number> = {}
+    let totalLiquidity = 0;
+    const validAmounts: Record<string, number> = {};
     for (const [optId, amtStr] of Object.entries(liquidityAmounts)) {
-      const amt = parseFloat(amtStr)
+      const amt = parseFloat(amtStr);
       if (!isNaN(amt) && amt > 0) {
-        validAmounts[optId] = amt
-        totalLiquidity += amt
+        validAmounts[optId] = amt;
+        totalLiquidity += amt;
       }
     }
 
-    const rawTotalLiquidity = BigInt(Math.round(totalLiquidity * 1e6))
+    const rawTotalLiquidity = BigInt(Math.round(totalLiquidity * 1e6));
 
-    setIsMobileDrawerOpen(false)
+    setIsMobileDrawerOpen(false);
 
     if (rawTotalLiquidity > (rawBalance || BigInt(0))) {
       toast.error(
         `Insufficient USDC balance. You need at least ${totalLiquidity} USDC to submit this ticket, but your balance is ${(Number(rawBalance || 0) / 1e6).toFixed(2)} USDC.`,
-      )
-      return
+      );
+      return;
     }
     try {
-      await onProvideLiquidity(validAmounts)
-      setLiquidityAmounts({})
-      setDesktopView("categories")
+      await onProvideLiquidity(validAmounts);
+      setLiquidityAmounts({});
+      setDesktopView("categories");
     } catch (error) {
       // Allow user to manually re-open with their inputs intact on failure
     }
-  }
+  };
 
   const renderTicketSlip = () => {
     const totalLiquidity = Object.values(liquidityAmounts).reduce(
       (sum, amtStr) => {
-        const amt = parseFloat(amtStr)
-        return sum + (isNaN(amt) ? 0 : amt)
+        const amt = parseFloat(amtStr);
+        return sum + (isNaN(amt) ? 0 : amt);
       },
       0,
-    )
+    );
 
     return (
       <div className="flex flex-col gap-0 w-full h-full min-h-0 max-h-full">
@@ -328,8 +328,8 @@ export default function PvpTicketBuilder({
           {Object.entries(pvpSelections).map(([optId, selection]) => {
             const opt = selectedPvpEvent?.options?.find(
               (o: any) => o.id === optId,
-            )
-            const isMultiOpt = opt?.outcomeCount && opt.outcomeCount > 2
+            );
+            const isMultiOpt = opt?.outcomeCount && opt.outcomeCount > 2;
             let displaySelection = isMultiOpt
               ? cleanOutcomeName(
                   selection,
@@ -346,14 +346,14 @@ export default function PvpTicketBuilder({
                     opt?.noCondition || "No",
                     parsedTeams.teamA,
                     parsedTeams.teamB,
-                  )
+                  );
             if (
               opt &&
               (opt.optionGroup === "red_card" ||
                 opt.optionGroup === "red_cards")
             ) {
               displaySelection =
-                selection === "YES" ? "Red card shown" : "No red card"
+                selection === "YES" ? "Red card shown" : "No red card";
             }
 
             return (
@@ -417,7 +417,7 @@ export default function PvpTicketBuilder({
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
 
@@ -439,8 +439,8 @@ export default function PvpTicketBuilder({
                     }
                     disabled={isSubmitting}
                     onChange={(e) => {
-                      const val = e.target.value
-                      onSetBetAmount(val === "" ? 0 : Number(val))
+                      const val = e.target.value;
+                      onSetBetAmount(val === "" ? 0 : Number(val));
                     }}
                     className="h-9 text-xs font-bold font-mono bg-stone-100 dark:bg-zinc-900 border-stone-300 dark:border-zinc-700 text-right"
                   />
@@ -460,8 +460,8 @@ export default function PvpTicketBuilder({
 
               <button
                 onClick={() => {
-                  setIsMobileDrawerOpen(false)
-                  onSubmitTicket()
+                  setIsMobileDrawerOpen(false);
+                  onSubmitTicket();
                 }}
                 disabled={isSubmitting || selectionCount < 3}
                 className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-sm shadow-md transition-all rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
@@ -489,15 +489,15 @@ export default function PvpTicketBuilder({
                     }
                     disabled={isSubmitting}
                     onChange={(e) => {
-                      const val = e.target.value
-                      const num = parseFloat(val)
-                      setLiquidityPerSelection(isNaN(num) ? 0 : num)
+                      const val = e.target.value;
+                      const num = parseFloat(val);
+                      setLiquidityPerSelection(isNaN(num) ? 0 : num);
 
-                      const newAmounts = { ...liquidityAmounts }
+                      const newAmounts = { ...liquidityAmounts };
                       Object.keys(pvpSelections).forEach((optId) => {
-                        newAmounts[optId] = val
-                      })
-                      setLiquidityAmounts(newAmounts)
+                        newAmounts[optId] = val;
+                      });
+                      setLiquidityAmounts(newAmounts);
                     }}
                     className="h-9 text-xs font-bold font-mono bg-stone-100 dark:bg-zinc-900 border-stone-300 dark:border-zinc-700 text-right"
                   />
@@ -515,7 +515,7 @@ export default function PvpTicketBuilder({
               <button
                 onClick={handleProvideLiquiditySubmit}
                 disabled={isSubmitting || totalLiquidity <= 0}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider text-sm shadow-md transition-all rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-sky-blue text-sm font-bold uppercase tracking-wider text-white shadow-md transition-all hover:bg-[#2b87ff] disabled:opacity-50"
               >
                 {isSubmitting ? "Providing Liquidity..." : "Provide Liquidity"}
               </button>
@@ -523,8 +523,8 @@ export default function PvpTicketBuilder({
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 w-full pb-12 lg:pb-24 relative">
@@ -691,7 +691,7 @@ export default function PvpTicketBuilder({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 /* ──────────────────────────────────────────────
@@ -706,50 +706,50 @@ function CategoryCard({
   onToggleSelection,
   onAddLiquidity,
 }: {
-  groupKey: string
-  opts: any[]
-  pvpSelections: Record<string, string>
-  parsedTeams: { teamA: string; teamB: string }
-  isSubmitting: boolean
-  onToggleSelection: (optId: string, selection: string) => void
-  onAddLiquidity: () => void
+  groupKey: string;
+  opts: any[];
+  pvpSelections: Record<string, string>;
+  parsedTeams: { teamA: string; teamB: string };
+  isSubmitting: boolean;
+  onToggleSelection: (optId: string, selection: string) => void;
+  onAddLiquidity: () => void;
 }) {
-  const firstOpt = opts[0]
-  const isMulti = firstOpt?.outcomeCount && firstOpt.outcomeCount > 2
+  const firstOpt = opts[0];
+  const isMulti = firstOpt?.outcomeCount && firstOpt.outcomeCount > 2;
   const groupVolume = opts.reduce(
     (s: number, o: any) => s + Number(o.liquidity ?? 0),
     0,
-  )
-  const catMeta = getCategoryMeta(groupKey)
+  );
+  const catMeta = getCategoryMeta(groupKey);
 
   // Extract handicap line from outcomes if O/U
-  let handicapLine: string | null = null
+  let handicapLine: string | null = null;
   if (!isMulti && opts.length === 1) {
-    const yc = firstOpt.yesCondition || ""
-    const numMatch = yc.match(/(\d+(?:\.\d+)?)/)
-    if (numMatch) handicapLine = numMatch[1]
+    const yc = firstOpt.yesCondition || "";
+    const numMatch = yc.match(/(\d+(?:\.\d+)?)/);
+    if (numMatch) handicapLine = numMatch[1];
   }
 
   // Check if any option in this group has a selection
-  const hasSelection = opts.some((o: any) => pvpSelections[o.id])
+  const hasSelection = opts.some((o: any) => pvpSelections[o.id]);
 
   // Determine highlight color
-  let selectedOptionColor: string | null = null
+  let selectedOptionColor: string | null = null;
   if (hasSelection) {
     if (isMulti) {
-      const selection = pvpSelections[firstOpt.id]
+      const selection = pvpSelections[firstOpt.id];
       if (selection) {
         const isDrawOption =
           selection.toLowerCase().includes("draw") ||
           selection.toLowerCase().includes("no goal") ||
-          selection.toLowerCase().includes("equal")
+          selection.toLowerCase().includes("equal");
         const isMatchWinner =
-          groupKey === "match_winner" || groupKey === "major"
+          groupKey === "match_winner" || groupKey === "major";
         selectedOptionColor =
-          isDrawOption && !isMatchWinner ? "amber" : "emerald"
+          isDrawOption && !isMatchWinner ? "amber" : "emerald";
       }
     } else {
-      selectedOptionColor = "emerald"
+      selectedOptionColor = "emerald";
     }
   }
 
@@ -784,7 +784,7 @@ function CategoryCard({
         />
       )}
     </ArenaCategory>
-  )
+  );
 }
 
 /* ──────────────────────────────────────────────
@@ -797,33 +797,34 @@ function MultiWayOutcomes({
   isSubmitting,
   onToggleSelection,
 }: {
-  firstOpt: any
-  pvpSelections: Record<string, string>
-  parsedTeams: { teamA: string; teamB: string }
-  isSubmitting: boolean
-  onToggleSelection: (optId: string, selection: string) => void
+  firstOpt: any;
+  pvpSelections: Record<string, string>;
+  parsedTeams: { teamA: string; teamB: string };
+  isSubmitting: boolean;
+  onToggleSelection: (optId: string, selection: string) => void;
 }) {
   return (
     <div
       className={`grid gap-2 ${firstOpt.outcomeCount === 3 ? "grid-cols-3" : firstOpt.outcomeCount === 2 ? "grid-cols-2" : "grid-cols-3"}`}
     >
       {firstOpt.outcomes.map((outcomeName: string, idx: number) => {
-        const price = firstOpt.outcomePrices?.[idx] ?? 1 / firstOpt.outcomeCount
-        const priceCents = (price * 100).toFixed(1)
-        const isSelected = pvpSelections[firstOpt.id] === outcomeName
+        const price =
+          firstOpt.outcomePrices?.[idx] ?? 1 / firstOpt.outcomeCount;
+        const priceCents = (price * 100).toFixed(1);
+        const isSelected = pvpSelections[firstOpt.id] === outcomeName;
         const displayName = cleanOutcomeName(
           outcomeName,
           parsedTeams.teamA,
           parsedTeams.teamB,
-        )
+        );
 
         const isDrawOption =
           displayName.toLowerCase().includes("draw") ||
           displayName.toLowerCase().includes("no goal") ||
-          displayName.toLowerCase().includes("equal")
+          displayName.toLowerCase().includes("equal");
         const btnColor = isSelected
           ? "bg-[#121212] dark:bg-white text-white dark:text-zinc-950 font-bold shadow-md relative"
-          : "bg-[#FAF9F6] dark:bg-zinc-900/40 hover:bg-[#F3F1EC] dark:hover:bg-zinc-850/50 text-charcoal-primary dark:text-zinc-300 font-medium"
+          : "bg-[#FAF9F6] dark:bg-zinc-900/40 hover:bg-[#F3F1EC] dark:hover:bg-zinc-850/50 text-charcoal-primary dark:text-zinc-300 font-medium";
 
         return (
           <button
@@ -860,10 +861,10 @@ function MultiWayOutcomes({
               </div>
             )}
           </button>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 /* ──────────────────────────────────────────────
@@ -877,34 +878,34 @@ function BinaryOutcomes({
   catMeta,
   onToggleSelection,
 }: {
-  opt: any
-  pvpSelections: Record<string, string>
-  parsedTeams: { teamA: string; teamB: string }
-  isSubmitting: boolean
-  catMeta: { selectedBg: string; ring: string; unselectedBg: string }
-  onToggleSelection: (optId: string, selection: string) => void
+  opt: any;
+  pvpSelections: Record<string, string>;
+  parsedTeams: { teamA: string; teamB: string };
+  isSubmitting: boolean;
+  catMeta: { selectedBg: string; ring: string; unselectedBg: string };
+  onToggleSelection: (optId: string, selection: string) => void;
 }) {
   // Compute probabilities in the component body — not in JSX
-  const yesPool = Number(opt.usdcYesAmount ?? 0)
-  const noPool = Number(opt.usdcNoAmount ?? 0)
-  const totalPool = yesPool + noPool
-  const yesProb = totalPool > 0 ? (yesPool / totalPool) * 100 : 50
-  const noProb = 100 - yesProb
+  const yesPool = Number(opt.usdcYesAmount ?? 0);
+  const noPool = Number(opt.usdcNoAmount ?? 0);
+  const totalPool = yesPool + noPool;
+  const yesProb = totalPool > 0 ? (yesPool / totalPool) * 100 : 50;
+  const noProb = 100 - yesProb;
 
   let yesLabel = cleanOutcomeName(
     opt.yesCondition || "Yes",
     parsedTeams.teamA,
     parsedTeams.teamB,
-  )
+  );
   let noLabel = cleanOutcomeName(
     opt.noCondition || "No",
     parsedTeams.teamA,
     parsedTeams.teamB,
-  )
+  );
 
   if (opt.optionGroup === "red_card" || opt.optionGroup === "red_cards") {
-    yesLabel = "Red card shown"
-    noLabel = "No red card"
+    yesLabel = "Red card shown";
+    noLabel = "No red card";
   }
 
   return (
@@ -980,5 +981,5 @@ function BinaryOutcomes({
         )}
       </button>
     </div>
-  )
+  );
 }

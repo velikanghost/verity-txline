@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { usePvpLeaderboardQuery } from "@/store/verity/verityQueries"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { Zap, Users, Info, CircleHelp, Medal } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { usePvpLeaderboardQuery } from "@/store/verity/verityQueries";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { Zap, Users, Info, CircleHelp, Medal } from "lucide-react";
+import Link from "next/link";
 
-type LeaderboardTab = "xp" | "referrers" | "points-system"
+type LeaderboardTab = "xp" | "referrers" | "points-system";
 
 export default function LeaderboardPage() {
-  const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp")
-  const { profile: loggedInProfile } = useWalletProfile()
+  const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp");
+  const { profile: loggedInProfile } = useWalletProfile();
   const {
     data: leaderboardData,
     isLoading,
     error,
-  } = usePvpLeaderboardQuery(loggedInProfile?.id)
+  } = usePvpLeaderboardQuery(loggedInProfile?.id);
 
   const pvpRules = [
     {
@@ -63,23 +63,23 @@ export default function LeaderboardPage() {
       logic:
         "Players with more than 30 Arena XP and no recorded PvP losses receive the lavender Special Grade tag alongside their Arena grade.",
     },
-  ]
+  ];
 
   return (
     <div className="flex flex-col gap-4 py-4 max-w-[672px] mx-auto">
       {/* Header Banner */}
-      <section className="verity-card relative overflow-hidden p-5 sm:p-6 bg-linear-to-br from-indigo-50/40 via-purple-50/20 to-transparent dark:from-indigo-950/10 dark:via-purple-950/5">
-        <div className="absolute -right-3 -top-3 h-24 w-24 rounded-full bg-indigo-500/10" />
+      <section className="verity-card game-grid relative overflow-hidden p-5 sm:p-6">
+        <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#1479ff]/22 blur-3xl" />
         <div className="relative max-w-[480px]">
-          <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">
-            World Cup PvP Arena
+          <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#59a2ff]">
+            Global player rankings
           </p>
           <h1 className="text-[32px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight dark:text-white sm:text-[40px]">
-            World Cup PvP Leaderboard
+            Who rules the arena?
           </h1>
           <p className="mt-3 text-[14px] leading-[1.47] tracking-[-0.2px] text-graphite dark:text-zinc-400">
-            Track Arena XP earned from Verity&apos;s World Cup head-to-head
-            prediction events.
+            Track XP, duel records, and the players climbing toward World Cup
+            glory.
           </p>
         </div>
       </section>
@@ -202,7 +202,7 @@ export default function LeaderboardPage() {
                     {(() => {
                       const isUserInXpList = leaderboardData?.xp?.some(
                         (u: any) => u.id === loggedInProfile?.id,
-                      )
+                      );
                       if (
                         !isUserInXpList &&
                         loggedInProfile &&
@@ -232,9 +232,9 @@ export default function LeaderboardPage() {
                               isCurrentUser={true}
                             />
                           </>
-                        )
+                        );
                       }
-                      return null
+                      return null;
                     })()}
                   </div>
                 )}
@@ -274,7 +274,7 @@ export default function LeaderboardPage() {
                       const isUserInReferrersList =
                         leaderboardData?.referrers?.some(
                           (u: any) => u.id === loggedInProfile?.id,
-                        )
+                        );
                       if (
                         !isUserInReferrersList &&
                         loggedInProfile &&
@@ -305,9 +305,9 @@ export default function LeaderboardPage() {
                               isCurrentUser={true}
                             />
                           </>
-                        )
+                        );
                       }
-                      return null
+                      return null;
                     })()}
                   </div>
                 )}
@@ -316,9 +316,9 @@ export default function LeaderboardPage() {
 
             {activeTab === "points-system" && (
               <div className="flex flex-col gap-3">
-                <div className="verity-card p-5 bg-linear-to-br from-indigo-50/20 to-transparent dark:from-indigo-950/5">
+                <div className="verity-card p-5 bg-linear-to-br from-sky-500/5 to-transparent">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-sky-blue/10 text-sky-blue">
                       <Medal className="h-5 w-5" />
                     </span>
                     <div>
@@ -366,7 +366,7 @@ export default function LeaderboardPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function UserLeaderboardRow({
@@ -377,30 +377,30 @@ function UserLeaderboardRow({
   extraInfo,
   isCurrentUser,
 }: {
-  user: any
-  rank: number
-  scoreLabel: string
-  scoreValue: number
-  extraInfo?: string
-  isCurrentUser?: boolean
+  user: any;
+  rank: number;
+  scoreLabel: string;
+  scoreValue: number;
+  extraInfo?: string;
+  isCurrentUser?: boolean;
 }) {
-  const isTopThree = rank <= 3
+  const isTopThree = rank <= 3;
   const rankColors = [
     "bg-amber-400 text-amber-950 dark:bg-amber-500/20 dark:text-amber-300", // Gold
     "bg-zinc-300 text-zinc-950 dark:bg-zinc-700/30 dark:text-zinc-300", // Silver
     "bg-amber-600 text-amber-50 dark:bg-amber-700/20 dark:text-amber-400", // Bronze
-  ]
-  const grade = getArenaGrade(scoreLabel, scoreValue)
+  ];
+  const grade = getArenaGrade(scoreLabel, scoreValue);
   const hasSpecialGrade =
     scoreLabel === "XP" &&
     scoreValue > 30 &&
-    Number(user.pvpMatchesLostCount ?? 0) === 0
+    Number(user.pvpMatchesLostCount ?? 0) === 0;
 
   return (
     <div
       className={`flex items-center justify-between p-4 transition-colors ${
         isCurrentUser
-          ? "bg-indigo-50/50 dark:bg-indigo-950/20 border-y border-indigo-150 dark:border-indigo-900/50"
+          ? "bg-sky-blue/5 border-y border-sky-blue/15"
           : "hover:bg-white-surface/20 dark:hover:bg-zinc-900/20"
       }`}
     >
@@ -423,7 +423,7 @@ function UserLeaderboardRow({
                 alt={user.displayName || user.username}
                 className="h-full w-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.style.display = "none"
+                  e.currentTarget.style.display = "none";
                 }}
               />
             ) : (
@@ -455,7 +455,7 @@ function UserLeaderboardRow({
             </span>
           )}
           {hasSpecialGrade && (
-            <span className="rounded bg-violet-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-300 font-mono">
+            <span className="rounded bg-sunburst-yellow/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sunburst-yellow font-mono">
               Special Grade
             </span>
           )}
@@ -470,51 +470,51 @@ function UserLeaderboardRow({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function getArenaGrade(scoreLabel: string, arenaXp: number) {
-  if (scoreLabel !== "XP") return null
-  if (arenaXp < 30) return null
+  if (scoreLabel !== "XP") return null;
+  if (arenaXp < 30) return null;
 
   if (arenaXp <= 499) {
     return {
       name: "Bronze",
       color: "bg-amber-700/10 text-amber-700 dark:text-amber-500",
-    }
+    };
   }
   if (arenaXp <= 1499) {
     return {
       name: "Silver",
       color: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-300",
-    }
+    };
   }
   if (arenaXp <= 2999) {
     return {
       name: "Gold",
       color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    }
+    };
   }
   if (arenaXp <= 4999) {
     return {
       name: "Platinum",
       color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
-    }
+    };
   }
   if (arenaXp <= 6999) {
     return {
       name: "Diamond",
-      color: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
-    }
+      color: "bg-sky-blue/10 text-sky-blue",
+    };
   }
   if (arenaXp <= 9000) {
     return {
       name: "Legend",
-      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-    }
+      color: "bg-sunburst-yellow/10 text-sunburst-yellow",
+    };
   }
   return {
     name: "Mythic",
     color: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400",
-  }
+  };
 }

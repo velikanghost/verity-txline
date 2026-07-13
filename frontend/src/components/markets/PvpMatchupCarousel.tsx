@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useMemo, useEffect, useRef } from "react"
-import { Search, Lock } from "lucide-react"
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Search, Lock } from "lucide-react";
 
 // Country flag helper
 export function getCountryFlag(name: string): string {
-  const clean = name.toLowerCase().trim()
+  const clean = name.toLowerCase().trim();
   const map: Record<string, string> = {
     // 2026 FIFA World Cup Hosts & Qualified Teams
     algeria: "🇩🇿",
@@ -71,24 +71,24 @@ export function getCountryFlag(name: string): string {
     cameroon: "🇨🇲",
     serbia: "🇷🇸",
     "costa rica": "🇨🇷",
-  }
-  return map[clean] || "🏳️"
+  };
+  return map[clean] || "🏳️";
 }
 
 // Helper to parse question into team names
 export function parseEventTeams(question: string) {
-  const vsMatch = question.match(/(.+?)\s+vs\.?\s+(.+)/i)
-  if (vsMatch) return { teamA: vsMatch[1].trim(), teamB: vsMatch[2].trim() }
-  const dashMatch = question.match(/(.+?)\s+-\s+(.+)/)
+  const vsMatch = question.match(/(.+?)\s+vs\.?\s+(.+)/i);
+  if (vsMatch) return { teamA: vsMatch[1].trim(), teamB: vsMatch[2].trim() };
+  const dashMatch = question.match(/(.+?)\s+-\s+(.+)/);
   if (dashMatch)
-    return { teamA: dashMatch[1].trim(), teamB: dashMatch[2].trim() }
-  return { teamA: "Team A", teamB: "Team B" }
+    return { teamA: dashMatch[1].trim(), teamB: dashMatch[2].trim() };
+  return { teamA: "Team A", teamB: "Team B" };
 }
 
 interface PvpMatchupCarouselProps {
-  pvpEvents: any[]
-  selectedPvpEventId: string | null
-  setSelectedPvpEventId: (id: string | null) => void
+  pvpEvents: any[];
+  selectedPvpEventId: string | null;
+  setSelectedPvpEventId: (id: string | null) => void;
 }
 
 export default function PvpMatchupCarousel({
@@ -96,58 +96,58 @@ export default function PvpMatchupCarousel({
   selectedPvpEventId,
   setSelectedPvpEventId,
 }: PvpMatchupCarouselProps) {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Calculate live/remaining time label
   const getCardTimeStatus = (evt: any) => {
-    const lockTimeStr = evt.lockTime || evt.deadline
-    if (!lockTimeStr) return { isClosed: true, label: "CLOSED" }
+    const lockTimeStr = evt.lockTime || evt.deadline;
+    if (!lockTimeStr) return { isClosed: true, label: "CLOSED" };
 
-    const target = new Date(lockTimeStr)
-    if (isNaN(target.getTime())) return { isClosed: true, label: "CLOSED" }
+    const target = new Date(lockTimeStr);
+    if (isNaN(target.getTime())) return { isClosed: true, label: "CLOSED" };
 
-    const diff = target.getTime() - Date.now()
+    const diff = target.getTime() - Date.now();
     const isClosed =
-      diff <= 0 || evt.status === "resolved" || evt.status === "closed"
+      diff <= 0 || evt.status === "resolved" || evt.status === "closed";
 
     if (isClosed) {
-      return { isClosed: true, label: "CLOSED" }
+      return { isClosed: true, label: "CLOSED" };
     }
 
-    const diffHrs = Math.floor(diff / (1000 * 60 * 60))
-    const diffMins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-    const diffDays = Math.floor(diffHrs / 24)
+    const diffHrs = Math.floor(diff / (1000 * 60 * 60));
+    const diffMins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const diffDays = Math.floor(diffHrs / 24);
 
     if (diffDays > 0) {
-      const remainingHrs = diffHrs % 24
-      return { isClosed: false, label: `LIVE · ${diffDays}D ${remainingHrs}H` }
+      const remainingHrs = diffHrs % 24;
+      return { isClosed: false, label: `LIVE · ${diffDays}D ${remainingHrs}H` };
     }
-    return { isClosed: false, label: `LIVE · ${diffHrs}H ${diffMins}M` }
-  }
+    return { isClosed: false, label: `LIVE · ${diffHrs}H ${diffMins}M` };
+  };
 
   // Calculate volume
   const getEventVolume = (evt: any) => {
-    if (!evt?.options) return 0
+    if (!evt?.options) return 0;
     return evt.options.reduce(
       (sum: number, opt: any) => sum + Number(opt.liquidity ?? 0),
       0,
-    )
-  }
+    );
+  };
 
   // Format date/time
   const formatEventDate = (evt: any) => {
-    const timeStr = evt.lockTime || evt.deadline
-    if (!timeStr) return ""
-    const date = new Date(timeStr)
+    const timeStr = evt.lockTime || evt.deadline;
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
     return date.toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
-  const selectedRef = useRef<HTMLDivElement | null>(null)
+  const selectedRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll selected card into view
   useEffect(() => {
@@ -156,75 +156,75 @@ export default function PvpMatchupCarousel({
         behavior: "smooth",
         block: "nearest",
         inline: "center",
-      })
+      });
     }
-  }, [selectedPvpEventId])
+  }, [selectedPvpEventId]);
 
   // Filter and limit events (max 7 past matchups)
   const filteredEvents = useMemo(() => {
-    if (!pvpEvents) return []
+    if (!pvpEvents) return [];
 
     const queried = pvpEvents.filter((evt) => {
-      const query = searchQuery.toLowerCase().trim()
-      if (!query) return true
-      return evt.question.toLowerCase().includes(query)
-    })
+      const query = searchQuery.toLowerCase().trim();
+      if (!query) return true;
+      return evt.question.toLowerCase().includes(query);
+    });
 
-    const live: any[] = []
-    const closed: any[] = []
+    const live: any[] = [];
+    const closed: any[] = [];
 
     queried.forEach((evt) => {
-      const lockTimeStr = evt.lockTime || evt.deadline
-      let isClosed = true
+      const lockTimeStr = evt.lockTime || evt.deadline;
+      let isClosed = true;
       if (lockTimeStr) {
-        const target = new Date(lockTimeStr)
+        const target = new Date(lockTimeStr);
         if (!isNaN(target.getTime())) {
-          const diff = target.getTime() - Date.now()
+          const diff = target.getTime() - Date.now();
           isClosed =
-            diff <= 0 || evt.status === "resolved" || evt.status === "closed"
+            diff <= 0 || evt.status === "resolved" || evt.status === "closed";
         }
       }
 
       if (isClosed) {
-        closed.push(evt)
+        closed.push(evt);
       } else {
-        live.push(evt)
+        live.push(evt);
       }
-    })
+    });
 
     // Sort closed ascending (oldest first), then take the 7 most recent closed ones
     closed.sort((a, b) => {
-      const timeA = new Date(a.lockTime || a.deadline || 0).getTime()
-      const timeB = new Date(b.lockTime || b.deadline || 0).getTime()
-      return timeA - timeB
-    })
-    const limitedClosed = closed.slice(-7)
+      const timeA = new Date(a.lockTime || a.deadline || 0).getTime();
+      const timeB = new Date(b.lockTime || b.deadline || 0).getTime();
+      return timeA - timeB;
+    });
+    const limitedClosed = closed.slice(-7);
 
     // Ensure the selected matchup is always included in the carousel list even if it is an older closed matchup
     if (selectedPvpEventId) {
-      const isSelectedClosed = closed.find((e) => e.id === selectedPvpEventId)
+      const isSelectedClosed = closed.find((e) => e.id === selectedPvpEventId);
       if (
         isSelectedClosed &&
         !limitedClosed.some((e) => e.id === selectedPvpEventId)
       ) {
-        limitedClosed.push(isSelectedClosed)
+        limitedClosed.push(isSelectedClosed);
         limitedClosed.sort((a, b) => {
-          const timeA = new Date(a.lockTime || a.deadline || 0).getTime()
-          const timeB = new Date(b.lockTime || b.deadline || 0).getTime()
-          return timeA - timeB
-        })
+          const timeA = new Date(a.lockTime || a.deadline || 0).getTime();
+          const timeB = new Date(b.lockTime || b.deadline || 0).getTime();
+          return timeA - timeB;
+        });
       }
     }
 
     // Sort live ascending
     live.sort((a, b) => {
-      const timeA = new Date(a.lockTime || a.deadline || 0).getTime()
-      const timeB = new Date(b.lockTime || b.deadline || 0).getTime()
-      return timeA - timeB
-    })
+      const timeA = new Date(a.lockTime || a.deadline || 0).getTime();
+      const timeB = new Date(b.lockTime || b.deadline || 0).getTime();
+      return timeA - timeB;
+    });
 
-    return [...limitedClosed, ...live]
-  }, [pvpEvents, searchQuery, selectedPvpEventId])
+    return [...limitedClosed, ...live];
+  }, [pvpEvents, searchQuery, selectedPvpEventId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -244,7 +244,7 @@ export default function PvpMatchupCarousel({
             placeholder="Search teams..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-4 pr-10 border border-border dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-xs rounded-full text-charcoal-primary dark:text-white focus:outline-none focus:border-indigo-500 transition-colors"
+            className="h-10 w-full rounded-full border border-border bg-surface-solid pl-4 pr-10 text-xs text-charcoal-primary transition-colors focus:border-sky-blue focus:outline-none dark:text-white"
           />
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ash" />
         </div>
@@ -260,12 +260,12 @@ export default function PvpMatchupCarousel({
           filteredEvents.map((evt) => {
             const isSelected = selectedPvpEventId
               ? evt.id === selectedPvpEventId
-              : pvpEvents[0]?.id === evt.id
+              : pvpEvents[0]?.id === evt.id;
 
-            const { isClosed, label: statusLabel } = getCardTimeStatus(evt)
-            const vol = getEventVolume(evt)
-            const formattedDate = formatEventDate(evt)
-            const { teamA, teamB } = parseEventTeams(evt.question)
+            const { isClosed, label: statusLabel } = getCardTimeStatus(evt);
+            const vol = getEventVolume(evt);
+            const formattedDate = formatEventDate(evt);
+            const { teamA, teamB } = parseEventTeams(evt.question);
 
             return (
               <div
@@ -275,7 +275,7 @@ export default function PvpMatchupCarousel({
                 className={`relative flex-none w-68 h-40 p-4 rounded-2xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
                   isSelected
                     ? "bg-brand-primary border-brand-primary dark:bg-white dark:border-white text-white dark:text-zinc-950 shadow-lg scale-[1.01]"
-                    : "bg-white dark:bg-zinc-900/40 border-border dark:border-zinc-800 hover:border-indigo-500 hover:scale-[1.005]"
+                    : "border-border bg-surface-solid hover:scale-[1.005] hover:border-sky-blue"
                 } ${isClosed && !isSelected ? "opacity-75" : ""}`}
               >
                 {/* Top Badge Row */}
@@ -361,10 +361,10 @@ export default function PvpMatchupCarousel({
                   </div>
                 )}
               </div>
-            )
+            );
           })
         )}
       </div>
     </div>
-  )
+  );
 }

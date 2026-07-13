@@ -1,29 +1,31 @@
-"use client"
+"use client";
 
-import Sidebar from "@/components/layout/Sidebar"
-import MobileNav from "@/components/layout/MobileNav"
-import MobileLeaderboardButton from "@/components/layout/MobileLeaderboardButton"
-import AppHeader from "@/components/layout/AppHeader"
-import { useSocket } from "@/hooks/useSocket"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { useEffect } from "react"
+import Sidebar from "@/components/layout/Sidebar";
+import MobileNav from "@/components/layout/MobileNav";
+import MobileLeaderboardButton from "@/components/layout/MobileLeaderboardButton";
+import AppHeader from "@/components/layout/AppHeader";
+import CinematicBackdrop from "@/components/layout/CinematicBackdrop";
+import { useSocket } from "@/hooks/useSocket";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { useEffect } from "react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const { profile } = useWalletProfile()
-  const { joinRoom, leaveRoom } = useSocket()
+  const { profile } = useWalletProfile();
+  const { joinRoom, leaveRoom } = useSocket();
 
   useEffect(() => {
     if (profile?.id) {
-      joinRoom(`user:${profile.id}`)
+      joinRoom(`user:${profile.id}`);
       return () => {
-        leaveRoom(`user:${profile.id}`)
-      }
+        leaveRoom(`user:${profile.id}`);
+      };
     }
-  }, [profile?.id, joinRoom, leaveRoom])
+  }, [profile?.id, joinRoom, leaveRoom]);
 
   return (
     <>
-      <div className="mx-auto flex min-h-screen w-full max-w-[1300px] justify-center gap-3 px-4 sm:px-3 xl:gap-6 xl:px-5">
+      <CinematicBackdrop />
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1300px] justify-center gap-3 px-4 sm:px-3 xl:gap-6 xl:px-5">
         <div className="sticky top-0 hidden h-screen w-[76px] shrink-0 flex-col py-4 sm:flex xl:w-[280px]">
           <Sidebar />
         </div>
@@ -37,5 +39,5 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <MobileLeaderboardButton />
       <MobileNav />
     </>
-  )
+  );
 }

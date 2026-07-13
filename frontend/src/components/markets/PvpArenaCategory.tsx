@@ -1,16 +1,16 @@
-import { Trophy, Target, Flag, Swords, RectangleVertical } from "lucide-react"
+import { Trophy, Target, Flag, Swords, RectangleVertical } from "lucide-react";
 
 /* ──────────────────────────────────────────────
    Category metadata helper
    ────────────────────────────────────────────── */
 export interface CatMeta {
-  title: string
-  subtitle: string
-  icon: React.ReactNode
-  accent: string
-  selectedBg: string
-  ring: string
-  unselectedBg: string
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  accent: string;
+  selectedBg: string;
+  ring: string;
+  unselectedBg: string;
 }
 
 export function getCategoryMeta(groupKey: string): CatMeta {
@@ -145,7 +145,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       unselectedBg:
         "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
     },
-  }
+  };
 
   const fallback: CatMeta = {
     title: groupKey
@@ -159,30 +159,30 @@ export function getCategoryMeta(groupKey: string): CatMeta {
     ring: "ring-emerald-400/30",
     unselectedBg:
       "bg-stone-100/80 dark:bg-zinc-800/40 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700/60",
-  }
+  };
 
-  const meta = map[groupKey] || fallback
+  const meta = map[groupKey] || fallback;
   return {
     ...meta,
     unselectedBg:
       "bg-stone-50/50 dark:bg-zinc-900/20 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800/60 hover:bg-stone-100/60 dark:hover:bg-zinc-800/40",
-  }
+  };
 }
 
 /* ──────────────────────────────────────────────
    ArenaCategory — visual card for each group
    ────────────────────────────────────────────── */
 interface ArenaCategoryProps {
-  title: string
-  subtitle: string
-  icon: React.ReactNode
-  accentColor: string
-  volume: number
-  hasSelection: boolean
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  accentColor: string;
+  volume: number;
+  hasSelection: boolean;
   /** Show the "+ LP" action. Off for pure-parimutuel markets (no LPs). */
-  showLp?: boolean
-  onAddLiquidity?: () => void
-  children: React.ReactNode
+  showLp?: boolean;
+  onAddLiquidity?: () => void;
+  children: React.ReactNode;
 }
 
 export default function ArenaCategory({
@@ -201,11 +201,10 @@ export default function ArenaCategory({
     { bg: string; border: string; iconBg: string; iconActive: string }
   > = {
     indigo: {
-      bg: "bg-indigo-50/30 dark:bg-indigo-950/10",
-      border: "border-indigo-200 dark:border-indigo-900/50",
-      iconBg:
-        "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
-      iconActive: "bg-indigo-600 text-white",
+      bg: "bg-sky-blue/5",
+      border: "border-sky-blue/20",
+      iconBg: "bg-sky-blue/10 text-sky-blue",
+      iconActive: "bg-sky-blue text-white",
     },
     emerald: {
       bg: "bg-emerald-50/30 dark:bg-emerald-950/10",
@@ -234,9 +233,9 @@ export default function ArenaCategory({
       iconBg: "bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400",
       iconActive: "bg-stone-600 text-white",
     },
-  }
+  };
 
-  const colors = accentMap[accentColor] || accentMap.stone
+  const colors = accentMap[accentColor] || accentMap.stone;
 
   return (
     <div
@@ -273,7 +272,7 @@ export default function ArenaCategory({
             <button
               type="button"
               onClick={onAddLiquidity}
-              className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border border-border dark:border-zinc-800 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-stone-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer shadow-xs bg-stone-50/50 dark:bg-zinc-900/20"
+              className="cursor-pointer rounded-lg border border-border bg-surface-muted px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-ash shadow-xs transition-all hover:border-sky-blue hover:bg-sky-blue/10 hover:text-sky-blue"
             >
               + LP
             </button>
@@ -284,5 +283,5 @@ export default function ArenaCategory({
       {/* Body */}
       <div className="px-3 pb-3">{children}</div>
     </div>
-  )
+  );
 }

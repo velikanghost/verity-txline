@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useMemo, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { type FeedTabId } from "@/components/feed/FeedTabs"
-import MarketCard from "@/components/post/MarketCard"
-import PostCard from "@/components/post/PostCard"
-import CommentModal from "@/components/social/CommentModal"
-import { useDailyVotes } from "@/hooks/useDailyVotes"
-import { useFeed } from "@/hooks/useFeed"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { apiRequest } from "@/store/apiClient"
-import { useSocket } from "@/hooks/useSocket"
-import { Swords, Timer, ChevronRight } from "lucide-react"
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { type FeedTabId } from "@/components/feed/FeedTabs";
+import MarketCard from "@/components/post/MarketCard";
+import PostCard from "@/components/post/PostCard";
+import CommentModal from "@/components/social/CommentModal";
+import { useDailyVotes } from "@/hooks/useDailyVotes";
+import { useFeed } from "@/hooks/useFeed";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { apiRequest } from "@/store/apiClient";
+import { useSocket } from "@/hooks/useSocket";
+import { Swords, Timer, ChevronRight } from "lucide-react";
 import {
   displayHandle,
   displayName,
@@ -22,13 +22,13 @@ import {
   type MarketPost,
   type VoteSide,
   type Profile,
-} from "@/lib/verity"
+} from "@/lib/verity";
 import {
   useToggleLikeMutation,
   useToggleReshareMutation,
   useCastFreeVoteMutation,
-} from "@/store/verity/verityQueries"
-import { toast } from "@/lib/toast"
+} from "@/store/verity/verityQueries";
+import { toast } from "@/lib/toast";
 
 const FEED_CATEGORIES = [
   "Crypto",
@@ -37,43 +37,43 @@ const FEED_CATEGORIES = [
   "Miscellaneous",
   "Politics",
   "Sports",
-] as const
+] as const;
 
-type FeedCategory = (typeof FEED_CATEGORIES)[number]
+type FeedCategory = (typeof FEED_CATEGORIES)[number];
 
 export default function FeedShell() {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState<FeedTabId>("for-you")
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<FeedTabId>("for-you");
   const [activeCategory, setActiveCategory] = useState<FeedCategory | null>(
     null,
-  )
-  const { profile } = useWalletProfile()
-  const { dailyVotes, refetch: reloadDailyVotes } = useDailyVotes(profile?.id)
+  );
+  const { profile } = useWalletProfile();
+  const { dailyVotes, refetch: reloadDailyVotes } = useDailyVotes(profile?.id);
   const { items, loading, error, reload } = useFeed(
     profile?.id,
     activeTab === "markets",
-  )
+  );
 
-  const { joinRoom, leaveRoom } = useSocket()
+  const { joinRoom, leaveRoom } = useSocket();
 
   useEffect(() => {
-    joinRoom("feed")
+    joinRoom("feed");
     if (profile?.id) {
-      joinRoom(`user:${profile.id}`)
+      joinRoom(`user:${profile.id}`);
     }
     return () => {
-      leaveRoom("feed")
+      leaveRoom("feed");
       if (profile?.id) {
-        leaveRoom(`user:${profile.id}`)
+        leaveRoom(`user:${profile.id}`);
       }
-    }
-  }, [profile?.id])
+    };
+  }, [profile?.id]);
 
-  const [commentingPost, setCommentingPost] = useState<FeedPost | null>(null)
-  const { mutateAsync: toggleLike } = useToggleLikeMutation()
-  const { mutateAsync: toggleReshare } = useToggleReshareMutation()
-  const { mutateAsync: castFreeVote } = useCastFreeVoteMutation()
-  const [stakeLoading, setStakeLoading] = useState<string | null>(null)
+  const [commentingPost, setCommentingPost] = useState<FeedPost | null>(null);
+  const { mutateAsync: toggleLike } = useToggleLikeMutation();
+  const { mutateAsync: toggleReshare } = useToggleReshareMutation();
+  const { mutateAsync: castFreeVote } = useCastFreeVoteMutation();
+  const [stakeLoading, setStakeLoading] = useState<string | null>(null);
 
   async function handleBuySide(
     market: MarketPost,
@@ -81,10 +81,10 @@ export default function FeedShell() {
     amount: number,
   ) {
     if (!profile) {
-      toast.error("Sign in before taking that action.")
-      return
+      toast.error("Sign in before taking that action.");
+      return;
     }
-    setStakeLoading(market.id)
+    setStakeLoading(market.id);
     try {
       await apiRequest("/solana/stake", {
         method: "POST",
@@ -93,14 +93,14 @@ export default function FeedShell() {
           outcome: side === "YES" ? 1 : 0,
           amountUsdc: amount,
         }),
-      })
-      await reload()
+      });
+      await reload();
     } catch (caught) {
       toast.error(
         caught instanceof Error ? caught.message : "Failed to stake.",
-      )
+      );
     } finally {
-      setStakeLoading(null)
+      setStakeLoading(null);
     }
   }
 
@@ -113,7 +113,7 @@ export default function FeedShell() {
           (item.market.category?.toLowerCase() === "pvp" &&
             (() => {
               const children =
-                item.market.childMarkets || item.market.child_markets || []
+                item.market.childMarkets || item.market.child_markets || [];
               return (
                 children.length > 0 &&
                 children.every(
@@ -122,48 +122,48 @@ export default function FeedShell() {
                     child.status === "voided" ||
                     child.resolvedOutcome,
                 )
-              )
-            })())
+              );
+            })());
 
         if (isResolved) {
-          return false
+          return false;
         }
       }
-      return true
-    })
-    if (!activeCategory) return activeItems
+      return true;
+    });
+    if (!activeCategory) return activeItems;
     return activeItems.filter(
       (item) => item.market?.category === activeCategory,
-    )
-  }, [activeCategory, items])
+    );
+  }, [activeCategory, items]);
 
   async function runAction(action: () => Promise<unknown>) {
     if (!profile) {
-      toast.error("Connect a wallet before taking that action.")
-      return
+      toast.error("Connect a wallet before taking that action.");
+      return;
     }
 
     try {
-      await action()
-      await Promise.all([reload(), reloadDailyVotes()])
+      await action();
+      await Promise.all([reload(), reloadDailyVotes()]);
     } catch (caught) {
-      toast.error(caught instanceof Error ? caught.message : "Action failed.")
+      toast.error(caught instanceof Error ? caught.message : "Action failed.");
     }
   }
 
   async function sharePost(post: FeedPost) {
-    const text = post.market?.question || post.content
+    const text = post.market?.question || post.content;
     const url = post.market
       ? `${window.location.origin}/markets/${post.market.id}`
-      : `${window.location.origin}/`
+      : `${window.location.origin}/`;
 
     if (navigator.share) {
-      await navigator.share({ title: "Verity", text, url })
-      return
+      await navigator.share({ title: "Verity", text, url });
+      return;
     }
 
-    await navigator.clipboard.writeText(`${text}\n${url}`)
-    toast.success("Link copied to clipboard!")
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    toast.success("Link copied to clipboard!");
   }
 
   return (
@@ -221,9 +221,9 @@ export default function FeedShell() {
               }
               onOpenMarket={(market) => {
                 if (market.category?.toLowerCase() === "pvp") {
-                  router.push("/markets?tab=pvp-arena")
+                  router.push("/markets?tab=pvp-arena");
                 } else {
-                  router.push(`/markets/${market.id}`)
+                  router.push(`/markets/${market.id}`);
                 }
               }}
               onOpenPost={(post) => router.push(`/posts/${post.id}`)}
@@ -253,10 +253,10 @@ export default function FeedShell() {
               profile={profile}
               onComment={() => {
                 if (!profile) {
-                  toast.error("Connect a wallet to leave a comment.")
-                  return
+                  toast.error("Connect a wallet to leave a comment.");
+                  return;
                 }
-                setCommentingPost(item)
+                setCommentingPost(item);
               }}
             />
           ))
@@ -276,7 +276,7 @@ export default function FeedShell() {
         onClose={() => setCommentingPost(null)}
       />
     </div>
-  )
+  );
 }
 
 function FeedCard({
@@ -293,20 +293,20 @@ function FeedCard({
   profile,
   onComment,
 }: {
-  item: FeedPost
-  dailyVotesRemaining: number
-  onLike: () => void
-  onOpenMarket: (market: MarketPost) => void
-  onOpenPost: (post: FeedPost) => void
-  onReshare: () => void
-  onShare: () => void
-  onUsdcVote: (market: MarketPost, side: VoteSide, amount: number) => void
-  onVote: (market: MarketPost, side: VoteSide) => void
-  isConnected: boolean
-  profile: Profile | null
-  onComment: () => void
+  item: FeedPost;
+  dailyVotesRemaining: number;
+  onLike: () => void;
+  onOpenMarket: (market: MarketPost) => void;
+  onOpenPost: (post: FeedPost) => void;
+  onReshare: () => void;
+  onShare: () => void;
+  onUsdcVote: (market: MarketPost, side: VoteSide, amount: number) => void;
+  onVote: (market: MarketPost, side: VoteSide) => void;
+  isConnected: boolean;
+  profile: Profile | null;
+  onComment: () => void;
 }) {
-  const isPvp = item.market?.category?.toLowerCase() === "pvp"
+  const isPvp = item.market?.category?.toLowerCase() === "pvp";
 
   const renderContent = () => {
     if (item.type === "market" && item.market) {
@@ -314,9 +314,9 @@ function FeedCard({
         return (
           <article
             onClick={() => onOpenMarket(item.market!)}
-            className="verity-card p-5 border border-indigo-200 dark:border-indigo-950 bg-indigo-50/20 hover:border-indigo-400 dark:hover:border-indigo-800 transition-all cursor-pointer group relative flex flex-col justify-between"
+            className="verity-card group relative flex cursor-pointer flex-col justify-between border border-sky-blue/15 bg-sky-blue/5 p-5 transition-all hover:border-sky-blue/45"
           >
-            <div className="absolute top-4 right-4 flex items-center gap-1 bg-indigo-500/10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider shadow-subtle">
+            <div className="absolute top-4 right-4 flex items-center gap-1 bg-sky-blue/10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold text-sky-blue uppercase tracking-wider shadow-subtle">
               <Swords className="h-3 w-3" />
               PvP Matchup
             </div>
@@ -325,7 +325,7 @@ function FeedCard({
               <span className="font-mono text-[10px] font-bold text-ash uppercase tracking-wider">
                 World Cup Arena
               </span>
-              <h3 className="text-xl font-bold tracking-tight text-charcoal-primary dark:text-white mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-xl font-bold tracking-tight text-charcoal-primary dark:text-white mt-1 group-hover:text-sky-blue transition-colors">
                 {item.market.question}
               </h3>
               <p className="text-xs text-graphite dark:text-zinc-400 mt-2 leading-relaxed">
@@ -334,29 +334,30 @@ function FeedCard({
               </p>
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-dashed border-indigo-100 dark:border-indigo-950/60 pt-3">
+            <div className="mt-6 flex items-center justify-between border-t border-dashed border-sky-blue/15 pt-3">
               <div className="flex items-center gap-2 font-mono text-[10px] text-ash">
                 <Timer className="h-3.5 w-3.5" />
                 <span>
                   Closes: {new Date(item.market.deadline).toLocaleDateString()}
                 </span>
               </div>
-              <span className="flex items-center gap-1 font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              <span className="flex items-center gap-1 font-mono text-xs font-semibold text-sky-blue">
                 Predict Now
                 <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
           </article>
-        )
+        );
       }
 
-      const market = item.market!
+      const market = item.market!;
       const totalUsdc =
-        Number(market.usdc_yes_amount || 0) + Number(market.usdc_no_amount || 0)
+        Number(market.usdc_yes_amount || 0) +
+        Number(market.usdc_no_amount || 0);
       const yesPercent =
         totalUsdc > 0
           ? (Number(market.usdc_yes_amount || 0) / totalUsdc) * 100
-          : 50
+          : 50;
 
       return (
         <MarketCard
@@ -400,7 +401,7 @@ function FeedCard({
           onShare={onShare}
           reshared={item.viewerReshared}
         />
-      )
+      );
     }
 
     return (
@@ -422,10 +423,10 @@ function FeedCard({
         profile={item.author}
         profileHref={`/profile/${encodeURIComponent(item.author.id)}`}
       />
-    )
-  }
+    );
+  };
 
-  return <div className="flex flex-col gap-2">{renderContent()}</div>
+  return <div className="flex flex-col gap-2">{renderContent()}</div>;
 }
 
 export function FeedSkeleton() {
@@ -454,5 +455,5 @@ export function FeedSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }

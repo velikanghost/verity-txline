@@ -1,46 +1,44 @@
-"use client"
-
-import Link from "next/link"
-import { Swords } from "lucide-react"
-import { WorldCupMarketsList } from "@/components/worldcup/WorldCupMarketsList"
+import { WorldCupMarketsList } from "@/components/worldcup/WorldCupMarketsList";
+import { ExperienceHighlights } from "./ExperienceHighlights";
+import { PlayerProgress } from "./PlayerProgress";
+import { WorldCupHero } from "./WorldCupHero";
 
 export default function HomeExperience() {
   return (
-    <div className="flex min-h-screen flex-col gap-5 py-2">
-      {/* Hero */}
-      <div className="verity-card relative overflow-hidden p-6">
-        <p className="text-[10px] font-mono font-black uppercase tracking-widest text-brand-primary">
-          Social Prediction Market
-        </p>
-        <h1 className="mt-2 max-w-xl text-3xl font-black leading-[1.05] tracking-tight text-charcoal-primary dark:text-white sm:text-4xl">
-          Predict the match. Prove your read.
-        </h1>
-        <p className="mt-3 max-w-lg text-sm text-ash">
-          Back your calls on live World Cup stats — every market settles
-          trustlessly on-chain by verifying TxLINE&apos;s signed data feed. Then
-          take opponents head-to-head in the PvP Arena.
-        </p>
-        <Link
-          href="/pvp"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-charcoal-primary px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 clickable dark:bg-white dark:text-zinc-950"
-        >
-          <Swords className="h-4 w-4" />
-          Enter the PvP Arena
-        </Link>
-      </div>
+    <div className="flex min-h-screen flex-col gap-7 pb-10 pt-2">
+      <WorldCupHero />
+      <PlayerProgress />
+      <ExperienceHighlights />
 
-      {/* Markets grid */}
-      <div>
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-lg font-black text-charcoal-primary dark:text-white">
-            Markets
-          </h2>
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash">
-            Settles on-chain via TxLINE
+      <section
+        id="markets"
+        className="scroll-mt-24"
+        aria-labelledby="markets-heading"
+      >
+        <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-[#1479ff]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1479ff] opacity-40" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#1479ff]" />
+              </span>
+              <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em]">
+                Live match arena
+              </p>
+            </div>
+            <h2
+              id="markets-heading"
+              className="font-game mt-1 text-3xl font-black tracking-tight text-charcoal-primary dark:text-white"
+            >
+              Pick a match. Make your call.
+            </h2>
+          </div>
+          <span className="w-fit rounded-full border border-[#35e881]/20 bg-[#35e881]/10 px-3 py-1.5 font-mono text-[9px] font-black uppercase tracking-wider text-[#27bd69] dark:text-[#58f09a]">
+            TxLINE verified
           </span>
         </div>
         <WorldCupMarketsList />
-      </div>
+      </section>
     </div>
-  )
+  );
 }

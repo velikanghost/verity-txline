@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { History, X, Swords, Award } from "lucide-react"
-import { parseEventTeams } from "./PvpMatchupCarousel"
-import { usePvpMatchHistoryQuery } from "@/store/verity/verityQueries"
+import { useState } from "react";
+import { History, X, Swords, Award } from "lucide-react";
+import { parseEventTeams } from "./PvpMatchupCarousel";
+import { usePvpMatchHistoryQuery } from "@/store/verity/verityQueries";
 
 export default function DuelHistory() {
-  const { data: matchHistory = [] } = usePvpMatchHistoryQuery()
-  const [selectedMatch, setSelectedMatch] = useState<any | null>(null)
+  const { data: matchHistory = [] } = usePvpMatchHistoryQuery();
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
 
   return (
     <div className="verity-card overflow-hidden flex flex-col bg-white dark:bg-zinc-900/30">
@@ -24,7 +24,7 @@ export default function DuelHistory() {
       ) : (
         <div className="flex flex-col gap-2.5 p-4 max-h-[360px] overflow-y-auto">
           {matchHistory.map((item: any) => {
-            const { teamA, teamB } = parseEventTeams(item.eventQuestion)
+            const { teamA, teamB } = parseEventTeams(item.eventQuestion);
             return (
               <div
                 key={item.matchId}
@@ -65,7 +65,7 @@ export default function DuelHistory() {
                   </span>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
@@ -73,11 +73,11 @@ export default function DuelHistory() {
       {/* Duel Details Modal */}
       {selectedMatch && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-left">
+          <div className="game-modal-surface flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden text-left animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="p-4 border-b border-border dark:border-zinc-800 flex items-center justify-between bg-stone-50 dark:bg-zinc-900/50">
               <div className="flex items-center gap-2">
-                <Swords className="h-5 w-5 text-indigo-500" />
+                <Swords className="h-5 w-5 text-coral-red" />
                 <span className="font-mono text-xs font-bold uppercase tracking-wider text-charcoal-primary dark:text-white">
                   Duel Match Details
                 </span>
@@ -107,7 +107,7 @@ export default function DuelHistory() {
               </div>
 
               {/* Outcome Banner & Stats Summary */}
-              <div className="p-4 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 bg-linear-to-br from-indigo-50/10 via-transparent to-transparent border-border dark:border-zinc-800">
+              <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-border bg-linear-to-br from-sky-blue/5 via-transparent to-transparent p-4 md:flex-row">
                 <div className="flex items-center gap-3 w-full md:w-auto">
                   <div
                     className={`h-11 w-11 rounded-full flex items-center justify-center shrink-0 border ${
@@ -168,13 +168,13 @@ export default function DuelHistory() {
                         selectedMatch.myPicks?.reduce(
                           (acc: number, p: any) => acc + (p.investedUsdc ?? 5),
                           0,
-                        ) ?? 0
+                        ) ?? 0;
                       const totalWon =
                         selectedMatch.myPicks?.reduce(
                           (acc: number, p: any) => acc + (p.winningsUsdc ?? 0),
                           0,
-                        ) ?? 0
-                      const net = totalWon - totalBet
+                        ) ?? 0;
+                      const net = totalWon - totalBet;
                       return (
                         <strong
                           className={`text-sm font-bold font-mono mt-0.5 block ${net >= 0 ? "text-meadow-green" : "text-ember-orange"}`}
@@ -182,7 +182,7 @@ export default function DuelHistory() {
                           {net >= 0 ? "+" : ""}
                           {net.toFixed(2)} USDC
                         </strong>
-                      )
+                      );
                     })()}
                   </div>
                 </div>
@@ -203,15 +203,15 @@ export default function DuelHistory() {
                   {selectedMatch.myPicks?.map((pick: any) => {
                     const oppPick = selectedMatch.oppPicks?.find(
                       (p: any) => p.marketId === pick.marketId,
-                    )
-                    const bet = pick.investedUsdc ?? 5
-                    const won = pick.winningsUsdc ?? 0
+                    );
+                    const bet = pick.investedUsdc ?? 5;
+                    const won = pick.winningsUsdc ?? 0;
                     const resolvedLabel =
                       pick.resolvedOutcome === "YES"
                         ? pick.yesCondition || "YES"
                         : pick.resolvedOutcome === "NO"
                           ? pick.noCondition || "NO"
-                          : pick.resolvedOutcome || "Pending"
+                          : pick.resolvedOutcome || "Pending";
 
                     return (
                       <div
@@ -250,7 +250,7 @@ export default function DuelHistory() {
                                   ? "text-meadow-green"
                                   : pick.selection === "NO"
                                     ? "text-ember-orange"
-                                    : "text-indigo-600 dark:text-indigo-400"
+                                    : "text-sky-blue"
                               }`}
                             >
                               {pick.selection === "YES"
@@ -271,7 +271,7 @@ export default function DuelHistory() {
                                   ? "text-meadow-green"
                                   : oppPick?.selection === "NO"
                                     ? "text-ember-orange"
-                                    : "text-indigo-600 dark:text-indigo-400"
+                                    : "text-sky-blue"
                               }`}
                             >
                               {oppPick
@@ -305,7 +305,7 @@ export default function DuelHistory() {
                           </span>
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -324,5 +324,5 @@ export default function DuelHistory() {
         </div>
       )}
     </div>
-  )
+  );
 }
