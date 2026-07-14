@@ -20,8 +20,13 @@ type MobileTab = "arena" | "stats" | "history";
 export default function PvpArenaPage() {
   const { profile } = useWalletProfile();
 
-  const { data: activeSlates = [], isLoading: slatesLoading } =
-    useActivePvpEventsQuery();
+  const {
+    data: activeSlates = [],
+    isLoading: slatesLoading,
+    isError: slatesFailed,
+    error: slatesError,
+    refetch: refetchSlates,
+  } = useActivePvpEventsQuery();
   const { data: myTicketSlates = [] } = useMyActivePvpTicketsQuery();
   const { data: referralsData } = useReferralsQuery();
 
@@ -60,97 +65,123 @@ export default function PvpArenaPage() {
   const hasLineup = Boolean(pvpStatus && pvpStatus.ticket);
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] py-4 font-sans sm:px-4 sm:py-6">
-      {/* Header */}
-      <div className="duel-hero game-grid relative mb-5 flex items-center gap-3 overflow-hidden rounded-[26px] border border-white/[0.09] p-5 sm:p-6">
+    <div className="zero-duel-page -mx-4 overflow-hidden font-sans sm:mx-0 sm:my-6 sm:rounded-[28px]">
+      <section className="zero-duel-hero relative overflow-hidden">
         <div
-          className="absolute -right-8 -top-12 h-32 w-32 rounded-full bg-[#ff6b4a]/22 blur-3xl"
+          className="zero-duel-spark zero-duel-spark-one"
           aria-hidden="true"
         />
-        <div className="flex items-center gap-2.5">
-          <span
-            className="-ml-2 flex h-14 w-[70px] shrink-0 items-center justify-center"
-            aria-hidden="true"
-          >
-            <DuelNavIcon active className="h-14 w-[70px]" />
-          </span>
-          <div>
-            <p className="font-mono text-[8px] font-black uppercase tracking-[0.18em] text-[#ff927b]">
-              Head-to-head mode
-            </p>
-            <h1 className="mt-1 text-2xl font-black leading-none text-charcoal-primary dark:text-white">
-              Duel Station
-            </h1>
-            <p className="mt-1 text-[11px] font-medium text-ash">
-              Build your lineup. Read the field. Beat the other player.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile sub-tabs */}
-      <div className="duel-subtabs mb-4 flex gap-1 rounded-2xl border border-white/10 bg-[#0b0f20] p-1.5 lg:hidden">
-        {(["arena", "history", "stats"] as MobileTab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setMobileTab(t)}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold capitalize transition-all clickable ${
-              mobileTab === t
-                ? "bg-[#1479ff] text-white shadow-sm"
-                : "text-ash hover:bg-white/[0.05] hover:text-white"
-            }`}
-          >
-            {t === "arena"
-              ? "Arena"
-              : t === "history"
-                ? "Duel History"
-                : "PvP Stats"}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-        {/* Main */}
         <div
-          className={`flex flex-col gap-5 lg:col-span-2 lg:block ${mobileTab === "arena" ? "block" : "hidden"}`}
-        >
-          <SlateCarousel
-            slates={slates}
-            loading={slatesLoading}
-            selectedId={effectiveSelectedId}
-            onSelect={setSelectedId}
-          />
+          className="zero-duel-spark zero-duel-spark-two"
+          aria-hidden="true"
+        />
 
-          {selectedSlate &&
-            (hasLineup ? (
-              <DuelPanel status={pvpStatus} />
-            ) : (
-              <LineupBuilder
-                slate={selectedSlate}
-                onSubmitted={() => void refetchStatus()}
-              />
-            ))}
+        <div className="zero-duel-topbar relative z-10 flex items-center justify-between gap-3">
+          <span className="zero-duel-brand">
+            <span aria-hidden="true">◀</span> World Cup PvP
+          </span>
+          <span className="zero-duel-live">
+            <i aria-hidden="true" /> Season live
+          </span>
         </div>
 
-        {/* Sidebar */}
-        <div className="flex flex-col gap-4">
+        <div className="zero-duel-hero-grid relative z-10">
           <div
-            className={`${mobileTab === "stats" ? "block" : "hidden"} lg:block`}
+            className="zero-duel-poster"
+            role="img"
+            aria-label="Duel Station: you versus rival"
           >
-            <PvpSidebarStats
-              profile={profile}
-              referralsData={referralsData}
-              claimedMarketIds={claimedMarketIds}
-              onClaimSuccess={onClaimSuccess}
+            <span className="zero-duel-poster-ribbon">Duel station</span>
+            <div className="zero-duel-poster-icon">
+              <DuelNavIcon active className="h-24 w-28" />
+            </div>
+            <div className="zero-duel-versus">
+              <span>YOU</span>
+              <strong>VS</strong>
+              <span>RIVAL</span>
+            </div>
+            <span className="zero-duel-ball" />
+          </div>
+        </div>
+      </section>
+
+      <section className="zero-duel-arena" id="duel-arena">
+        <div className="zero-duel-arena-head">
+          <div>
+            <span className="zero-duel-section-label">
+              One round live · play now
+            </span>
+            <h2>Enter the arena</h2>
+            <p>
+              Choose a contest, build your card, and back your football read.
+            </p>
+          </div>
+          <span className="zero-duel-round">
+            <i aria-hidden="true" /> Knockout mode
+          </span>
+        </div>
+
+        <div className="zero-duel-tabs mb-6 flex gap-2 rounded-full p-1.5 lg:hidden">
+          {(["arena", "history", "stats"] as MobileTab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setMobileTab(t)}
+              className={`flex-1 rounded-full py-2.5 text-[11px] font-black capitalize transition-all clickable ${mobileTab === t ? "is-active" : ""}`}
+            >
+              {t === "arena" ? "Arena" : t === "history" ? "History" : "Stats"}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
+          <div
+            className={`flex flex-col gap-6 lg:col-span-2 lg:flex ${mobileTab === "arena" ? "flex" : "hidden"}`}
+          >
+            <SlateCarousel
+              slates={slates}
+              loading={slatesLoading}
+              errorMessage={
+                slatesFailed
+                  ? slatesError instanceof Error
+                    ? slatesError.message
+                    : "The arena is temporarily unavailable."
+                  : null
+              }
+              selectedId={effectiveSelectedId}
+              onSelect={setSelectedId}
+              onRetry={() => void refetchSlates()}
             />
+
+            {selectedSlate &&
+              (hasLineup ? (
+                <DuelPanel status={pvpStatus} />
+              ) : (
+                <LineupBuilder
+                  slate={selectedSlate}
+                  onSubmitted={() => void refetchStatus()}
+                />
+              ))}
           </div>
-          <div
-            className={`${mobileTab === "history" ? "block" : "hidden"} lg:block`}
-          >
-            <DuelHistory />
-          </div>
+
+          <aside className="zero-duel-sidebar flex flex-col gap-5">
+            <div
+              className={`${mobileTab === "stats" ? "block" : "hidden"} lg:block`}
+            >
+              <PvpSidebarStats
+                profile={profile}
+                referralsData={referralsData}
+                claimedMarketIds={claimedMarketIds}
+                onClaimSuccess={onClaimSuccess}
+              />
+            </div>
+            <div
+              className={`${mobileTab === "history" ? "block" : "hidden"} lg:block`}
+            >
+              <DuelHistory />
+            </div>
+          </aside>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

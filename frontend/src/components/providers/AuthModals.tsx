@@ -93,8 +93,8 @@ export default function AuthModals() {
     <>
       {/* 1. PASSWORDLESS EMAIL OTP AUTHENTICATION MODAL */}
       {authModalStep !== "idle" && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
-          <div className="game-modal-surface w-full max-w-[440px] overflow-hidden p-6 transition-all duration-300">
+        <div className="tournament-auth-overlay fixed inset-0 z-1000 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
+          <div className="tournament-auth-modal game-modal-surface w-full max-w-[440px] overflow-hidden transition-all duration-300">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-stone-surface pb-4 mb-5">
               <div className="flex items-center gap-3">
@@ -126,7 +126,10 @@ export default function AuthModals() {
 
             {/* Email Step */}
             {authModalStep === "email" && (
-              <form onSubmit={handleRequestOtp} className="space-y-4">
+              <form
+                onSubmit={handleRequestOtp}
+                className="tournament-auth-body space-y-4"
+              >
                 <p className="text-sm text-ash leading-relaxed">
                   Enter your email address to receive a passwordless
                   authentication code. If you don't have an account, we will
@@ -174,7 +177,10 @@ export default function AuthModals() {
 
             {/* OTP Step */}
             {authModalStep === "otp" && (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <form
+                onSubmit={handleVerifyOtp}
+                className="tournament-auth-body space-y-4"
+              >
                 <p className="text-sm text-ash leading-relaxed">
                   We've sent a 6-digit verification code to your email. Enter it
                   below to authorize.
@@ -232,7 +238,10 @@ export default function AuthModals() {
 
             {/* Onboarding Step */}
             {authModalStep === "onboarding" && (
-              <form onSubmit={handleSaveOnboarding} className="space-y-4">
+              <form
+                onSubmit={handleSaveOnboarding}
+                className="tournament-auth-body space-y-4"
+              >
                 <p className="text-sm text-ash leading-relaxed">
                   Choose a unique username to represent your predictions and
                   Takes on Verity.
@@ -303,7 +312,7 @@ export default function AuthModals() {
 
             {/* Success Step (Wallet Address & Funding Details) */}
             {authModalStep === "success" && (
-              <div className="space-y-5 py-2">
+              <div className="tournament-auth-body space-y-5">
                 <div className="rounded-[10px] border border-stone-surface bg-parchment-card p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs text-ash">

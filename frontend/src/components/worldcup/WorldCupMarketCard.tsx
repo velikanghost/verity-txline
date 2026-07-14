@@ -27,12 +27,12 @@ const OUTCOME_STYLES = [
   {
     bar: "bg-[#35e881]",
     button:
-      "border-[#35e881]/25 bg-[#35e881]/10 text-[#27bd69] dark:text-[#58f09a] hover:bg-[#35e881]/15",
+      "border-[#35e881]/25 bg-[#35e881]/10 text-[#27bd69] hover:bg-[#35e881]/15",
   },
   {
     bar: "bg-[#ffc844]",
     button:
-      "border-[#ffc844]/25 bg-[#ffc844]/10 text-[#bf8e08] dark:text-[#ffc844] hover:bg-[#ffc844]/15",
+      "border-[#ffc844]/25 bg-[#ffc844]/10 text-[#bf8e08] hover:bg-[#ffc844]/15",
   },
 ];
 

@@ -216,7 +216,7 @@ export default function PortfolioDashboard() {
                       <button
                         onClick={handleClaimLpFees}
                         disabled={isClaiming}
-                        className="text-[9px] px-1.5 py-0.5 rounded-md bg-[#FF4D00] text-white font-bold hover:bg-[#E04400] transition-colors outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-[9px] px-1.5 py-0.5 rounded-md bg-[#E8294F] text-white font-bold hover:bg-[#CF1F43] transition-colors outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isClaiming ? "..." : "Claim"}
                       </button>

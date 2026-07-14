@@ -23,7 +23,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
       unselectedBg:
-        "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
+        "bg-emerald-50/80 text-emerald-700 border border-emerald-100 ",
     },
     match_winner: {
       title: "Match Winner",
@@ -33,7 +33,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
       unselectedBg:
-        "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
+        "bg-emerald-50/80 text-emerald-700 border border-emerald-100 ",
     },
     first_goal: {
       title: "First Team to Score",
@@ -43,7 +43,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
       unselectedBg:
-        "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
+        "bg-emerald-50/80 text-emerald-700 border border-emerald-100 ",
     },
     red_card: {
       title: "Red Card",
@@ -52,8 +52,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-red-50/80 dark:bg-red-950/20 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-900/40",
+      unselectedBg: "bg-red-50/80 text-red-700 border border-red-100 ",
     },
     red_cards: {
       title: "Red Card",
@@ -62,8 +61,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-red-50/80 dark:bg-red-950/20 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-900/40",
+      unselectedBg: "bg-red-50/80 text-red-700 border border-red-100 ",
     },
     corners: {
       title: "Corners",
@@ -73,7 +71,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
       unselectedBg:
-        "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
+        "bg-emerald-50/80 text-emerald-700 border border-emerald-100 ",
     },
     total_corners: {
       title: "Corners",
@@ -83,7 +81,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
       unselectedBg:
-        "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
+        "bg-emerald-50/80 text-emerald-700 border border-emerald-100 ",
     },
     goals: {
       title: "Goals",
@@ -92,8 +90,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-amber-50/80 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/40",
+      unselectedBg: "bg-amber-50/80 text-amber-700 border border-amber-100 ",
     },
     total_goals: {
       title: "Goals",
@@ -102,8 +99,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-amber-50/80 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/40",
+      unselectedBg: "bg-amber-50/80 text-amber-700 border border-amber-100 ",
     },
     cards: {
       title: "Yellow Cards",
@@ -112,8 +108,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-yellow-50/80 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-300 border border-yellow-100 dark:border-yellow-900/40",
+      unselectedBg: "bg-yellow-50/80 text-yellow-700 border border-yellow-100 ",
     },
     yellow_cards: {
       title: "Yellow Cards",
@@ -122,8 +117,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-yellow-50/80 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-300 border border-yellow-100 dark:border-yellow-900/40",
+      unselectedBg: "bg-yellow-50/80 text-yellow-700 border border-yellow-100 ",
     },
     total_yellow_cards: {
       title: "Yellow Cards",
@@ -132,8 +126,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       accent: "emerald",
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
-      unselectedBg:
-        "bg-yellow-50/80 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-300 border border-yellow-100 dark:border-yellow-900/40",
+      unselectedBg: "bg-yellow-50/80 text-yellow-700 border border-yellow-100 ",
     },
     extra_time_penalties: {
       title: "Extra Time / Penalties Winner",
@@ -143,7 +136,7 @@ export function getCategoryMeta(groupKey: string): CatMeta {
       selectedBg: "bg-emerald-600",
       ring: "ring-emerald-400/30",
       unselectedBg:
-        "bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/40",
+        "bg-emerald-50/80 text-emerald-700 border border-emerald-100 ",
     },
   };
 
@@ -157,15 +150,14 @@ export function getCategoryMeta(groupKey: string): CatMeta {
     accent: "emerald",
     selectedBg: "bg-emerald-600",
     ring: "ring-emerald-400/30",
-    unselectedBg:
-      "bg-stone-100/80 dark:bg-zinc-800/40 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700/60",
+    unselectedBg: "bg-stone-100/80 text-stone-700 border border-stone-200 ",
   };
 
   const meta = map[groupKey] || fallback;
   return {
     ...meta,
     unselectedBg:
-      "bg-stone-50/50 dark:bg-zinc-900/20 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800/60 hover:bg-stone-100/60 dark:hover:bg-zinc-800/40",
+      "bg-stone-50/50 text-stone-600 border border-stone-200/80 hover:bg-stone-100/60 ",
   };
 }
 
@@ -207,30 +199,27 @@ export default function ArenaCategory({
       iconActive: "bg-sky-blue text-white",
     },
     emerald: {
-      bg: "bg-emerald-50/30 dark:bg-emerald-950/10",
-      border: "border-emerald-200 dark:border-emerald-900/50",
-      iconBg:
-        "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-50/30 ",
+      border: "border-emerald-200 ",
+      iconBg: "bg-emerald-100 text-emerald-600 ",
       iconActive: "bg-emerald-600 text-white",
     },
     amber: {
-      bg: "bg-amber-50/30 dark:bg-amber-950/10",
-      border: "border-amber-200 dark:border-amber-900/50",
-      iconBg:
-        "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-50/30 ",
+      border: "border-amber-200 ",
+      iconBg: "bg-amber-100 text-amber-600 ",
       iconActive: "bg-amber-500 text-white",
     },
     yellow: {
-      bg: "bg-yellow-50/30 dark:bg-yellow-950/10",
-      border: "border-yellow-200 dark:border-yellow-900/50",
-      iconBg:
-        "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
+      bg: "bg-yellow-50/30 ",
+      border: "border-yellow-200 ",
+      iconBg: "bg-yellow-100 text-yellow-600 ",
       iconActive: "bg-yellow-500 text-white",
     },
     stone: {
-      bg: "bg-stone-50/30 dark:bg-zinc-900/20",
-      border: "border-stone-200 dark:border-zinc-700/60",
-      iconBg: "bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400",
+      bg: "bg-stone-50/30 ",
+      border: "border-stone-200 ",
+      iconBg: "bg-stone-100 text-stone-500 ",
       iconActive: "bg-stone-600 text-white",
     },
   };
@@ -239,10 +228,11 @@ export default function ArenaCategory({
 
   return (
     <div
-      className={`rounded-xl border transition-all overflow-hidden ${
+      data-selected={hasSelection}
+      className={`pvp-arena-category rounded-xl border transition-all overflow-hidden ${
         hasSelection
           ? `${colors.bg} ${colors.border}`
-          : "border-border dark:border-zinc-800 bg-white dark:bg-zinc-900/30"
+          : "border-border bg-white "
       }`}
     >
       {/* Header */}
@@ -256,7 +246,7 @@ export default function ArenaCategory({
             {icon}
           </div>
           <div className="text-left min-w-0">
-            <span className="block text-sm font-bold text-charcoal-primary dark:text-white leading-tight">
+            <span className="block text-sm font-bold text-charcoal-primary leading-tight">
               {title}
             </span>
             <span className="block text-[10px] text-ash font-mono truncate">

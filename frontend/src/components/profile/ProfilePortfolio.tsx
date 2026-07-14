@@ -39,7 +39,7 @@ export default function ProfilePortfolio({
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[960px]">
+    <div className="tournament-player mx-auto w-full max-w-[960px]">
       {/* Segmented toggle */}
       <div className="pb-2 pt-3">
         <div className="player-view-tabs grid w-full grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-[#0b0f20]/80 p-1.5 shadow-[0_10px_35px_rgba(4,6,18,.18)] sm:inline-flex sm:w-auto">

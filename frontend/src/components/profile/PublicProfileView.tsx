@@ -196,7 +196,7 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
               <span className="font-mono text-xs text-ash">
                 {accuracy}% accuracy
               </span>
-              <span className="font-mono text-xs font-semibold text-sky-blue">
+              <span className="pixel-reward text-[10px] text-sky-blue">
                 ⭐ {(profile.arenaXp ?? 0).toLocaleString()} XP
               </span>
             </div>

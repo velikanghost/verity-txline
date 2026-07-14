@@ -33,7 +33,7 @@ export function PlayerProgress() {
               <p className="font-mono text-[8px] font-black uppercase tracking-[0.18em] text-ash">
                 Player level
               </p>
-              <p className="font-game mt-0.5 text-lg font-black text-charcoal-primary dark:text-white">
+              <p className="font-game mt-0.5 text-lg font-black text-charcoal-primary ">
                 {profile ? `Level ${level} Predictor` : "Rookie Predictor"}
               </p>
             </div>
@@ -58,7 +58,7 @@ export function PlayerProgress() {
           <p className="font-mono text-[8px] font-black uppercase tracking-[0.16em] text-ash">
             Open quests
           </p>
-          <p className="font-game mt-0.5 text-xl font-black text-charcoal-primary dark:text-white">
+          <p className="font-game mt-0.5 text-xl font-black text-charcoal-primary ">
             {openQuests}
           </p>
         </div>
@@ -76,7 +76,7 @@ export function PlayerProgress() {
           <p className="font-mono text-[8px] font-black uppercase tracking-[0.16em] text-ash">
             Arena wins
           </p>
-          <p className="font-game mt-0.5 text-xl font-black text-charcoal-primary dark:text-white">
+          <p className="font-game mt-0.5 text-xl font-black text-charcoal-primary ">
             {profile?.pvpMatchesWonCount ?? 0}
           </p>
         </div>

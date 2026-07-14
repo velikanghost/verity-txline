@@ -72,7 +72,7 @@ export function WorldCupHero() {
             </span>
           </div>
 
-          <h1 className="font-game max-w-2xl text-[2.85rem] font-black leading-[0.93] tracking-[-0.055em] sm:text-6xl lg:text-[4.45rem]">
+          <h1 className="home-poster-title max-w-2xl text-[2.85rem] leading-[0.93] sm:text-6xl lg:text-[4.45rem]">
             Read the field.
             <span className="game-text-gradient block pb-1">
               Beat the player.
@@ -135,7 +135,7 @@ export function WorldCupHero() {
               <h2 className="font-game mt-1 text-2xl font-black">
                 Road to victory
               </h2>
-              <p className="mt-1 text-xs font-medium text-[#858eae]">
+              <p className="home-roadmap-subtitle mt-1 text-xs font-medium text-[#858eae]">
                 Lineup to verified win
               </p>
             </div>

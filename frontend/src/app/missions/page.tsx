@@ -155,7 +155,7 @@ export default function MissionsPage() {
   };
 
   return (
-    <div className="w-full max-w-[1240px] mx-auto py-4 font-sans flex flex-col gap-6">
+    <div className="tournament-missions w-full max-w-[1240px] mx-auto py-4 font-sans flex flex-col gap-6">
       {/* Top Header Card */}
       <section className="verity-card game-grid relative flex flex-col items-center justify-between gap-6 overflow-hidden p-5 sm:flex-row sm:p-6">
         {/* Background shapes rhyming with Home */}
@@ -170,10 +170,10 @@ export default function MissionsPage() {
           <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#ffc844]">
             Quest board
           </p>
-          <h1 className="text-[30px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight dark:text-white sm:text-[44px] sm:tracking-[-1.14px]">
+          <h1 className="text-[30px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight sm:text-[44px] sm:tracking-[-1.14px]">
             Complete quests. Level up.
           </h1>
-          <p className="mt-3 text-[15px] leading-[1.47] tracking-[-0.2px] text-graphite dark:text-zinc-400 max-w-xl mx-auto sm:mx-0">
+          <p className="mt-3 text-[15px] leading-[1.47] tracking-[-0.2px] text-graphite max-w-xl mx-auto sm:mx-0">
             Clear daily challenges, collect XP, and upgrade your player card.
           </p>
         </div>
@@ -181,7 +181,7 @@ export default function MissionsPage() {
         {/* Current XP & Linked Twitter Info */}
         <div className="relative z-10 flex flex-col items-center sm:items-end gap-3 shrink-0 w-full sm:w-auto">
           {/* Current XP Stat Box */}
-          <div className="rounded-2xl bg-[#FAF9F6] dark:bg-zinc-900/40 px-6 py-4 border border-stone-200/20 dark:border-zinc-850/10 shadow-inner flex flex-col items-center shrink-0 w-full sm:w-auto min-w-[180px]">
+          <div className="rounded-2xl bg-[#FAF9F6] px-6 py-4 border border-stone-200/20 shadow-inner flex flex-col items-center shrink-0 w-full sm:w-auto min-w-[180px]">
             <span className="text-[10px] font-mono text-ash uppercase font-bold tracking-wider flex items-center gap-1.5">
               Total XP
             </span>
@@ -191,7 +191,7 @@ export default function MissionsPage() {
           </div>
 
           {profile?.twitterUsername ? (
-            <div className="text-[10px] font-mono text-ash flex items-center gap-1.5 bg-[#FAF9F6] dark:bg-zinc-900/40 border border-stone-200/20 dark:border-zinc-850/10 px-3 py-1.5 rounded-xl">
+            <div className="text-[10px] font-mono text-ash flex items-center gap-1.5 bg-[#FAF9F6] border border-stone-200/20 px-3 py-1.5 rounded-xl">
               <Send className="h-3 w-3 text-sky-blue" />
               <span>X: @{profile.twitterUsername}</span>
             </div>
@@ -201,7 +201,7 @@ export default function MissionsPage() {
                 setTwitterInput("");
                 setIsModalOpen(true);
               }}
-              className="text-[10px] font-mono text-ember-orange hover:bg-ember-orange/10 transition-colors flex items-center gap-1.5 bg-[#FAF9F6] dark:bg-zinc-900/40 border border-stone-200/20 dark:border-zinc-850/10 px-3.5 py-2 rounded-xl cursor-pointer font-semibold outline-none"
+              className="text-[10px] font-mono text-ember-orange hover:bg-ember-orange/10 transition-colors flex items-center gap-1.5 bg-[#FAF9F6] border border-stone-200/20 px-3.5 py-2 rounded-xl cursor-pointer font-semibold outline-none"
             >
               <Send className="h-3 w-3 text-ember-orange" />
               <span>Link X Username</span>
@@ -216,13 +216,13 @@ export default function MissionsPage() {
           {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className="verity-card h-20 bg-stone-200/20 dark:bg-zinc-900/10 rounded-2xl"
+              className="verity-card h-20 bg-stone-200/20 rounded-2xl"
             />
           ))}
         </div>
       ) : !missions || missions.length === 0 ? (
         /* Empty State (Coming Soon Component) */
-        <div className="verity-card border border-dashed border-border dark:border-zinc-800 rounded-2xl bg-white-surface/40 dark:bg-zinc-900/10 p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-4 relative overflow-hidden">
+        <div className="verity-card border border-dashed border-border rounded-2xl bg-white-surface/40 p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-4 relative overflow-hidden">
           <div className="absolute -left-16 -bottom-16 w-36 h-36 rounded-full bg-sky-blue/10 blur-2xl pointer-events-none" />
           <div className="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-ember-orange/10 blur-2xl pointer-events-none" />
 
@@ -234,10 +234,10 @@ export default function MissionsPage() {
           </div>
 
           <div className="max-w-md relative z-10 space-y-2 mt-4">
-            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-midnight dark:text-white">
+            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-midnight ">
               Missions Coming Soon
             </h2>
-            <p className="text-sm text-graphite dark:text-zinc-400 leading-relaxed">
+            <p className="text-sm text-graphite leading-relaxed">
               Check back soon to complete tasks, verify your social actions, and
               accumulate XP!
             </p>
@@ -253,7 +253,7 @@ export default function MissionsPage() {
             // Dot color logic: Grey if completed, green if started/claimable, orange if unstarted
             let dotColor = "bg-[#FF4D00]"; // orange
             if (isCompleted) {
-              dotColor = "bg-stone-300 dark:bg-zinc-700";
+              dotColor = "bg-stone-300 ";
             } else if (isStarted) {
               dotColor = "bg-[#00E35B]"; // green
             }
@@ -261,7 +261,7 @@ export default function MissionsPage() {
             return (
               <div
                 key={mission.id}
-                className="verity-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 md:p-5 bg-white-surface border border-stone-200/40 dark:border-zinc-800/40 shadow-sm rounded-2xl transition-all duration-200 hover:shadow-md"
+                className="verity-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 md:p-5 bg-white-surface border border-stone-200/40 shadow-sm rounded-2xl transition-all duration-200 hover:shadow-md"
               >
                 {/* Left Section: Status Dot & Title Details */}
                 <div className="flex items-start gap-3.5 min-w-0">
@@ -273,22 +273,22 @@ export default function MissionsPage() {
                       className={`text-base font-semibold tracking-tight leading-snug ${
                         isCompleted
                           ? "text-ash line-through opacity-60"
-                          : "text-midnight dark:text-white"
+                          : "text-midnight "
                       }`}
                     >
                       {mission.title}
                     </h3>
-                    <p className="text-sm text-graphite dark:text-zinc-400 mt-0.5 leading-normal">
+                    <p className="text-sm text-graphite mt-0.5 leading-normal">
                       {getMissionDescription(mission)}
                     </p>
                   </div>
                 </div>
 
                 {/* Right Section: Rewards & Actions */}
-                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0 w-full sm:w-auto pt-3 sm:pt-0 border-t border-stone-100 dark:border-zinc-800/20 sm:border-none">
+                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0 w-full sm:w-auto pt-3 sm:pt-0 border-t border-stone-100 sm:border-none">
                   {/* Reward Label */}
                   <span
-                    className={`text-base font-bold tracking-tight ${
+                    className={`pixel-reward text-sm ${
                       isCompleted
                         ? "text-ash font-medium opacity-60"
                         : "text-[#FF4D00]"
@@ -312,7 +312,7 @@ export default function MissionsPage() {
                         handleClaim(mission.id, mission.verificationKey)
                       }
                       disabled={verifyingMissionId === mission.id}
-                      className="flex h-8 px-5 items-center justify-center bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                      className="flex h-8 px-5 items-center justify-center bg-black text-white rounded-full font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                     >
                       {verifyingMissionId === mission.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -370,7 +370,7 @@ export default function MissionsPage() {
             </div>
 
             {/* Warning / Caution */}
-            <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-800 dark:text-amber-400 leading-relaxed font-sans">
+            <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-800 leading-relaxed font-sans">
               <strong>⚠️ Permanency Warning</strong>: This username cannot be
               changed or edited once set. Please verify that it is correct.
             </div>
@@ -390,7 +390,7 @@ export default function MissionsPage() {
                   value={twitterInput}
                   onChange={(e) => setTwitterInput(e.target.value)}
                   disabled={isLinking}
-                  className="pl-7 h-10 w-full rounded-xl border border-stone-200 dark:border-zinc-850 bg-transparent text-sm text-midnight dark:text-white placeholder-ash outline-none focus:border-[#FF4D00] dark:focus:border-ember-orange transition-colors"
+                  className="pl-7 h-10 w-full rounded-xl border border-stone-200 bg-transparent text-sm text-midnight placeholder-ash outline-none focus:border-[#FF4D00] transition-colors"
                 />
               </div>
             </div>

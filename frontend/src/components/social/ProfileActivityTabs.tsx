@@ -92,8 +92,8 @@ export default function ProfileActivityTabs({
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                   predictionFilter === filter
-                    ? "bg-black/10 dark:bg-white/10 text-charcoal-primary dark:text-white font-bold"
-                    : "bg-stone-surface dark:bg-stone-800/50 text-ash dark:text-stone-400 font-bold hover:text-charcoal-primary dark:hover:text-white"
+                    ? "bg-black/10 text-charcoal-primary font-bold"
+                    : "bg-stone-surface text-ash font-bold hover:text-charcoal-primary "
                 }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -192,11 +192,11 @@ export default function ProfileActivityTabs({
                   onClick={() => setPredictionPage((p) => Math.max(1, p - 1))}
                   disabled={predictionPage === 1}
                   aria-label="Previous page"
-                  className="p-2 rounded-lg border border-border bg-white dark:bg-stone-900 text-charcoal-primary dark:text-white shadow-sm disabled:opacity-50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                  className="p-2 rounded-lg border border-border bg-white text-charcoal-primary shadow-sm disabled:opacity-50 hover:bg-stone-100 transition-colors"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <span className="text-sm font-semibold text-charcoal-primary dark:text-white">
+                <span className="text-sm font-semibold text-charcoal-primary ">
                   Page {predictionPage} of {totalPages}
                 </span>
                 <button
@@ -205,7 +205,7 @@ export default function ProfileActivityTabs({
                   }
                   disabled={predictionPage === totalPages}
                   aria-label="Next page"
-                  className="p-2 rounded-lg border border-border bg-white dark:bg-stone-900 text-charcoal-primary dark:text-white shadow-sm disabled:opacity-50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                  className="p-2 rounded-lg border border-border bg-white text-charcoal-primary shadow-sm disabled:opacity-50 hover:bg-stone-100 transition-colors"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -429,10 +429,10 @@ function ActivityItem({
             <span className="font-mono text-[10px] font-bold text-ash uppercase tracking-wider">
               World Cup Arena
             </span>
-            <h3 className="text-xl font-bold tracking-tight text-charcoal-primary dark:text-white mt-1 group-hover:text-sky-blue transition-colors">
+            <h3 className="text-xl font-bold tracking-tight text-charcoal-primary mt-1 group-hover:text-sky-blue transition-colors">
               {market.question}
             </h3>
-            <p className="text-xs text-graphite dark:text-zinc-400 mt-2 leading-relaxed font-sans">
+            <p className="text-xs text-graphite mt-2 leading-relaxed font-sans">
               Predict all propositions for the match. Battle head-to-head for
               Arena XP, boosts, and bragging rights.
             </p>

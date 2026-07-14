@@ -325,10 +325,10 @@ function FeedCard({
               <span className="font-mono text-[10px] font-bold text-ash uppercase tracking-wider">
                 World Cup Arena
               </span>
-              <h3 className="text-xl font-bold tracking-tight text-charcoal-primary dark:text-white mt-1 group-hover:text-sky-blue transition-colors">
+              <h3 className="text-xl font-bold tracking-tight text-charcoal-primary mt-1 group-hover:text-sky-blue transition-colors">
                 {item.market.question}
               </h3>
-              <p className="text-xs text-graphite dark:text-zinc-400 mt-2 leading-relaxed">
+              <p className="text-xs text-graphite mt-2 leading-relaxed">
                 Predict all propositions for the match. Battle head-to-head for
                 Arena XP, boosts, and bragging rights.
               </p>

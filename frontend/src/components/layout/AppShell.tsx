@@ -24,7 +24,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <CinematicBackdrop />
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1300px] justify-center gap-3 px-4 sm:px-3 xl:gap-6 xl:px-5">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1300px] justify-center gap-3 px-0 sm:px-3 xl:gap-6 xl:px-5">
         <div className="sticky top-0 hidden h-screen w-[76px] shrink-0 flex-col py-4 sm:flex xl:w-[280px]">
           <Sidebar />
         </div>
@@ -32,7 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* Single full-width column — every page owns its own layout. */}
         <main className="min-w-0 flex-1 max-w-[1080px] pb-28 sm:pb-0">
           <AppHeader />
-          {children}
+          <div className="px-4 sm:px-0">{children}</div>
         </main>
       </div>
       <MobileNav />

@@ -23,7 +23,7 @@ export default function SearchPage() {
   );
 
   return (
-    <div className="mx-auto min-h-[calc(100vh-170px)] w-full max-w-[672px] pb-10 pt-4 sm:pt-6">
+    <div className="tournament-search mx-auto min-h-[calc(100vh-170px)] w-full max-w-[672px] pb-10 pt-4 sm:pt-6">
       <section className="duel-search-hero relative overflow-hidden rounded-[26px] border border-white/[0.09] bg-[#080d18]/86 p-5 shadow-[0_22px_80px_rgba(2,5,15,.28)] sm:p-7">
         <div className="absolute -right-4 -top-4 opacity-25" aria-hidden="true">
           <SearchNavIcon active className="h-28 w-32" />

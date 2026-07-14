@@ -6,8 +6,7 @@ import { useAuth } from "@/components/providers/AuthModals";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
 import { useUsdcBalance } from "@/hooks/useUsdcBalance";
 import { useNotificationsQuery } from "@/store/verity/verityQueries";
-import { ProofBallIcon } from "@/components/icons/ProofBallIcon";
-import ThemeToggle from "@/components/layout/ThemeToggle";
+import { PixelTrophyIcon } from "@/components/icons/PixelTrophyIcon";
 
 export default function AppHeader() {
   const { authenticated, loading, login } = useAuth();
@@ -21,11 +20,11 @@ export default function AppHeader() {
   return (
     <header className="arcade-app-header sticky top-0 z-30 flex items-center justify-between gap-3 py-3 backdrop-blur-xl sm:mt-3 sm:rounded-2xl sm:border sm:border-white/[0.07] sm:px-4">
       <Link href="/pvp" className="group flex min-w-0 items-center gap-2.5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[#1479ff]/35 bg-[#0b1830] text-[#59a2ff] shadow-[0_8px_24px_rgba(20,121,255,.2)]">
-          <ProofBallIcon className="h-7 w-7 transition-transform duration-500 group-hover:rotate-12" />
+        <span className="arcade-brand-emblem flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px]">
+          <PixelTrophyIcon className="h-8 w-8" />
         </span>
         <span className="min-w-0">
-            <span className="font-game block truncate text-xl font-black leading-none text-charcoal-primary">
+          <span className="arcade-brand-wordmark block truncate leading-none">
             Verity
           </span>
           <span className="mt-1 block font-mono text-[7px] font-black uppercase tracking-[0.22em] text-[#71809f]">
@@ -59,8 +58,6 @@ export default function AppHeader() {
             </span>
           )}
         </Link>
-
-        <ThemeToggle />
 
         {!loading && !authenticated && (
           <button

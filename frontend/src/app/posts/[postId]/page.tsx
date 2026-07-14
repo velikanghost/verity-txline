@@ -9,5 +9,9 @@ interface PostDetailPageProps {
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { postId } = await params
 
-  return <PostDetailView postId={postId} />
+  return (
+    <div className="tournament-social-detail">
+      <PostDetailView postId={postId} />
+    </div>
+  )
 }

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, User, Swords, Search, Gamepad2 } from "lucide-react";
-import ThemeToggle from "@/components/layout/ThemeToggle";
 import SidebarProfile from "@/components/layout/SidebarProfile";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
 import { useNotificationsQuery } from "@/store/verity/verityQueries";
@@ -27,7 +26,7 @@ export default function Sidebar() {
   ).length;
 
   return (
-    <div className="game-panel flex h-full flex-col rounded-[26px] border border-white/[0.08] p-3 text-white shadow-[0_22px_70px_rgba(9,12,30,.18)] xl:p-4">
+    <div className="tournament-sidebar game-panel flex h-full flex-col rounded-[26px] border border-white/[0.08] p-3 text-white shadow-[0_22px_70px_rgba(9,12,30,.18)] xl:p-4">
       {/* Logo */}
       <div className="mb-3 flex items-center justify-between">
         <Link
@@ -46,9 +45,6 @@ export default function Sidebar() {
             </span>
           </div>
         </Link>
-        <div className="hidden xl:block">
-          <ThemeToggle />
-        </div>
       </div>
 
       {/* Nav Links */}

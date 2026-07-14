@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Edit3, Share, MoreHorizontal, LogOut, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Edit3, Share, MoreHorizontal, LogOut } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthModals";
 import ProfileActivityTabs, {
   type ProfileActivityTab,
@@ -31,9 +30,7 @@ export default function ProfileEditor() {
   const isConnected = Boolean(profile);
 
   const { login, logout } = useAuth();
-  const { setTheme, resolvedTheme } = useTheme();
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const isDark = resolvedTheme === "dark";
 
   const { data: tabItems = [], isLoading: isActivityLoading } =
     useProfileActivityQuery(
@@ -145,30 +142,8 @@ export default function ProfileEditor() {
 
                 {optionsOpen && (
                   <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-48 rounded-[12px] border border-border bg-surface-solid p-1.5 shadow-sm">
-                    <button
-                      className="flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left text-xs font-semibold text-charcoal-primary hover:bg-stone-surface transition-colors cursor-pointer"
-                      onClick={() => {
-                        setTheme(isDark ? "light" : "dark");
-                        setOptionsOpen(false);
-                      }}
-                      type="button"
-                    >
-                      <span className="flex items-center gap-2">
-                        {isDark ? (
-                          <>
-                            <Sun className="h-4 w-4 text-ash" /> Light Mode
-                          </>
-                        ) : (
-                          <>
-                            <Moon className="h-4 w-4 text-ash" /> Dark Mode
-                          </>
-                        )}
-                      </span>
-                    </button>
-
                     {isConnected && (
                       <>
-                        <div className="my-1 h-px bg-border/60" />
                         {referralsData?.referralLink && (
                           <button
                             className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-xs font-semibold text-charcoal-primary hover:bg-stone-surface transition-colors cursor-pointer"
@@ -254,7 +229,7 @@ export default function ProfileEditor() {
                 {accuracy}% accuracy
               </span>
               {isConnected && profile && (
-                <span className="font-mono text-xs font-semibold text-sky-blue">
+                <span className="pixel-reward text-[10px] text-sky-blue">
                   ⭐ {(profile.arenaXp ?? 0).toLocaleString()} XP
                 </span>
               )}

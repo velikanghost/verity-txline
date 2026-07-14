@@ -54,7 +54,7 @@ export function ExperienceHighlights() {
           </div>
           <h2
             id="quests-heading"
-            className="font-game mt-1 text-3xl font-black tracking-tight text-charcoal-primary dark:text-white"
+            className="font-game mt-1 text-3xl font-black tracking-tight text-charcoal-primary "
           >
             Choose your next move
           </h2>
@@ -72,7 +72,7 @@ export function ExperienceHighlights() {
             className="game-quest-card clickable-card group relative overflow-hidden rounded-[22px] border border-border bg-surface-solid p-5"
           >
             <span
-              className="absolute right-4 top-3 font-game text-5xl font-black text-charcoal-primary/[0.035] dark:text-white/[0.035]"
+              className="absolute right-4 top-3 font-game text-5xl font-black text-charcoal-primary/[0.035] "
               aria-hidden="true"
             >
               0{index + 1}
@@ -85,14 +85,14 @@ export function ExperienceHighlights() {
             <p className="mt-4 font-mono text-[9px] font-black uppercase tracking-[0.18em] text-ash">
               {quest.label}
             </p>
-            <h3 className="font-game mt-1 text-xl font-black leading-tight text-charcoal-primary dark:text-white">
+            <h3 className="font-game mt-1 text-xl font-black leading-tight text-charcoal-primary ">
               {quest.title}
             </h3>
             <p className="mt-2 min-h-10 text-[11px] font-medium leading-5 text-graphite">
               {quest.description}
             </p>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-              <span className="font-mono text-[10px] font-black uppercase tracking-wider text-[#59a2ff]">
+              <span className="pixel-reward text-[10px] text-[#59a2ff]">
                 {quest.reward}
               </span>
               <ArrowUpRight

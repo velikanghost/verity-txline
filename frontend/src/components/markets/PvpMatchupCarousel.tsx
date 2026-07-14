@@ -231,7 +231,7 @@ export default function PvpMatchupCarousel({
       {/* Search Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-charcoal-primary dark:text-white">
+          <h2 className="text-xl font-bold tracking-tight text-charcoal-primary ">
             Select matchup
           </h2>
           <p className="text-xs text-ash">Scroll, search, or tap a card.</p>
@@ -244,7 +244,7 @@ export default function PvpMatchupCarousel({
             placeholder="Search teams..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 w-full rounded-full border border-border bg-surface-solid pl-4 pr-10 text-xs text-charcoal-primary transition-colors focus:border-sky-blue focus:outline-none dark:text-white"
+            className="h-10 w-full rounded-full border border-border bg-surface-solid pl-4 pr-10 text-xs text-charcoal-primary transition-colors focus:border-sky-blue focus:outline-none "
           />
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ash" />
         </div>
@@ -253,7 +253,7 @@ export default function PvpMatchupCarousel({
       {/* Horizontal Scroll Carousel */}
       <div className="flex gap-4 overflow-x-auto pb-3 pt-1 no-scrollbar -mx-1 px-1">
         {filteredEvents.length === 0 ? (
-          <div className="w-full text-center py-6 text-xs font-mono text-ash border border-dashed border-border dark:border-zinc-800 rounded-xl bg-white/30 dark:bg-zinc-900/10">
+          <div className="w-full text-center py-6 text-xs font-mono text-ash border border-dashed border-border rounded-xl bg-white/30 ">
             No matchups found.
           </div>
         ) : (
@@ -274,7 +274,7 @@ export default function PvpMatchupCarousel({
                 onClick={() => setSelectedPvpEventId(evt.id)}
                 className={`relative flex-none w-68 h-40 p-4 rounded-2xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
                   isSelected
-                    ? "bg-brand-primary border-brand-primary dark:bg-white dark:border-white text-white dark:text-zinc-950 shadow-lg scale-[1.01]"
+                    ? "bg-brand-primary border-brand-primary text-white shadow-lg scale-[1.01]"
                     : "border-border bg-surface-solid hover:scale-[1.005] hover:border-sky-blue"
                 } ${isClosed && !isSelected ? "opacity-75" : ""}`}
               >
@@ -283,10 +283,10 @@ export default function PvpMatchupCarousel({
                   <div
                     className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold font-mono tracking-wider ${
                       isClosed
-                        ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+                        ? "bg-zinc-100 text-zinc-500 "
                         : isSelected
                           ? "bg-zinc-800/80 text-white"
-                          : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400"
+                          : "bg-emerald-50 text-emerald-600 "
                     }`}
                   >
                     {isClosed ? (
@@ -334,7 +334,7 @@ export default function PvpMatchupCarousel({
                 </div>
 
                 {/* Footer Details */}
-                <div className="flex items-center justify-between text-[9px] font-mono border-t border-dashed border-zinc-200/20 dark:border-zinc-800/50 pt-2 shrink-0">
+                <div className="flex items-center justify-between text-[9px] font-mono border-t border-dashed border-zinc-200/20 pt-2 shrink-0">
                   <span className={isSelected ? "text-zinc-400" : "text-ash"}>
                     {formattedDate}
                   </span>
@@ -345,7 +345,7 @@ export default function PvpMatchupCarousel({
 
                 {/* Selected Check Badge Badge */}
                 {isSelected && (
-                  <div className="absolute -top-1.5 -right-1.5 bg-[#FF3E00] text-white h-5 w-5 rounded-full flex items-center justify-center shadow-md ring-2 ring-white dark:ring-white">
+                  <div className="absolute -top-1.5 -right-1.5 bg-[#FF3E00] text-white h-5 w-5 rounded-full flex items-center justify-center shadow-md ring-2 ring-white ">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"

@@ -14,7 +14,7 @@ export default function PagePanel({
   children,
 }: PagePanelProps) {
   return (
-    <div className="flex flex-col gap-3 py-3 sm:py-4">
+    <div className="tournament-page-panel flex flex-col gap-3 py-3 sm:py-4">
       <section className="verity-card game-grid relative overflow-hidden p-5 sm:p-6">
         <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#1479ff]/22 blur-3xl" />
         {eyebrow && (

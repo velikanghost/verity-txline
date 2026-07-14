@@ -18,15 +18,15 @@ const PARTICLES = [
 
 function getSceneAccent(pathname: string) {
   if (pathname.startsWith("/pvp") || pathname.startsWith("/markets")) {
-    return "#ff6b4a";
+    return "#de7186";
   }
-  if (pathname.startsWith("/search")) return "#35e881";
-  if (pathname.startsWith("/profile")) return "#ffc844";
-  if (pathname.startsWith("/missions")) return "#ffc844";
-  if (pathname.startsWith("/leaderboard")) return "#1479ff";
-  if (pathname.startsWith("/portfolio")) return "#35e881";
-  if (pathname.startsWith("/notifications")) return "#ff6b4a";
-  return "#1479ff";
+  if (pathname.startsWith("/search")) return "#71c3a5";
+  if (pathname.startsWith("/profile")) return "#f2d66a";
+  if (pathname.startsWith("/missions")) return "#f2d66a";
+  if (pathname.startsWith("/leaderboard")) return "#8f79d8";
+  if (pathname.startsWith("/portfolio")) return "#71c3a5";
+  if (pathname.startsWith("/notifications")) return "#de7186";
+  return "#8f79d8";
 }
 
 export default function CinematicBackdrop() {
@@ -35,7 +35,7 @@ export default function CinematicBackdrop() {
 
   return (
     <div
-      className="cinematic-backdrop fixed inset-0 z-0 overflow-hidden"
+      className="cinematic-backdrop pointer-events-none fixed inset-0 z-0 overflow-hidden"
       style={{ "--scene-accent": accent } as CSSProperties}
       aria-hidden="true"
     >

@@ -443,7 +443,7 @@ export default function PvpArenaTab({
           </div>
 
           <div className="space-y-2 max-w-sm">
-            <h3 className="text-xl font-black font-sans leading-tight text-charcoal-primary dark:text-white">
+            <h3 className="text-xl font-black font-sans leading-tight text-charcoal-primary ">
               Entering the Arena...
             </h3>
             <p className="text-xs text-ash leading-relaxed font-sans">
@@ -483,22 +483,22 @@ export default function PvpArenaTab({
           {/* Ticket Builder Form */}
           {(!hasActiveDuel || showBuilderOverride) &&
             (isEventEnded ? (
-              <div className="verity-card p-8 md:p-10 flex flex-col gap-6 relative overflow-hidden bg-linear-to-b from-amber-50/40 to-stone-100/30 dark:from-amber-950/10 dark:to-zinc-900/10 border border-amber-200/40 dark:border-amber-900/20 shadow-sm">
+              <div className="verity-card p-8 md:p-10 flex flex-col gap-6 relative overflow-hidden bg-linear-to-b from-amber-50/40 to-stone-100/30 border border-amber-200/40 shadow-sm">
                 {/* Locked Content */}
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-5">
                   {/* Circular Gold Icon Container */}
-                  <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200/50 dark:border-amber-900/50 shadow-inner shrink-0">
-                    <div className="relative z-10 text-amber-600 dark:text-amber-400">
+                  <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 border border-amber-200/50 shadow-inner shrink-0">
+                    <div className="relative z-10 text-amber-600 ">
                       <Lock className="h-6 w-6" strokeWidth={2.5} />
                     </div>
                   </div>
 
                   {/* Text Area */}
                   <div className="flex-1 text-center md:text-left space-y-2.5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/40 text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider font-mono">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-[10px] font-bold text-amber-700 uppercase tracking-wider font-mono">
                       🔒 Predictions Closed
                     </span>
-                    <h3 className="text-2xl font-black font-sans leading-tight text-charcoal-primary dark:text-white">
+                    <h3 className="text-2xl font-black font-sans leading-tight text-charcoal-primary ">
                       Whistle's blown on {parsedTeams.teamA} vs{" "}
                       {parsedTeams.teamB}
                     </h3>
@@ -525,7 +525,7 @@ export default function PvpArenaTab({
                   if (recommended.length === 0) return null;
 
                   return (
-                    <div className="border-t border-amber-200/20 dark:border-zinc-800/60 pt-6 mt-2">
+                    <div className="border-t border-amber-200/20 pt-6 mt-2">
                       <span className="block text-[10px] font-bold uppercase text-ash tracking-wider mb-4 font-mono">
                         Open now — pick one to play
                       </span>
@@ -569,7 +569,7 @@ export default function PvpArenaTab({
                               className="group flex cursor-pointer items-center justify-between rounded-xl border border-border bg-surface-solid p-3.5 shadow-xs transition-all hover:border-sky-blue hover:shadow-sm"
                             >
                               <div className="text-left space-y-1 min-w-0 flex-1 pr-2">
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-charcoal-primary dark:text-zinc-200 truncate">
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-charcoal-primary truncate">
                                   <span>{getCountryFlag(recTeamA)}</span>
                                   <span>vs</span>
                                   <span>{getCountryFlag(recTeamB)}</span>

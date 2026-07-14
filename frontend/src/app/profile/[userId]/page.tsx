@@ -11,5 +11,9 @@ export default async function PublicProfilePage({
 }: PublicProfilePageProps) {
   const { userId } = await params
 
-  return <PublicProfileView userId={userId} />
+  return (
+    <div className="tournament-public-profile">
+      <PublicProfileView userId={userId} />
+    </div>
+  )
 }

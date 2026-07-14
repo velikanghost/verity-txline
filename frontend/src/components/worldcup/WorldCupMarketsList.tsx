@@ -61,7 +61,7 @@ export function WorldCupMarketsList() {
 
       {!error && markets && markets.length === 0 && (
         <div className="game-panel flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-white/[0.08] p-8 text-center text-white">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sunburst-yellow/15 text-[#b27600] dark:text-sunburst-yellow">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sunburst-yellow/15 text-[#b27600] ">
             <Radio className="h-5 w-5" aria-hidden="true" />
           </div>
           <p className="font-game mt-4 text-xl font-black text-white">

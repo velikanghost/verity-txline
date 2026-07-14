@@ -51,9 +51,9 @@ export default function PvpDuelPicks({
 
   return (
     <div className="verity-card p-5">
-      <div className="border-b border-border dark:border-zinc-800 pb-3 mb-4 flex items-center justify-between">
+      <div className="border-b border-border pb-3 mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-charcoal-primary dark:text-white">
+          <h3 className="text-base font-bold text-charcoal-primary ">
             Your Predictions & Outcomes
           </h3>
           <p className="text-xs text-ash mt-0.5">
@@ -94,11 +94,11 @@ export default function PvpDuelPicks({
           return (
             <div
               key={marketId}
-              className="flex flex-col gap-3 p-4 rounded-xl bg-parchment-card dark:bg-zinc-900/40 border border-border dark:border-zinc-800/85 transition-all"
+              className="flex flex-col gap-3 p-4 rounded-xl bg-parchment-card border border-border transition-all"
             >
               {/* Top row: Title + Shares */}
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs font-bold tracking-wide text-charcoal-primary dark:text-zinc-200 uppercase truncate">
+                <span className="text-xs font-bold tracking-wide text-charcoal-primary uppercase truncate">
                   {(
                     childOpt?.optionName ||
                     pick?.optionName ||
@@ -107,7 +107,7 @@ export default function PvpDuelPicks({
                   ).toUpperCase()}
                 </span>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[10px] text-stone-400 dark:text-zinc-500 font-inter">
+                  <span className="text-[10px] text-stone-400 font-inter">
                     Shares: <strong>{invested.toFixed(2)}</strong>
                   </span>
                   {childOpt && !isResolved && onAddLiquidity && (
@@ -116,7 +116,7 @@ export default function PvpDuelPicks({
                         e.stopPropagation();
                         onAddLiquidity(marketId);
                       }}
-                      className="px-2 py-0.5 rounded border border-border dark:border-zinc-700 text-[9px] font-bold text-ash dark:text-zinc-400 bg-white-surface dark:bg-zinc-900 hover:text-charcoal-primary dark:hover:text-zinc-200 hover:border-charcoal-primary/30 dark:hover:border-zinc-500 transition-all uppercase tracking-wider"
+                      className="px-2 py-0.5 rounded border border-border text-[9px] font-bold text-ash bg-white-surface hover:text-charcoal-primary hover:border-charcoal-primary/30 transition-all uppercase tracking-wider"
                     >
                       + LP
                     </button>
@@ -127,11 +127,11 @@ export default function PvpDuelPicks({
               {/* Bottom row: Selections */}
               <div className="grid grid-cols-2 md:flex md:items-stretch gap-2">
                 {/* Your Pick */}
-                <div className="flex flex-col items-start bg-white-surface dark:bg-zinc-950 px-3 py-1.5 rounded-[8px] border border-border dark:border-zinc-800 flex-1 min-w-0">
+                <div className="flex flex-col items-start bg-white-surface px-3 py-1.5 rounded-[8px] border border-border flex-1 min-w-0">
                   <span className="text-[9px] font-inter text-ash uppercase">
                     You
                   </span>
-                  <span className="text-xs font-semibold text-charcoal-primary dark:text-zinc-200 truncate max-w-full">
+                  <span className="text-xs font-semibold text-charcoal-primary truncate max-w-full">
                     {pick
                       ? formatPickSelection(pick.selection, childOpt) || "—"
                       : "—"}
@@ -139,7 +139,7 @@ export default function PvpDuelPicks({
                 </div>
 
                 {/* Opponent's Pick */}
-                <div className="flex flex-col items-start bg-white-surface dark:bg-zinc-950 px-3 py-1.5 rounded-[8px] border border-border dark:border-zinc-800 flex-1 min-w-0">
+                <div className="flex flex-col items-start bg-white-surface px-3 py-1.5 rounded-[8px] border border-border flex-1 min-w-0">
                   <span className="text-[9px] font-inter text-ash uppercase">
                     Opponent
                   </span>
@@ -148,7 +148,7 @@ export default function PvpDuelPicks({
                       Waiting...
                     </span>
                   ) : (
-                    <span className="text-xs font-semibold text-charcoal-primary dark:text-zinc-200 truncate max-w-full">
+                    <span className="text-xs font-semibold text-charcoal-primary truncate max-w-full">
                       {oppPick
                         ? formatPickSelection(oppPick.selection, childOpt) ||
                           "—"
@@ -159,7 +159,7 @@ export default function PvpDuelPicks({
 
                 {/* Outcome — only shown when resolved */}
                 {isResolved && (
-                  <div className="flex flex-col items-start bg-zinc-100 dark:bg-zinc-900/60 px-3 py-1.5 rounded-[8px] border border-border dark:border-zinc-800 flex-1 min-w-0">
+                  <div className="flex flex-col items-start bg-zinc-100 px-3 py-1.5 rounded-[8px] border border-border flex-1 min-w-0">
                     <span className="text-[9px] font-inter text-ash uppercase">
                       Outcome
                     </span>
@@ -172,12 +172,12 @@ export default function PvpDuelPicks({
                 {/* Points — only shown when resolved */}
                 {((pick && pick.isCorrect !== null) ||
                   (oppPick && oppPick.isCorrect !== null)) && (
-                  <div className="flex flex-col items-center justify-center px-3 py-1.5 rounded-[8px] border border-border dark:border-zinc-800 shrink-0">
+                  <div className="flex flex-col items-center justify-center px-3 py-1.5 rounded-[8px] border border-border shrink-0">
                     <span className="text-[9px] font-inter text-ash uppercase">
                       Points
                     </span>
                     <span
-                      className={`text-xs font-bold ${pick?.isCorrect ? "text-meadow-green" : "text-charcoal-primary dark:text-zinc-400"}`}
+                      className={`text-xs font-bold ${pick?.isCorrect ? "text-meadow-green" : "text-charcoal-primary "}`}
                     >
                       {pick?.isCorrect ? "+1 pt" : "0 pts"}
                     </span>

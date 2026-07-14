@@ -142,7 +142,7 @@ function MarketsContent() {
   const { data: referralsData } = useReferralsQuery();
 
   return (
-    <div className="w-full max-w-[1240px] mx-auto py-6 font-sans">
+    <div className="tournament-markets w-full max-w-[1240px] mx-auto py-6 font-sans">
       {/* Tabs Menu */}
       <div className="mb-6 inline-flex gap-1 rounded-2xl border border-white/10 bg-[#0b0f20]/80 p-1.5 shadow-[0_10px_35px_rgba(4,6,18,.18)]">
         <button

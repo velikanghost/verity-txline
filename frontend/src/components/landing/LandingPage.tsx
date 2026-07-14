@@ -13,7 +13,6 @@ import {
   TrendingUp,
   UsersRound,
 } from "lucide-react"
-import ThemeToggle from "@/components/layout/ThemeToggle"
 
 const steps = [
   {
@@ -73,9 +72,6 @@ export default function LandingPage({
           </span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-        </div>
       </header>
 
       <section className="relative mx-auto grid min-h-[calc(100vh-76px)] w-full max-w-[1180px] items-center gap-6 px-4 pb-8 pt-2 sm:gap-10 sm:px-6 sm:pb-12 lg:grid-cols-[1fr_460px] lg:pb-16">

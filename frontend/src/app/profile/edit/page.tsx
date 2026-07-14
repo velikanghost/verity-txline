@@ -9,7 +9,7 @@ export default function EditProfilePage() {
   const { profile, isLoading } = useWalletProfile();
 
   return (
-    <div className="flex flex-col gap-4 py-4">
+    <div className="tournament-profile-edit flex flex-col gap-4 py-4">
       {/* Back button and page title */}
       <div className="flex items-center gap-3">
         <Link

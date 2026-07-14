@@ -4,7 +4,7 @@ import { WorldCupMarketsList } from "@/components/worldcup/WorldCupMarketsList";
 
 export default function WorldCupMarketsPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
+    <div className="tournament-worldcup mx-auto max-w-4xl px-4 py-6">
       <header className="verity-card game-grid relative mb-6 overflow-hidden p-5 sm:p-6">
         <div
           className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#1479ff]/22 blur-3xl"
