@@ -132,7 +132,7 @@ export default function PvpSidebarStats({
           <button
             onClick={handleClaimAll}
             disabled={isClaiming}
-            className="w-full mt-2 py-3 rounded-lg bg-charcoal-primary dark:bg-white text-white dark:text-zinc-950 hover:opacity-90 active:opacity-100 disabled:opacity-60 disabled:cursor-not-allowed text-sm font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 font-sans cursor-pointer"
+            className="game-button-primary w-full mt-2 py-3 rounded-lg text-white hover:opacity-90 active:opacity-100 disabled:opacity-60 disabled:cursor-not-allowed text-sm font-bold transition-all flex items-center justify-center gap-1.5 font-sans cursor-pointer"
           >
             {isClaiming ? (
               <>

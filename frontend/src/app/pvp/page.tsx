@@ -89,7 +89,7 @@ export default function PvpArenaPage() {
       </div>
 
       {/* Mobile sub-tabs */}
-      <div className="mb-4 flex gap-1 rounded-2xl border border-white/10 bg-[#0b0f20] p-1.5 lg:hidden">
+      <div className="duel-subtabs mb-4 flex gap-1 rounded-2xl border border-white/10 bg-[#0b0f20] p-1.5 lg:hidden">
         {(["arena", "history", "stats"] as MobileTab[]).map((t) => (
           <button
             key={t}

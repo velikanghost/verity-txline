@@ -24,7 +24,7 @@ const GAME_STEPS = [
 
 export function WorldCupHero() {
   return (
-    <section className="game-hero relative isolate overflow-hidden rounded-[30px] border border-white/10 px-5 py-6 text-white sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+    <section className="home-hero game-hero relative isolate overflow-hidden rounded-[30px] border border-white/10 px-5 py-6 text-white sm:px-8 sm:py-8 lg:px-10 lg:py-10">
       <div
         className="game-grid game-grid-fade absolute inset-0 -z-20 opacity-35"
         aria-hidden="true"
@@ -42,17 +42,17 @@ export function WorldCupHero() {
         aria-hidden="true"
       />
 
-      <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
+      <div className="home-hero-status mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
         <div className="flex items-center gap-2.5">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#35e881] opacity-50" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#35e881]" />
           </span>
-          <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-white/65">
+          <span className="home-live-label font-mono text-[10px] font-black uppercase tracking-[0.2em] text-white/65">
             World Cup PvP is live
           </span>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5">
+        <div className="home-season-chip flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5">
           <Zap
             className="h-3.5 w-3.5 fill-[#ffc844] text-[#ffc844]"
             aria-hidden="true"
@@ -79,7 +79,7 @@ export function WorldCupHero() {
             </span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-sm font-medium leading-6 text-[#aeb4d0] sm:text-base sm:leading-7">
+          <p className="home-hero-copy mt-5 max-w-xl text-sm font-medium leading-6 text-[#aeb4d0] sm:text-base sm:leading-7">
             Build a World Cup lineup, meet another fan head-to-head, and prove
             who reads the match better. Every duel result is settled with a
             real TxLINE proof on Solana.
@@ -95,14 +95,14 @@ export function WorldCupHero() {
             </Link>
             <Link
               href="/search"
-              className="clickable inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-6 font-game text-base font-black text-white hover:bg-white/10"
+              className="home-secondary-cta clickable inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-6 font-game text-base font-black text-white hover:bg-white/10"
             >
               <Search className="h-4 w-4 text-[#35e881]" aria-hidden="true" />
               Scan open duels
             </Link>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-white/45">
+          <div className="home-feature-list mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-white/45">
             {["Head-to-head", "Proof-verified", "USDC rewards"].map(
               (item) => (
                 <span key={item} className="flex items-center gap-1.5">
@@ -117,7 +117,7 @@ export function WorldCupHero() {
           </div>
         </div>
 
-        <div className="game-panel relative overflow-hidden rounded-[24px] border border-white/10 p-4 sm:p-5">
+        <div className="home-roadmap game-panel relative overflow-hidden rounded-[24px] border border-white/10 p-4 sm:p-5">
           <div
             className="absolute right-5 top-5 h-16 w-16 rounded-full border border-[#1479ff]/20"
             aria-hidden="true"
@@ -160,14 +160,14 @@ export function WorldCupHero() {
                   <step.icon className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-game text-[15px] font-black text-white">
+                  <p className="home-step-title font-game text-[15px] font-black text-white">
                     {step.label}
                   </p>
                   <p className="mt-0.5 text-[10px] font-semibold text-[#737c9d]">
                     {step.detail}
                   </p>
                 </div>
-                <span className="font-mono text-[9px] font-black text-white/20">
+                <span className="home-step-number font-mono text-[9px] font-black text-white/20">
                   0{index + 1}
                 </span>
               </li>

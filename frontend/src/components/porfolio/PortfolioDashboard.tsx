@@ -659,7 +659,7 @@ export default function PortfolioDashboard() {
                         </div>
                         <Link
                           href={`/markets/${pos.market_id}`}
-                          className="flex h-9 px-4 items-center justify-center rounded-[8px] bg-black/80 text-white font-semibold hover:bg-black/70 transition-colors shadow-subtle text-[11px] uppercase tracking-wider text-center"
+                          className="game-button-primary flex h-9 px-4 items-center justify-center rounded-[8px] text-white font-semibold transition-colors text-[11px] uppercase tracking-wider text-center"
                         >
                           View
                         </Link>

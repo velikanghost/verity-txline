@@ -24,7 +24,7 @@ export default function SearchPage() {
 
   return (
     <div className="mx-auto min-h-[calc(100vh-170px)] w-full max-w-[672px] pb-10 pt-4 sm:pt-6">
-      <section className="relative overflow-hidden rounded-[26px] border border-white/[0.09] bg-[#080d18]/86 p-5 shadow-[0_22px_80px_rgba(2,5,15,.28)] sm:p-7">
+      <section className="duel-search-hero relative overflow-hidden rounded-[26px] border border-white/[0.09] bg-[#080d18]/86 p-5 shadow-[0_22px_80px_rgba(2,5,15,.28)] sm:p-7">
         <div className="absolute -right-4 -top-4 opacity-25" aria-hidden="true">
           <SearchNavIcon active className="h-28 w-32" />
         </div>
@@ -44,7 +44,7 @@ export default function SearchPage() {
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#59a2ff]" />
           <input
             autoFocus
-            className="h-14 w-full rounded-[17px] border border-[#1479ff]/55 bg-[#050912]/90 pl-12 pr-12 font-mono text-sm font-semibold text-white outline-none transition focus:border-[#59a2ff] focus:shadow-[0_0_0_3px_rgba(20,121,255,.13)]"
+            className="duel-search-input h-14 w-full rounded-[17px] border border-[#1479ff]/55 bg-[#050912]/90 pl-12 pr-12 font-mono text-sm font-semibold text-white outline-none transition focus:border-[#59a2ff] focus:shadow-[0_0_0_3px_rgba(20,121,255,.13)]"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search duels..."
             type="search"
@@ -75,15 +75,15 @@ export default function SearchPage() {
       <div className="mt-3 grid gap-3">
         {isLoading ? (
           [0, 1, 2].map((item) => (
-            <div
-              className="h-28 animate-pulse rounded-[20px] border border-white/[0.07] bg-white/[0.035]"
+              <div
+                className="duel-search-skeleton h-28 animate-pulse rounded-[20px] border border-white/[0.07] bg-white/[0.035]"
               key={item}
             />
           ))
         ) : results.length ? (
           results.map((slate) => (
             <Link
-              className="group flex items-center gap-4 rounded-[20px] border border-white/[0.09] bg-[#0a101c]/88 p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1479ff]/40 hover:bg-[#0d1728]"
+              className="duel-search-result group flex items-center gap-4 rounded-[20px] border border-white/[0.09] bg-[#0a101c]/88 p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1479ff]/40 hover:bg-[#0d1728]"
               href="/pvp"
               key={slate.id}
             >
@@ -102,7 +102,7 @@ export default function SearchPage() {
             </Link>
           ))
         ) : (
-          <div className="rounded-[22px] border border-dashed border-white/[0.12] bg-[#080d17]/65 px-6 py-14 text-center">
+          <div className="duel-search-empty rounded-[22px] border border-dashed border-white/[0.12] bg-[#080d17]/65 px-6 py-14 text-center">
             <Search className="mx-auto h-7 w-7 text-[#45516a]" />
             <p className="font-game mt-3 text-xl font-black text-white">
               No duel found.

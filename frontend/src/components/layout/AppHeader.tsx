@@ -7,6 +7,7 @@ import { useWalletProfile } from "@/hooks/useWalletProfile";
 import { useUsdcBalance } from "@/hooks/useUsdcBalance";
 import { useNotificationsQuery } from "@/store/verity/verityQueries";
 import { ProofBallIcon } from "@/components/icons/ProofBallIcon";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 export default function AppHeader() {
   const { authenticated, loading, login } = useAuth();
@@ -24,7 +25,7 @@ export default function AppHeader() {
           <ProofBallIcon className="h-7 w-7 transition-transform duration-500 group-hover:rotate-12" />
         </span>
         <span className="min-w-0">
-          <span className="font-game block truncate text-xl font-black leading-none text-white">
+            <span className="font-game block truncate text-xl font-black leading-none text-charcoal-primary">
             Verity
           </span>
           <span className="mt-1 block font-mono text-[7px] font-black uppercase tracking-[0.22em] text-[#71809f]">
@@ -48,7 +49,7 @@ export default function AppHeader() {
 
         <Link
           aria-label="Open alerts"
-          className="relative flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/[0.09] bg-[#0b0f1a]/85 text-[#7b859f] transition-colors hover:text-white"
+          className="arcade-alert-button relative flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/[0.09] bg-[#0b0f1a]/85 text-[#7b859f] transition-colors hover:text-white"
           href="/notifications"
         >
           <Bell className="h-4 w-4" />
@@ -58,6 +59,8 @@ export default function AppHeader() {
             </span>
           )}
         </Link>
+
+        <ThemeToggle />
 
         {!loading && !authenticated && (
           <button

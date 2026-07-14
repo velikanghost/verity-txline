@@ -67,34 +67,36 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Dynamic neutral palette — light values */
-  --warm-canvas: #07111f;
-  --stone-surface: #17263a;
-  --parchment-card: #101d2e;
-  --graphite: #b9c7d9;
-  --charcoal-primary: #f4f7ff;
-  --midnight: #ffffff;
-  --ash: #8394aa;
-  --fog: #2c4058;
-  --smoke: #58708a;
-  --white-surface: #0d1a2b;
+  --warm-canvas: #edf5fc;
+  --stone-surface: #d9e7f3;
+  --parchment-card: #ffffff;
+  --graphite: #4f6278;
+  --charcoal-primary: #0a1b2d;
+  --midnight: #07111f;
+  --ash: #71839a;
+  --fog: #d6e4f0;
+  --smoke: #8da0b5;
+  --white-surface: #ffffff;
 
   /* Semantic tokens — light */
   --background: var(--warm-canvas);
   --foreground: var(--charcoal-primary);
-  --surface: rgba(13, 26, 43, 0.94);
-  --surface-solid: #0d1a2b;
-  --surface-muted: #122238;
-  --surface-hover: rgba(255, 255, 255, 0.065);
-  --border: rgba(255, 255, 255, 0.085);
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-solid: #ffffff;
+  --surface-muted: #f2f7fc;
+  --surface-hover: rgba(20, 121, 255, 0.075);
+  --border: rgba(12, 47, 77, 0.13);
   --border-strong: rgba(20, 121, 255, 0.38);
   --muted: var(--ash);
   --inverse: #1479ff;
   --inverse-text: #ffffff;
   --panel-border: var(--border);
-  --panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --panel-shadow:
+    0 16px 44px rgba(38, 78, 112, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --panel-shadow-hover:
-    rgba(7, 9, 25, 0.26) 0px 12px 40px 0px,
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    rgba(38, 78, 112, 0.14) 0px 16px 46px 0px,
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 
   /* Blob face color */
   --blob-face: #ffffff;
@@ -123,10 +125,12 @@
   --radius-card: 22px;
   --radius-card-lg: 28px;
   --radius-pill: 32px;
-  --shadow-subtle: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-subtle:
+    0 8px 24px rgba(38, 78, 112, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --shadow-sm:
-    rgba(7, 9, 25, 0.26) 0px 12px 40px 0px,
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    rgba(38, 78, 112, 0.14) 0px 14px 42px 0px,
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --sidebar: var(--surface);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -135,6 +139,7 @@
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
+  color-scheme: light;
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
@@ -205,6 +210,7 @@
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
+  color-scheme: dark;
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
@@ -214,12 +220,12 @@ body {
   background:
     radial-gradient(
       circle at 12% 8%,
-      rgba(20, 121, 255, 0.17),
+      rgba(20, 121, 255, 0.12),
       transparent 28rem
     ),
     radial-gradient(
       circle at 88% 18%,
-      rgba(39, 124, 255, 0.12),
+      rgba(53, 232, 129, 0.08),
       transparent 24rem
     ),
     var(--background);
@@ -602,7 +608,7 @@ body {
 .game-app textarea,
 .game-app select {
   border-color: var(--border);
-  background-color: rgba(5, 8, 20, 0.52);
+  background-color: var(--surface-solid);
   color: var(--foreground);
 }
 
@@ -620,7 +626,7 @@ body {
 
 .game-app table thead,
 .game-app [role="tablist"] {
-  background-color: rgba(5, 8, 20, 0.48);
+  background-color: var(--surface-muted);
 }
 
 .game-app table tbody tr {
@@ -658,8 +664,8 @@ body {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.game-app .bg-white,
-.game-app .bg-\[\#FAF9F6\] {
+:root[data-theme="dark"] .game-app .bg-white,
+:root[data-theme="dark"] .game-app .bg-\[\#FAF9F6\] {
   background-color: #0d1a2b !important;
 }
 
@@ -851,17 +857,44 @@ body {
 
 .game-hero {
   background:
+    radial-gradient(circle at 92% 8%, rgba(20, 121, 255, 0.16), transparent 17rem),
+    radial-gradient(circle at 12% 92%, rgba(53, 232, 129, 0.1), transparent 19rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(239, 247, 253, 0.98));
+  border-color: rgba(12, 47, 77, 0.14);
+  color: #07111f;
+  box-shadow:
+    0 26px 70px rgba(38, 78, 112, 0.16),
+    inset 0 1px 0 #ffffff;
+}
+
+.game-panel {
+  background:
+    radial-gradient(circle at 96% 0%, rgba(20, 121, 255, 0.1), transparent 10rem),
+    rgba(255, 255, 255, 0.82);
+  border-color: rgba(12, 47, 77, 0.13);
+  color: #07111f;
+  box-shadow:
+    0 16px 44px rgba(38, 78, 112, 0.1),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="dark"] .game-hero {
+  background:
     linear-gradient(135deg, rgba(10, 31, 53, 0.96), rgba(4, 12, 23, 0.99)),
     #07111f;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f4f7ff;
   box-shadow:
     0 28px 90px rgba(10, 12, 30, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-.game-panel {
+:root[data-theme="dark"] .game-panel {
   background:
     linear-gradient(145deg, rgba(18, 45, 72, 0.74), rgba(7, 17, 31, 0.94)),
     #091728;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f4f7ff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.045),
     0 18px 60px rgba(4, 6, 18, 0.18);
@@ -880,7 +913,7 @@ body {
 
 .game-app main > div > .verity-card p.text-graphite,
 .game-app main section.verity-card > div p.text-graphite {
-  color: #bbc4df;
+  color: var(--graphite);
 }
 
 .game-text-gradient {
@@ -1119,6 +1152,213 @@ body {
   .arcade-scan-line {
     animation: none;
   }
+}
+
+/* Light arcade skin. */
+:root[data-theme="light"] .arcade-app-header {
+  background: linear-gradient(
+    to bottom,
+    rgba(237, 245, 252, 0.97),
+    rgba(237, 245, 252, 0.88) 76%,
+    transparent
+  );
+}
+
+:root[data-theme="light"] .arcade-alert-button {
+  border-color: rgba(12, 47, 77, 0.13);
+  background: rgba(255, 255, 255, 0.9);
+  color: #61748c;
+  box-shadow: 0 8px 24px rgba(38, 78, 112, 0.08);
+}
+
+:root[data-theme="light"] .home-hero {
+  border-color: rgba(12, 47, 77, 0.14);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(20, 121, 255, 0.16), transparent 17rem),
+    radial-gradient(circle at 12% 92%, rgba(53, 232, 129, 0.1), transparent 19rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(239, 247, 253, 0.98));
+  color: #07111f;
+  box-shadow:
+    0 26px 70px rgba(38, 78, 112, 0.16),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="light"] .home-hero-status {
+  border-color: rgba(12, 47, 77, 0.11);
+}
+
+:root[data-theme="light"] .home-live-label,
+:root[data-theme="light"] .home-season-chip span,
+:root[data-theme="light"] .home-feature-list {
+  color: #667b92;
+}
+
+:root[data-theme="light"] .home-season-chip {
+  border-color: rgba(12, 47, 77, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 7px 20px rgba(38, 78, 112, 0.08);
+}
+
+:root[data-theme="light"] .home-hero-copy {
+  color: #50657c;
+}
+
+:root[data-theme="light"] .home-secondary-cta {
+  border-color: rgba(20, 121, 255, 0.2);
+  background: rgba(255, 255, 255, 0.76);
+  color: #0a1b2d;
+  box-shadow: 0 9px 26px rgba(38, 78, 112, 0.08);
+}
+
+:root[data-theme="light"] .home-secondary-cta:hover {
+  background: #ffffff;
+}
+
+:root[data-theme="light"] .home-roadmap {
+  border-color: rgba(12, 47, 77, 0.13);
+  background:
+    radial-gradient(circle at 96% 0%, rgba(20, 121, 255, 0.1), transparent 10rem),
+    rgba(255, 255, 255, 0.76);
+  box-shadow:
+    0 16px 44px rgba(38, 78, 112, 0.1),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="light"] .home-roadmap li {
+  border-color: rgba(12, 47, 77, 0.1);
+  background: rgba(247, 251, 255, 0.88);
+}
+
+:root[data-theme="light"] .home-roadmap li:first-child {
+  border-color: rgba(20, 121, 255, 0.28);
+  background: rgba(20, 121, 255, 0.07);
+}
+
+:root[data-theme="light"] .home-roadmap li:not(:first-child) > div:first-child {
+  border-color: rgba(20, 121, 255, 0.14);
+  background: #eaf3fc;
+  color: #52708e;
+}
+
+:root[data-theme="light"] .home-step-title {
+  color: #0a1b2d;
+}
+
+:root[data-theme="light"] .home-step-number {
+  color: rgba(10, 27, 45, 0.26);
+}
+
+:root[data-theme="light"] .arcade-alert-button:hover {
+  color: #1479ff;
+}
+
+:root[data-theme="light"] .arcade-balance-pill {
+  border-color: rgba(30, 175, 95, 0.2);
+  background: linear-gradient(145deg, #ffffff, #edf9f3);
+  color: #0a1b2d;
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 9px 26px rgba(38, 78, 112, 0.1);
+}
+
+:root[data-theme="light"] .arcade-mobile-nav {
+  border-color: rgba(12, 47, 77, 0.13);
+  background:
+    radial-gradient(circle at 50% -40%, rgba(20, 121, 255, 0.12), transparent 58%),
+    rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 20px 55px rgba(38, 78, 112, 0.2),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="light"] .arcade-nav-item {
+  color: #77879b;
+}
+
+:root[data-theme="light"] .arcade-nav-item.is-active {
+  color: #07111f;
+}
+
+:root[data-theme="light"] .duel-hero {
+  border-color: rgba(12, 47, 77, 0.13);
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255, 107, 74, 0.16), transparent 11rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(242, 248, 253, 0.98));
+  box-shadow:
+    0 22px 60px rgba(38, 78, 112, 0.12),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="light"] .duel-subtabs,
+:root[data-theme="light"] .player-view-tabs {
+  border-color: rgba(12, 47, 77, 0.13);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 32px rgba(38, 78, 112, 0.1);
+}
+
+:root[data-theme="light"] .duel-subtabs button:not(.bg-\[\#1479ff\]),
+:root[data-theme="light"] .player-view-tabs button:not([class*="from-[#1479ff]"]) {
+  color: #687b91;
+}
+
+:root[data-theme="light"] .duel-search-hero {
+  border-color: rgba(12, 47, 77, 0.13);
+  background:
+    radial-gradient(circle at 88% 0%, rgba(53, 232, 129, 0.13), transparent 13rem),
+    rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 22px 60px rgba(38, 78, 112, 0.12),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="light"] .duel-search-hero h1,
+:root[data-theme="light"] .duel-search-result .font-game,
+:root[data-theme="light"] .duel-search-empty .font-game {
+  color: #07111f;
+}
+
+:root[data-theme="light"] .duel-search-input {
+  border-color: rgba(20, 121, 255, 0.42);
+  background: #f9fcff;
+  color: #07111f;
+  box-shadow: inset 0 1px 3px rgba(38, 78, 112, 0.06);
+}
+
+:root[data-theme="light"] .duel-search-result,
+:root[data-theme="light"] .duel-search-empty,
+:root[data-theme="light"] .duel-search-skeleton {
+  border-color: rgba(12, 47, 77, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 30px rgba(38, 78, 112, 0.075);
+}
+
+:root[data-theme="light"] .verity-card {
+  border-color: rgba(12, 47, 77, 0.13);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(245, 250, 254, 0.98)),
+    #ffffff;
+  box-shadow:
+    0 16px 46px rgba(38, 78, 112, 0.1),
+    inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="light"] .game-modal-surface,
+:root[data-theme="light"] [data-slot="drawer-content"] {
+  border-color: rgba(12, 47, 77, 0.13) !important;
+  background:
+    radial-gradient(circle at 90% 5%, rgba(20, 121, 255, 0.12), transparent 13rem),
+    linear-gradient(145deg, #ffffff, #edf5fc 72%) !important;
+  color: #07111f !important;
+  box-shadow:
+    0 30px 90px rgba(38, 78, 112, 0.22),
+    inset 0 1px 0 #ffffff !important;
+}
+
+:root[data-theme="light"] .cinematic-vignette {
+  background:
+    radial-gradient(circle at 82% 46%, color-mix(in srgb, var(--scene-accent) 10%, transparent), transparent 31rem),
+    radial-gradient(circle at 12% 88%, rgba(20, 121, 255, 0.06), transparent 25rem),
+    linear-gradient(to bottom, transparent 58%, rgba(172, 202, 226, 0.16));
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

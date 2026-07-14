@@ -28,7 +28,12 @@ export default function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+      <ThemeProvider
+        attribute="data-theme"
+        defaultTheme="light"
+        enableSystem={false}
+        storageKey="verity-arcade-theme"
+      >
         {children}
         <AuthModals />
         <Toaster position="top-right" toastOptions={{ duration: 5000 }} />

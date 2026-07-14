@@ -215,7 +215,7 @@ export default function LineupBuilder({
                       disabled={submit.isPending}
                       className={`relative flex flex-col items-center justify-center gap-1 rounded-xl p-3.5 text-xs transition-all clickable disabled:opacity-50 ${
                         isSel
-                          ? "bg-[#121212] dark:bg-white font-bold text-white dark:text-zinc-950 shadow-md"
+                          ? "bg-[#1479ff] dark:bg-white font-bold text-white dark:text-zinc-950 shadow-[0_9px_24px_rgba(20,121,255,.22)]"
                           : "bg-[#FAF9F6] dark:bg-zinc-900/40 font-medium text-charcoal-primary dark:text-zinc-300 hover:bg-[#F3F1EC] dark:hover:bg-zinc-800/50"
                       }`}
                     >
@@ -294,7 +294,7 @@ export default function LineupBuilder({
           <button
             onClick={handleSubmit}
             disabled={authenticated && !canSubmit}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-charcoal-primary text-sm font-black uppercase tracking-wider text-white shadow-md transition-all hover:opacity-90 disabled:opacity-40 clickable dark:bg-white dark:text-zinc-950"
+            className="game-button-primary flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-black uppercase tracking-wider text-white transition-all hover:opacity-90 disabled:opacity-40 clickable"
           >
             <Swords className="h-4 w-4" />
             {!authenticated

@@ -54,7 +54,7 @@ function SlateCard({
       onClick={onSelect}
       className={`relative flex w-[86%] max-w-[320px] shrink-0 snap-start flex-col gap-3 rounded-2xl p-4 text-left transition-all clickable sm:w-[300px] ${
         selected
-          ? "bg-[#121212] text-white shadow-lg dark:bg-white dark:text-zinc-950"
+          ? "bg-[#1479ff] text-white shadow-[0_12px_32px_rgba(20,121,255,.24)] dark:bg-white dark:text-zinc-950"
           : "verity-card verity-card-hover bg-white dark:bg-zinc-900/30"
       }`}
     >

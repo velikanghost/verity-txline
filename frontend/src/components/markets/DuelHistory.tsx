@@ -315,7 +315,7 @@ export default function DuelHistory() {
             <div className="p-4 border-t border-border dark:border-zinc-800 flex justify-end bg-stone-50 dark:bg-zinc-900/50">
               <button
                 onClick={() => setSelectedMatch(null)}
-                className="px-4 py-2 rounded-[10px] bg-charcoal-primary hover:bg-charcoal-primary/95 text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-white/90 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                className="game-button-primary px-4 py-2 rounded-[10px] text-white text-xs font-bold transition-all cursor-pointer"
               >
                 Close Details
               </button>
