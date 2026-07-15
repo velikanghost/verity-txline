@@ -9,9 +9,9 @@
 > instruction — no oracle trust beyond TxLINE's cryptographically-signed match data.
 
 This is a hackathon pivot of the original "Verity" (an EVM/Arc prediction-market social app)
-onto the **TxODDS TxLINE** track. The social layer, PvP Arena, missions/XP, admin, and
-portfolio are kept; the settlement engine is rebuilt as a custom Solana Anchor program that
-reads TxLINE's signed Merkle roots.
+onto the **TxODDS TxLINE** track. The social layer, PvP Arena, XP, admin, and portfolio are
+kept; the settlement engine is rebuilt as a custom Solana Anchor program that reads TxLINE's
+signed Merkle roots.
 
 ## How settlement works
 
@@ -21,11 +21,11 @@ Our program never trusts an off-chain oracle — at settlement a keeper fetches 
 proof from TxLINE's REST API and the program **CPIs into `validate_stat`** to get the verdict.
 
 ```
-Admin/user creates market  →  on-chain parimutuel pool (USDC-SPL)
-Users stake YES / NO       →  pool grows
+Admin creates market       →  on-chain parimutuel pool (USDC-SPL)
+Users stake an outcome     →  pool grows
 Match ends                 →  keeper fetches TxLINE proof(s)
-settle() CPIs validate_stat →  boolean verdict sets the winning side
-Winners + LPs claim         →  pro-rata USDC payout
+settle() CPIs validate_stat →  verified verdict sets the winning outcome
+Winners claim              →  pro-rata USDC payout (losing pools fund winners)
 ```
 
 ### Market types it can settle
@@ -49,7 +49,7 @@ verity-txline/
 ├── solana/     # Anchor program (verity-worldcup) — the settlement engine
 ├── backend/    # NestJS API: TxLINE client, keeper, Circle Solana wallets, social/PvP
 ├── frontend/   # Next.js user app (custodial, no wallet popups)
-├── admin/      # Next.js admin console (market builder, moderation, metrics)
+├── admin/      # Next.js admin console (market + PvP-event builder, metrics)
 └── docs/       # Internal planning notes (gitignored)
 ```
 
@@ -64,7 +64,7 @@ Anchor project (npm) with its own toolchain — see [solana/README.md](solana/RE
 | TxLINE program (devnet) | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
 | Collateral | USDC (SPL); SOL is the gas token |
 | Wallets | Custodial **Circle** Solana wallets (`SOL-DEVNET`), backend-signed |
-| Toolchain | Anchor 0.31.1 · Agave 4.0.2 · NestJS 11 · Next.js 15 / React 19 |
+| Toolchain | Anchor 0.31.1 · Agave 4.0.2 · NestJS 11 · Next.js 16 / React 19 |
 
 ## Getting started
 
