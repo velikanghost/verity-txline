@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useRef } from "react"
-import { X, Loader2 } from "lucide-react"
-import { useAddCommentMutation } from "@/store/verity/verityQueries"
+import React, { useState, useEffect, useRef } from "react";
+import { X, Loader2 } from "lucide-react";
+import { useAddCommentMutation } from "@/store/verity/verityQueries";
 import {
   displayName,
   displayHandle,
   relativeTime,
   type FeedPost,
   type MarketComment,
-} from "@/lib/verity"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import toast from "@/lib/toast"
+} from "@/lib/verity";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import toast from "@/lib/toast";
 
 interface CommentModalProps {
-  post?: FeedPost | null
-  replyToComment?: MarketComment | null
-  isOpen: boolean
-  onClose: () => void
+  post?: FeedPost | null;
+  replyToComment?: MarketComment | null;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export default function CommentModal({
@@ -26,42 +26,42 @@ export default function CommentModal({
   isOpen,
   onClose,
 }: CommentModalProps) {
-  const [commentText, setCommentText] = useState("")
-  const { profile } = useWalletProfile()
+  const [commentText, setCommentText] = useState("");
+  const { profile } = useWalletProfile();
   const { mutateAsync: addComment, isPending: isSubmitting } =
-    useAddCommentMutation()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+    useAddCommentMutation();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setCommentText("")
+      setCommentText("");
       // Focus textarea when modal opens
       setTimeout(() => {
-        textareaRef.current?.focus()
-      }, 50)
+        textareaRef.current?.focus();
+      }, 50);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!isOpen || (!post && !replyToComment)) return null
+  if (!isOpen || (!post && !replyToComment)) return null;
 
-  const parentAuthor = replyToComment ? replyToComment.author : post?.author
+  const parentAuthor = replyToComment ? replyToComment.author : post?.author;
   const parentTime = replyToComment
     ? replyToComment.created_at
-    : post?.created_at
+    : post?.created_at;
   const parentContent = replyToComment
     ? replyToComment.content
-    : post?.market?.question || post?.content
-  const parentId = replyToComment?.id
-  const postId = replyToComment ? replyToComment.post_id : post?.id
+    : post?.market?.question || post?.content;
+  const parentId = replyToComment?.id;
+  const postId = replyToComment ? replyToComment.post_id : post?.id;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!profile) {
-      toast.error("Connect a wallet to leave a comment.")
-      return
+      toast.error("Connect a wallet to leave a comment.");
+      return;
     }
-    const text = commentText.trim()
-    if (!text) return
+    const text = commentText.trim();
+    if (!text) return;
 
     try {
       await addComment({
@@ -69,26 +69,26 @@ export default function CommentModal({
         authorId: profile.id,
         content: text,
         parentId,
-      })
-      toast.success("Comment posted!")
-      onClose()
+      });
+      toast.success("Comment posted!");
+      onClose();
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to post comment.",
-      )
+      );
     }
-  }
+  };
 
-  const parentAvatarUrl = parentAuthor?.avatar_url || parentAuthor?.avatarUrl
-  const myAvatarUrl = profile?.avatar_url || profile?.avatarUrl
+  const parentAvatarUrl = parentAuthor?.avatar_url || parentAuthor?.avatarUrl;
+  const myAvatarUrl = profile?.avatar_url || profile?.avatarUrl;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-midnight/35 px-4 py-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-sm">
       {/* Backdrop overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Dialog Card */}
-      <section className="verity-card relative z-10 w-full max-w-[520px] flex flex-col overflow-hidden bg-white-surface p-5 shadow-xl animate-in fade-in-50 zoom-in-95 duration-150">
+      <section className="game-modal-surface relative z-10 flex w-full max-w-[520px] flex-col overflow-hidden p-5 animate-in fade-in-50 zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-dashed border-stone-surface">
           <span className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-ash">
@@ -197,5 +197,5 @@ export default function CommentModal({
         </form>
       </section>
     </div>
-  )
+  );
 }

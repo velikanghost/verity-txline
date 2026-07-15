@@ -1,35 +1,39 @@
-import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
-import AppProviders from "@/components/providers/AppProviders"
-import AppShell from "@/components/layout/AppShell"
+import type { Metadata, Viewport } from "next";
+import { Poppins, Silkscreen } from "next/font/google";
+import "./globals.css";
+import AppProviders from "@/components/providers/AppProviders";
+import AppShell from "@/components/layout/AppShell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-})
+  weight: ["400", "500", "600", "700", "800"],
+});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const silkscreen = Silkscreen({
+  variable: "--font-silkscreen",
   subsets: ["latin"],
-})
+  weight: ["400", "700"],
+});
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-}
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://veritymarket.vercel.app"),
-  title: "Verity | Opinions Backed by Conviction",
-  description: "A social network where opinions can become markets.",
-  applicationName: "Verity",
+  title: "Verity World Cup | Every Result Settled on Proof",
+  description:
+    "A social World Cup prediction arena powered by live TxLINE data and verifiable settlement on Solana.",
+  applicationName: "Verity World Cup",
   keywords: [
     "Verity",
     "prediction markets",
-    "social markets",
-    "Arc testnet",
+    "World Cup markets",
+    "TxLINE",
+    "Solana",
     "USDC",
     "community signals",
   ],
@@ -38,9 +42,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "Verity | Opinions Backed by Conviction",
+    title: "Verity World Cup | Every Result Settled on Proof",
     description:
-      "Post claims, rally Upvote/Downvote signals, fund launch pools, and trade community-backed markets.",
+      "Back live World Cup predictions and verify every settlement against TxLINE proofs on Solana.",
     url: "https://veritymarket.vercel.app",
     siteName: "Verity",
     images: [
@@ -48,7 +52,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Verity social prediction markets preview",
+        alt: "Verity World Cup prediction markets preview",
       },
     ],
     locale: "en_US",
@@ -56,26 +60,27 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Verity | Opinions Backed by Conviction",
+    title: "Verity World Cup | Every Result Settled on Proof",
     description:
-      "A social prediction network where posts become USDC-backed markets.",
+      "A social World Cup prediction arena with verifiable settlement on Solana.",
     images: ["/twitter-image"],
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      data-theme="light"
+      className={`${poppins.variable} ${silkscreen.variable}`}
       suppressHydrationWarning
     >
       <body
-        className="min-h-screen overflow-y-scroll bg-background text-foreground"
+        className="game-app min-h-screen overflow-y-scroll bg-background text-foreground"
         suppressHydrationWarning
       >
         <AppProviders>
@@ -83,5 +88,5 @@ export default function RootLayout({
         </AppProviders>
       </body>
     </html>
-  )
+  );
 }

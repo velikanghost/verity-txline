@@ -1,36 +1,64 @@
-"use client"
+"use client";
 
-import { Check, X, Clock, Swords, Trophy } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Check, X, Clock, Swords, Trophy } from "lucide-react";
 
 interface Pick {
-  marketId: string
-  optionName: string
-  matchup?: string | null
-  selection: string
-  isCorrect: boolean | null
+  marketId: string;
+  optionName: string;
+  matchup?: string | null;
+  selection: string;
+  isCorrect: boolean | null;
 }
 
 interface DuelStatus {
-  status: "queued" | "matched" | "resolved"
+  status: "queued" | "matched" | "resolved";
   ticket: {
-    id: string
-    status: string
-    score: number
-    xpEarned: number
-    picks: Pick[]
-  }
-  match: { id: string; divergenceScore: number; status: string } | null
+    id: string;
+    status: string;
+    score: number;
+    xpEarned: number;
+    picks: Pick[];
+  };
+  match: { id: string; divergenceScore: number; status: string } | null;
   opponent: {
-    id: string
-    username: string
-    avatarUrl: string | null
-    picks: Pick[]
-  } | null
-  event: { id: string; question: string } | null
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+    picks: Pick[];
+  } | null;
+  event: { id: string; question: string } | null;
 }
 
 const correctCount = (picks: Pick[]) =>
-  picks.filter((p) => p.isCorrect === true).length
+  picks.filter((p) => p.isCorrect === true).length;
+
+function AnimatedScore({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const reducedMotionFrame = requestAnimationFrame(() => setDisplay(value));
+      return () => cancelAnimationFrame(reducedMotionFrame);
+    }
+
+    const startedAt = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / 420);
+      setDisplay(Math.round(value * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+
+  return (
+    <div className="pvp-score-pop text-3xl font-black text-charcoal-primary ">
+      {display}
+    </div>
+  );
+}
 
 function PickRow({ pick }: { pick: Pick }) {
   const state =
@@ -38,16 +66,16 @@ function PickRow({ pick }: { pick: Pick }) {
       ? "correct"
       : pick.isCorrect === false
         ? "wrong"
-        : "pending"
+        : "pending";
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-[#FAF9F6] dark:bg-zinc-900/40 px-3 py-2.5">
+    <div className="pvp-pick-row flex items-center justify-between gap-3 rounded-xl bg-[#FAF9F6] px-3 py-3 ">
       <div className="min-w-0">
         {pick.matchup && (
           <div className="text-[9px] font-mono font-bold uppercase tracking-wider text-ash truncate">
             {pick.matchup}
           </div>
         )}
-        <div className="text-xs font-bold text-charcoal-primary dark:text-white truncate">
+        <div className="text-xs font-bold text-charcoal-primary truncate">
           {pick.optionName}
         </div>
         <div className="text-[10px] font-mono text-ash truncate">
@@ -72,20 +100,20 @@ function PickRow({ pick }: { pick: Pick }) {
         )}
       </span>
     </div>
-  )
+  );
 }
 
 export default function DuelPanel({ status }: { status: DuelStatus }) {
-  const myScore = correctCount(status.ticket.picks)
-  const oppScore = status.opponent ? correctCount(status.opponent.picks) : 0
-  const resolved = status.status === "resolved"
-  const won = resolved && myScore > oppScore
-  const tied = resolved && myScore === oppScore
+  const myScore = correctCount(status.ticket.picks);
+  const oppScore = status.opponent ? correctCount(status.opponent.picks) : 0;
+  const resolved = status.status === "resolved";
+  const won = resolved && myScore > oppScore;
+  const tied = resolved && myScore === oppScore;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="pvp-duel-panel flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-black text-charcoal-primary dark:text-white leading-tight">
+        <h1 className="text-2xl font-black text-charcoal-primary leading-tight">
           {status.event?.question || "Your duel"}
         </h1>
         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash">
@@ -103,14 +131,12 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
 
       {/* Scoreboard */}
       {status.opponent ? (
-        <div className="verity-card flex items-center justify-between gap-3 p-4">
+        <div className="pvp-scoreboard verity-card flex items-center justify-between gap-3 p-5">
           <div className="flex-1 text-center">
             <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash">
               You
             </div>
-            <div className="text-3xl font-black text-charcoal-primary dark:text-white">
-              {myScore}
-            </div>
+            <AnimatedScore value={myScore} />
           </div>
           <div className="flex flex-col items-center gap-1 text-ash">
             {resolved && won ? (
@@ -124,15 +150,13 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
             <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash truncate">
               @{status.opponent.username}
             </div>
-            <div className="text-3xl font-black text-charcoal-primary dark:text-white">
-              {oppScore}
-            </div>
+            <AnimatedScore value={oppScore} />
           </div>
         </div>
       ) : (
         <div className="verity-card p-6 text-center">
           <Clock className="mx-auto h-6 w-6 text-ash" />
-          <p className="mt-2 text-sm font-bold text-charcoal-primary dark:text-white">
+          <p className="mt-2 text-sm font-bold text-charcoal-primary ">
             Lineup locked in
           </p>
           <p className="mt-1 text-xs text-ash">
@@ -142,7 +166,7 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
       )}
 
       {resolved && status.ticket.xpEarned > 0 && (
-        <div className="verity-card flex items-center justify-center gap-2 bg-amber-500/5 p-3 text-xs font-bold text-amber-600">
+        <div className="pvp-success-reveal pixel-reward verity-card flex items-center justify-center gap-2 bg-amber-500/5 p-4 text-xs font-bold text-amber-600">
           <Trophy className="h-4 w-4" /> +{status.ticket.xpEarned} Arena XP
         </div>
       )}
@@ -169,5 +193,5 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
         )}
       </div>
     </div>
-  )
+  );
 }

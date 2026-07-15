@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Input } from "@/components/ui/input"
-import { Search, X } from "lucide-react"
-import { useMemo, useState } from "react"
-import FollowButton from "@/components/profile/FollowButton"
-import { displayHandle, displayName, type Profile } from "@/lib/verity"
+import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import FollowButton from "@/components/profile/FollowButton";
+import { displayHandle, displayName, type Profile } from "@/lib/verity";
 
 interface SocialUserListModalProps {
-  open: boolean
-  title: string
-  subtitle?: string
-  users: Profile[]
-  onClose: () => void
+  open: boolean;
+  title: string;
+  subtitle?: string;
+  users: Profile[];
+  onClose: () => void;
 }
 
 export default function SocialUserListModal({
@@ -22,25 +22,25 @@ export default function SocialUserListModal({
   users,
   onClose,
 }: SocialUserListModalProps) {
-  const [query, setQuery] = useState("")
+  const [query, setQuery] = useState("");
   const filteredUsers = useMemo(() => {
-    const normalized = query.trim().toLowerCase()
-    if (!normalized) return users
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return users;
 
     return users.filter((user) => {
       return (
         displayName(user).toLowerCase().includes(normalized) ||
         displayHandle(user).toLowerCase().includes(normalized) ||
         (user.bio || "").toLowerCase().includes(normalized)
-      )
-    })
-  }, [query, users])
+      );
+    });
+  }, [query, users]);
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-midnight/35 px-2 py-2 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6">
-      <section className="verity-card flex max-h-[88dvh] w-full max-w-[520px] flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#02040d]/75 px-2 py-2 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6">
+      <section className="game-modal-surface flex max-h-[88dvh] w-full max-w-[520px] flex-col overflow-hidden">
         <div className="flex items-start justify-between gap-4 border-b border-dashed border-stone-surface p-4 sm:p-5">
           <div>
             <h2 className="text-[23px] font-semibold leading-[1.2] tracking-[-0.44px] text-charcoal-primary">
@@ -87,15 +87,15 @@ export default function SocialUserListModal({
         </div>
       </section>
     </div>
-  )
+  );
 }
 
 function UserListRow({
   user,
   onClose,
 }: {
-  user: Profile
-  onClose: () => void
+  user: Profile;
+  onClose: () => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-3 border-b border-dashed border-stone-surface p-4 last:border-b-0">
@@ -121,11 +121,11 @@ function UserListRow({
       </Link>
       <FollowButton compact profile={user} />
     </div>
-  )
+  );
 }
 
 function ProfileAvatar({ profile }: { profile: Profile }) {
-  const avatarUrl = profile.avatar_url || profile.avatarUrl
+  const avatarUrl = profile.avatar_url || profile.avatarUrl;
 
   if (avatarUrl) {
     return (
@@ -133,12 +133,12 @@ function ProfileAvatar({ profile }: { profile: Profile }) {
         className="h-11 w-11 shrink-0 rounded-[16px] bg-cover bg-center shadow-subtle"
         style={{ backgroundImage: `url(${avatarUrl})` }}
       />
-    )
+    );
   }
 
   return (
     <span className="verity-blob h-11 w-11 shrink-0 bg-sky-blue">
       <span className="verity-blob-smile" />
     </span>
-  )
+  );
 }

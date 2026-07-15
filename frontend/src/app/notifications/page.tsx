@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CheckCircle2,
@@ -9,15 +9,15 @@ import {
   Heart,
   UserPlus,
   Loader2,
-} from "lucide-react"
-import PagePanel from "@/components/layout/PagePanel"
+} from "lucide-react";
+import PagePanel from "@/components/layout/PagePanel";
 import {
   useNotificationsQuery,
   useMarkNotificationReadMutation,
   useMarkAllNotificationsReadMutation,
-} from "@/store/verity/verityQueries"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { relativeTime } from "@/lib/verity"
+} from "@/store/verity/verityQueries";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { relativeTime } from "@/lib/verity";
 
 const ICON_MAP: Record<string, any> = {
   reply: MessageCircle,
@@ -28,34 +28,34 @@ const ICON_MAP: Record<string, any> = {
   market_move: TrendingUp,
   market_funded: TrendingUp,
   market_registered: TrendingUp,
-}
+};
 
 export default function NotificationsPage() {
-  const router = useRouter()
-  const { profile, isLoading: profileLoading } = useWalletProfile()
+  const router = useRouter();
+  const { profile, isLoading: profileLoading } = useWalletProfile();
   const {
     data: notifications = [],
     isLoading: notificationsLoading,
     refetch,
-  } = useNotificationsQuery(profile?.id || "")
-  const { mutateAsync: markRead } = useMarkNotificationReadMutation()
+  } = useNotificationsQuery(profile?.id || "");
+  const { mutateAsync: markRead } = useMarkNotificationReadMutation();
   const { mutateAsync: markAllRead, isPending: markAllReadPending } =
-    useMarkAllNotificationsReadMutation()
+    useMarkAllNotificationsReadMutation();
 
   async function handleMarkRead(id: string) {
     try {
-      await markRead({ notificationId: id, userId: profile?.id || "" })
-      await refetch()
+      await markRead({ notificationId: id, userId: profile?.id || "" });
+      await refetch();
     } catch (e) {
       // Ignore
     }
   }
 
   async function handleMarkAllRead() {
-    if (!profile?.id) return
+    if (!profile?.id) return;
     try {
-      await markAllRead(profile.id)
-      await refetch()
+      await markAllRead(profile.id);
+      await refetch();
     } catch (e) {
       // Ignore
     }
@@ -64,24 +64,24 @@ export default function NotificationsPage() {
   if (profileLoading) {
     return (
       <PagePanel
-        description="Signals from markets, creators, replies, and settlements you care about."
-        eyebrow="Inbox"
-        title="Notifications"
+        description="Match updates, duel results, quest progress, and verified rewards."
+        eyebrow="Signal feed"
+        title="Arena alerts"
       >
         <div className="flex flex-col items-center justify-center p-12 text-ash">
           <Loader2 className="h-6 w-6 animate-spin text-sky-blue" />
           <p className="mt-2 text-sm font-medium">Loading...</p>
         </div>
       </PagePanel>
-    )
+    );
   }
 
   if (!profile) {
     return (
       <PagePanel
-        description="Signals from markets, creators, replies, and settlements you care about."
-        eyebrow="Inbox"
-        title="Notifications"
+        description="Match updates, duel results, quest progress, and verified rewards."
+        eyebrow="Signal feed"
+        title="Arena alerts"
       >
         <div className="verity-card flex flex-col items-center gap-3 p-8 text-center text-sm font-medium text-ash bg-surface-solid border border-border rounded-xl shadow-subtle">
           <Bell className="h-10 w-10 text-ash animate-bounce" />
@@ -91,20 +91,20 @@ export default function NotificationsPage() {
           </p>
         </div>
       </PagePanel>
-    )
+    );
   }
 
   return (
     <PagePanel
-      description="Signals from markets, creators, replies, and settlements you care about."
-      eyebrow="Inbox"
-      title="Notifications"
+      description="Match updates, duel results, quest progress, and verified rewards."
+      eyebrow="Signal feed"
+      title="Arena alerts"
     >
       <section className="verity-card overflow-hidden bg-surface-solid border border-border rounded-xl shadow-subtle">
         <div className="border-b border-dashed border-stone-surface p-4 sm:p-5 flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-charcoal-primary">
             <Bell className="h-4 w-4 text-meadow-green" />
-            Recent
+            Latest signals
           </h2>
           {notifications.filter((n: any) => !n.read).length > 0 && (
             <button
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
         ) : notifications.length > 0 ? (
           notifications.map((notification: any) => {
             const IconComponent =
-              ICON_MAP[notification.type?.toLowerCase()] || Bell
+              ICON_MAP[notification.type?.toLowerCase()] || Bell;
 
             return (
               <article
@@ -137,7 +137,7 @@ export default function NotificationsPage() {
                 key={notification.id}
                 onClick={() => {
                   if (!notification.read) {
-                    void handleMarkRead(notification.id)
+                    void handleMarkRead(notification.id);
                   }
                   if (notification.targetId) {
                     if (
@@ -148,15 +148,15 @@ export default function NotificationsPage() {
                         "market_registered",
                       ].includes(notification.type?.toLowerCase())
                     ) {
-                      router.push(`/markets/${notification.targetId}`)
+                      router.push(`/markets/${notification.targetId}`);
                     } else if (
                       ["pvp_matched", "pvp_resolved", "pvp_boost"].includes(
                         notification.type?.toLowerCase(),
                       )
                     ) {
-                      router.push(`/markets?tab=pvp-arena`)
+                      router.push(`/markets?tab=pvp-arena`);
                     } else {
-                      router.push(`/posts/${notification.targetId}`)
+                      router.push(`/posts/${notification.targetId}`);
                     }
                   }
                 }}
@@ -191,7 +191,7 @@ export default function NotificationsPage() {
                   </p>
                 </div>
               </article>
-            )
+            );
           })
         ) : (
           <div className="flex flex-col items-center gap-3 p-12 text-center text-sm font-medium text-ash">
@@ -203,5 +203,5 @@ export default function NotificationsPage() {
         )}
       </section>
     </PagePanel>
-  )
+  );
 }

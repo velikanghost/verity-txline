@@ -1,42 +1,42 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Share } from "lucide-react"
-import FollowButton from "@/components/profile/FollowButton"
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Share } from "lucide-react";
+import FollowButton from "@/components/profile/FollowButton";
 import ProfileActivityTabs, {
   type ProfileActivityTab,
-} from "@/components/social/ProfileActivityTabs"
-import SocialUserListModal from "@/components/social/SocialUserListModal"
-import { useFeed } from "@/hooks/useFeed"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { displayHandle, displayName, type Profile } from "@/lib/verity"
+} from "@/components/social/ProfileActivityTabs";
+import SocialUserListModal from "@/components/social/SocialUserListModal";
+import { useFeed } from "@/hooks/useFeed";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { displayHandle, displayName, type Profile } from "@/lib/verity";
 import {
   useProfileActivityQuery,
   useUserProfileQuery,
   useUserPortfolioQuery,
-} from "@/store/verity/verityQueries"
-import { FeedSkeleton } from "@/components/feed/FeedShell"
+} from "@/store/verity/verityQueries";
+import { FeedSkeleton } from "@/components/feed/FeedShell";
 
 interface PublicProfileViewProps {
-  userId: string
+  userId: string;
 }
 
 export default function PublicProfileView({ userId }: PublicProfileViewProps) {
-  const router = useRouter()
-  const { profile: viewerProfile } = useWalletProfile()
-  const { items, loading, error } = useFeed()
-  const [activeTab, setActiveTab] = useState<ProfileActivityTab>("markets")
+  const router = useRouter();
+  const { profile: viewerProfile } = useWalletProfile();
+  const { items, loading, error } = useFeed();
+  const [activeTab, setActiveTab] = useState<ProfileActivityTab>("markets");
   const [peopleModal, setPeopleModal] = useState<
     "followers" | "following" | null
-  >(null)
+  >(null);
 
-  const decodedUserId = decodeURIComponent(userId)
+  const decodedUserId = decodeURIComponent(userId);
   const {
     data: profile,
     isLoading: isProfileLoading,
     error: profileError,
-  } = useUserProfileQuery(decodedUserId)
+  } = useUserProfileQuery(decodedUserId);
 
   const { data: tabItems = [], isLoading: isActivityLoading } =
     useProfileActivityQuery(
@@ -47,10 +47,10 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
           ? "comments"
           : "posts",
       viewerProfile?.id,
-    )
+    );
 
   const { data: positions = [], isLoading: isPositionsLoading } =
-    useUserPortfolioQuery(profile?.id || "")
+    useUserPortfolioQuery(profile?.id || "");
 
   const isTabLoading =
     activeTab === "markets"
@@ -59,33 +59,33 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
         ? isPositionsLoading
         : activeTab === "activity"
           ? isActivityLoading
-          : false
+          : false;
 
   const localProfileItems = useMemo(() => {
-    if (!profile) return []
-    return items.filter((item) => item.author.id === profile.id)
-  }, [items, profile])
+    if (!profile) return [];
+    return items.filter((item) => item.author.id === profile.id);
+  }, [items, profile]);
 
-  const marketItems = localProfileItems.filter((item) => item.market)
+  const marketItems = localProfileItems.filter((item) => item.market);
   const knownUsers = useMemo(() => {
-    const users = new Map<string, Profile>()
-    items.forEach((item) => users.set(item.author.id, item.author))
-    if (viewerProfile) users.set(viewerProfile.id, viewerProfile)
-    if (profile) users.set(profile.id, profile)
-    return Array.from(users.values())
-  }, [items, profile, viewerProfile])
+    const users = new Map<string, Profile>();
+    items.forEach((item) => users.set(item.author.id, item.author));
+    if (viewerProfile) users.set(viewerProfile.id, viewerProfile);
+    if (profile) users.set(profile.id, profile);
+    return Array.from(users.values());
+  }, [items, profile, viewerProfile]);
 
   const resolvedPositions = positions.filter(
     (pos) => pos.status === "resolved" && pos.resolved_outcome !== null,
-  )
+  );
   const wonPositions = resolvedPositions.filter(
     (pos) => pos.resolved_outcome === pos.side,
-  )
+  );
 
   const accuracy =
     resolvedPositions.length > 0
       ? Math.round((wonPositions.length / resolvedPositions.length) * 100)
-      : 0
+      : 0;
 
   if (isProfileLoading) {
     return (
@@ -112,7 +112,7 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
         </section>
         <FeedSkeleton />
       </div>
-    )
+    );
   }
 
   if (profileError) {
@@ -121,11 +121,11 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
         message={(profileError as any)?.message || "Failed to load profile."}
         tone="error"
       />
-    )
+    );
   }
 
   if (!profile) {
-    return <ProfileState message="Profile not found." tone="error" />
+    return <ProfileState message="Profile not found." tone="error" />;
   }
 
   return (
@@ -141,7 +141,7 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
                 className="clickable verity-pill hidden h-10 items-center justify-center gap-2 bg-parchment-card px-4 text-sm font-semibold tracking-[-0.18px] text-charcoal-primary shadow-subtle hover:bg-stone-surface sm:inline-flex"
                 onClick={() => {
                   if (typeof window !== "undefined") {
-                    void navigator.clipboard?.writeText(window.location.href)
+                    void navigator.clipboard?.writeText(window.location.href);
                   }
                 }}
                 type="button"
@@ -196,7 +196,7 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
               <span className="font-mono text-xs text-ash">
                 {accuracy}% accuracy
               </span>
-              <span className="font-mono text-xs text-ash font-semibold dark:text-indigo-400">
+              <span className="pixel-reward text-[10px] text-sky-blue">
                 ⭐ {(profile.arenaXp ?? 0).toLocaleString()} XP
               </span>
             </div>
@@ -224,11 +224,11 @@ export default function PublicProfileView({ userId }: PublicProfileViewProps) {
         users={knownUsers}
       />
     </div>
-  )
+  );
 }
 
 function ProfileAvatar({ profile }: { profile: Profile }) {
-  const avatarUrl = profile.avatar_url || profile.avatarUrl
+  const avatarUrl = profile.avatar_url || profile.avatarUrl;
 
   if (avatarUrl) {
     return (
@@ -236,28 +236,28 @@ function ProfileAvatar({ profile }: { profile: Profile }) {
         className="h-20 w-20 shrink-0 rounded-[24px] bg-cover bg-center ring-4 ring-white shadow-subtle sm:h-24 sm:w-24 sm:rounded-[28px]"
         style={{ backgroundImage: `url(${avatarUrl})` }}
       />
-    )
+    );
   }
 
   return (
     <div className="verity-blob h-20 w-20 shrink-0 bg-sky-blue ring-4 ring-white sm:h-24 sm:w-24">
       <span className="verity-blob-smile" />
     </div>
-  )
+  );
 }
 
 function ProfileTabs({
   activeTab,
   onChange,
 }: {
-  activeTab: ProfileActivityTab
-  onChange: (tab: ProfileActivityTab) => void
+  activeTab: ProfileActivityTab;
+  onChange: (tab: ProfileActivityTab) => void;
 }) {
   const tabs: Array<{ id: ProfileActivityTab; label: string }> = [
     { id: "markets", label: "Markets" },
     { id: "predictions", label: "Predictions" },
     { id: "activity", label: "Activity" },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-3 border-t border-dashed border-stone-surface px-2">
@@ -279,15 +279,15 @@ function ProfileTabs({
         </button>
       ))}
     </div>
-  )
+  );
 }
 
 function ProfileState({
   message,
   tone = "neutral",
 }: {
-  message: string
-  tone?: "neutral" | "error"
+  message: string;
+  tone?: "neutral" | "error";
 }) {
   return (
     <div className="py-4">
@@ -301,5 +301,5 @@ function ProfileState({
         {message}
       </section>
     </div>
-  )
+  );
 }

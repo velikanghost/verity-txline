@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { X, Loader2 } from "lucide-react"
-import { useUsdcTransfer } from "@/hooks/useUsdcTransfer"
-import toast from "@/lib/toast"
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { X, Loader2 } from "lucide-react";
+import { useUsdcTransfer } from "@/hooks/useUsdcTransfer";
+import toast from "@/lib/toast";
 
 interface SendUsdcModalProps {
-  isOpen: boolean
-  onClose: () => void
-  usdcBalance: number
-  onSuccess?: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  usdcBalance: number;
+  onSuccess?: () => void;
 }
 
 export default function SendUsdcModal({
@@ -19,51 +19,51 @@ export default function SendUsdcModal({
   usdcBalance,
   onSuccess,
 }: SendUsdcModalProps) {
-  const [recipient, setRecipient] = useState("")
-  const [amountInput, setAmountInput] = useState("")
-  const [isSending, setIsSending] = useState(false)
-  const { transferUsdc } = useUsdcTransfer()
+  const [recipient, setRecipient] = useState("");
+  const [amountInput, setAmountInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const { transferUsdc } = useUsdcTransfer();
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const amount = parseFloat(amountInput)
+    const amount = parseFloat(amountInput);
     if (!recipient || isNaN(amount) || amount <= 0) {
-      toast.error("Please provide a valid recipient address and amount.")
-      return
+      toast.error("Please provide a valid recipient address and amount.");
+      return;
     }
 
     if (amount > usdcBalance) {
       toast.error(
         `Insufficient USDC balance. You have ${usdcBalance.toFixed(2)} USDC.`,
-      )
-      return
+      );
+      return;
     }
 
-    setIsSending(true)
-    const toastId = toast.loading("Sending USDC...")
+    setIsSending(true);
+    const toastId = toast.loading("Sending USDC...");
     try {
-      await transferUsdc(recipient, amount)
-      toast.success(`Successfully sent ${amount} USDC!`, { id: toastId })
-      setRecipient("")
-      setAmountInput("")
-      onSuccess?.()
-      onClose()
+      await transferUsdc(recipient, amount);
+      toast.success(`Successfully sent ${amount} USDC!`, { id: toastId });
+      setRecipient("");
+      setAmountInput("");
+      onSuccess?.();
+      onClose();
     } catch (err: any) {
-      toast.dismiss(toastId)
+      toast.dismiss(toastId);
       if (!err.message?.includes("rejected")) {
-        toast.error(err.message || "Failed to send USDC.")
+        toast.error(err.message || "Failed to send USDC.");
       }
     } finally {
-      setIsSending(false)
+      setIsSending(false);
     }
-  }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-midnight/40 backdrop-blur-md px-4 py-6 animate-fade-in">
-      <div className="verity-card w-full max-w-[440px] bg-white-surface p-6 shadow-sm border border-border relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
+      <div className="game-modal-surface relative w-full max-w-[440px] p-6">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-ash hover:text-charcoal-primary transition-colors cursor-pointer"
@@ -139,5 +139,5 @@ export default function SendUsdcModal({
         </form>
       </div>
     </div>
-  )
+  );
 }

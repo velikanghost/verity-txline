@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { User, Wallet } from "lucide-react"
-import ProfileEditor from "@/components/profile/ProfileEditor"
-import PortfolioDashboard from "@/components/porfolio/PortfolioDashboard"
+import { useState } from "react";
+import { Trophy, User, Wallet } from "lucide-react";
+import ProfileEditor from "@/components/profile/ProfileEditor";
+import PortfolioDashboard from "@/components/porfolio/PortfolioDashboard";
+import { LeaderboardContent } from "@/app/leaderboard/page";
 
-type View = "profile" | "portfolio"
+type View = "profile" | "portfolio" | "leaderboard";
 
 /**
  * Unified account surface: identity/activity (Profile) and holdings/positions
@@ -15,32 +16,41 @@ type View = "profile" | "portfolio"
 export default function ProfilePortfolio({
   initialView = "profile",
 }: {
-  initialView?: View
+  initialView?: View;
 }) {
-  const [view, setView] = useState<View>(initialView)
+  const [view, setView] = useState<View>(initialView);
 
   const tabs: { id: View; label: string; icon: React.ReactNode }[] = [
-    { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
+    {
+      id: "profile",
+      label: "Player Card",
+      icon: <User className="h-4 w-4" />,
+    },
     {
       id: "portfolio",
-      label: "Portfolio",
+      label: "Vault",
       icon: <Wallet className="h-4 w-4" />,
     },
-  ]
+    {
+      id: "leaderboard",
+      label: "Rankings",
+      icon: <Trophy className="h-4 w-4" />,
+    },
+  ];
 
   return (
-    <div className="mx-auto w-full max-w-[960px]">
+    <div className="tournament-player mx-auto w-full max-w-[960px]">
       {/* Segmented toggle */}
       <div className="pb-2 pt-3">
-        <div className="inline-flex gap-1 rounded-xl border border-stone-200/60 bg-stone-100 p-1 dark:border-zinc-800/60 dark:bg-zinc-900">
+        <div className="player-view-tabs grid w-full grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-[#0b0f20]/80 p-1.5 shadow-[0_10px_35px_rgba(4,6,18,.18)] sm:inline-flex sm:w-auto">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setView(t.id)}
-              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all clickable ${
+              className={`font-game flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all clickable sm:px-4 ${
                 view === t.id
-                  ? "bg-white text-charcoal-primary shadow-sm dark:bg-zinc-800 dark:text-white"
-                  : "text-ash hover:text-charcoal-primary dark:hover:text-white"
+                  ? "bg-gradient-to-r from-[#1479ff] to-[#0862d3] text-white shadow-[0_7px_20px_rgba(20,121,255,.24)]"
+                  : "text-ash hover:bg-white/[0.05] hover:text-white"
               }`}
             >
               {t.icon}
@@ -50,7 +60,13 @@ export default function ProfilePortfolio({
         </div>
       </div>
 
-      {view === "profile" ? <ProfileEditor /> : <PortfolioDashboard />}
+      {view === "profile" ? (
+        <ProfileEditor />
+      ) : view === "portfolio" ? (
+        <PortfolioDashboard />
+      ) : (
+        <LeaderboardContent embedded />
+      )}
     </div>
-  )
+  );
 }

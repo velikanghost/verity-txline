@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import Link from "next/link"
-import UserHoverCard from "@/components/social/UserHoverCard"
-import MarketCard from "@/components/post/MarketCard"
-import PostCard from "@/components/post/PostCard"
-import { FeedSkeleton } from "@/components/feed/FeedShell"
+import React, { useState } from "react";
+import Link from "next/link";
+import UserHoverCard from "@/components/social/UserHoverCard";
+import MarketCard from "@/components/post/MarketCard";
+import PostCard from "@/components/post/PostCard";
+import { FeedSkeleton } from "@/components/feed/FeedShell";
 import {
   displayHandle,
   displayName,
@@ -15,26 +15,26 @@ import {
   type MarketPost,
   type Profile,
   type MarketPosition,
-} from "@/lib/verity"
-import { useRouter } from "next/navigation"
+} from "@/lib/verity";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   Swords,
   Timer,
   ChevronRight,
   ChevronLeft,
-} from "lucide-react"
+} from "lucide-react";
 
-export type ProfileActivityTab = "predictions" | "markets" | "activity"
+export type ProfileActivityTab = "predictions" | "markets" | "activity";
 
 interface ProfileActivityTabsProps {
-  activeTab: ProfileActivityTab
-  items?: FeedPost[]
-  positions?: MarketPosition[]
-  profile: Profile
-  onOpenMarket: (market: MarketPost) => void
-  onOpenPost?: (post: FeedPost) => void
-  loading?: boolean
+  activeTab: ProfileActivityTab;
+  items?: FeedPost[];
+  positions?: MarketPosition[];
+  profile: Profile;
+  onOpenMarket: (market: MarketPost) => void;
+  onOpenPost?: (post: FeedPost) => void;
+  loading?: boolean;
 }
 
 export default function ProfileActivityTabs({
@@ -48,36 +48,36 @@ export default function ProfileActivityTabs({
 }: ProfileActivityTabsProps) {
   const [predictionFilter, setPredictionFilter] = useState<
     "all" | "unresolved" | "resolved" | "won" | "lost"
-  >("all")
-  const [predictionPage, setPredictionPage] = useState(1)
-  const PREDICTIONS_PER_PAGE = 5
+  >("all");
+  const [predictionPage, setPredictionPage] = useState(1);
+  const PREDICTIONS_PER_PAGE = 5;
 
   if (loading) {
-    return <FeedSkeleton />
+    return <FeedSkeleton />;
   }
 
   if (activeTab === "predictions") {
     const filteredPositions = positions.filter((pos) => {
-      if (predictionFilter === "resolved") return pos.status === "resolved"
-      if (predictionFilter === "unresolved") return pos.status !== "resolved"
+      if (predictionFilter === "resolved") return pos.status === "resolved";
+      if (predictionFilter === "unresolved") return pos.status !== "resolved";
       if (predictionFilter === "won")
-        return pos.status === "resolved" && pos.resolved_outcome === pos.side
+        return pos.status === "resolved" && pos.resolved_outcome === pos.side;
       if (predictionFilter === "lost")
         return (
           pos.status === "resolved" &&
           pos.resolved_outcome !== pos.side &&
           pos.resolved_outcome !== null
-        )
-      return true
-    })
+        );
+      return true;
+    });
 
     const totalPages = Math.ceil(
       filteredPositions.length / PREDICTIONS_PER_PAGE,
-    )
+    );
     const paginatedPositions = filteredPositions.slice(
       (predictionPage - 1) * PREDICTIONS_PER_PAGE,
       predictionPage * PREDICTIONS_PER_PAGE,
-    )
+    );
 
     return (
       <section className="flex flex-col gap-3">
@@ -87,13 +87,13 @@ export default function ProfileActivityTabs({
               <button
                 key={filter}
                 onClick={() => {
-                  setPredictionFilter(filter)
-                  setPredictionPage(1)
+                  setPredictionFilter(filter);
+                  setPredictionPage(1);
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                   predictionFilter === filter
-                    ? "bg-black/10 dark:bg-white/10 text-charcoal-primary dark:text-white font-bold"
-                    : "bg-stone-surface dark:bg-stone-800/50 text-ash dark:text-stone-400 font-bold hover:text-charcoal-primary dark:hover:text-white"
+                    ? "bg-black/10 text-charcoal-primary font-bold"
+                    : "bg-stone-surface text-ash font-bold hover:text-charcoal-primary "
                 }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -104,7 +104,7 @@ export default function ProfileActivityTabs({
         {paginatedPositions.length > 0 ? (
           <>
             {paginatedPositions.map((pos) => {
-              const isYes = pos.side === "YES"
+              const isYes = pos.side === "YES";
               const currentPrice =
                 pos.status === "resolved"
                   ? pos.resolved_outcome === pos.side
@@ -116,14 +116,14 @@ export default function ProfileActivityTabs({
                         usdc_no_amount: pos.usdc_no_amount ?? 0,
                       },
                       pos.side,
-                    )
-              const currentValue = pos.shares * currentPrice
-              const unrealizedPnL = currentValue - (pos.invested_usdc || 0)
+                    );
+              const currentValue = pos.shares * currentPrice;
+              const unrealizedPnL = currentValue - (pos.invested_usdc || 0);
 
-              const isPvp = pos.category?.toLowerCase() === "pvp"
+              const isPvp = pos.category?.toLowerCase() === "pvp";
               const href = isPvp
                 ? "/markets?tab=pvp-arena"
-                : `/markets/${pos.market_id}`
+                : `/markets/${pos.market_id}`;
 
               return (
                 <div
@@ -184,7 +184,7 @@ export default function ProfileActivityTabs({
                     </Link>
                   </div>
                 </div>
-              )
+              );
             })}
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
@@ -192,11 +192,11 @@ export default function ProfileActivityTabs({
                   onClick={() => setPredictionPage((p) => Math.max(1, p - 1))}
                   disabled={predictionPage === 1}
                   aria-label="Previous page"
-                  className="p-2 rounded-lg border border-border bg-white dark:bg-stone-900 text-charcoal-primary dark:text-white shadow-sm disabled:opacity-50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                  className="p-2 rounded-lg border border-border bg-white text-charcoal-primary shadow-sm disabled:opacity-50 hover:bg-stone-100 transition-colors"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <span className="text-sm font-semibold text-charcoal-primary dark:text-white">
+                <span className="text-sm font-semibold text-charcoal-primary ">
                   Page {predictionPage} of {totalPages}
                 </span>
                 <button
@@ -205,7 +205,7 @@ export default function ProfileActivityTabs({
                   }
                   disabled={predictionPage === totalPages}
                   aria-label="Next page"
-                  className="p-2 rounded-lg border border-border bg-white dark:bg-stone-900 text-charcoal-primary dark:text-white shadow-sm disabled:opacity-50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                  className="p-2 rounded-lg border border-border bg-white text-charcoal-primary shadow-sm disabled:opacity-50 hover:bg-stone-100 transition-colors"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -219,11 +219,11 @@ export default function ProfileActivityTabs({
           </div>
         )}
       </section>
-    )
+    );
   }
 
   if (activeTab === "activity") {
-    const rows = items
+    const rows = items;
     return (
       <section className="flex flex-col gap-3">
         {rows.length > 0 ? (
@@ -242,11 +242,11 @@ export default function ProfileActivityTabs({
           </div>
         )}
       </section>
-    )
+    );
   }
 
   // Default is "markets" tab (custom created markets by user)
-  const rows = items
+  const rows = items;
   return (
     <section className="flex flex-col gap-3">
       {rows.length > 0 ? (
@@ -264,7 +264,7 @@ export default function ProfileActivityTabs({
         </div>
       )}
     </section>
-  )
+  );
 }
 
 function CommentActivityRow({
@@ -273,13 +273,13 @@ function CommentActivityRow({
   onOpenMarket,
   onOpenPost,
 }: {
-  item: FeedPost
-  profile: Profile
-  onOpenMarket: (market: MarketPost) => void
-  onOpenPost?: (post: FeedPost) => void
+  item: FeedPost;
+  profile: Profile;
+  onOpenMarket: (market: MarketPost) => void;
+  onOpenPost?: (post: FeedPost) => void;
 }) {
-  const profileHref = `/profile/${encodeURIComponent(item.author.id)}`
-  const avatarColor = "bg-sunburst-yellow"
+  const profileHref = `/profile/${encodeURIComponent(item.author.id)}`;
+  const avatarColor = "bg-sunburst-yellow";
 
   return (
     <article className="verity-card flex gap-3 p-4 sm:gap-4 sm:p-5">
@@ -354,11 +354,11 @@ function CommentActivityRow({
           <div
             className="border border-stone-surface rounded-xl overflow-hidden hover:bg-stone-surface/30 transition-colors duration-200 cursor-pointer"
             onClick={(e) => {
-              e.stopPropagation()
+              e.stopPropagation();
               if (item.parentPost?.market) {
-                onOpenMarket(item.parentPost.market)
+                onOpenMarket(item.parentPost.market);
               } else if (item.parentPost) {
-                onOpenPost?.(item.parentPost)
+                onOpenPost?.(item.parentPost);
               }
             }}
           >
@@ -393,7 +393,7 @@ function CommentActivityRow({
         )}
       </div>
     </article>
-  )
+  );
 }
 
 function ActivityItem({
@@ -401,26 +401,26 @@ function ActivityItem({
   onOpenMarket,
   onOpenPost,
 }: {
-  item: FeedPost
-  onOpenMarket: (market: MarketPost) => void
-  onOpenPost?: (post: FeedPost) => void
+  item: FeedPost;
+  onOpenMarket: (market: MarketPost) => void;
+  onOpenPost?: (post: FeedPost) => void;
 }) {
-  const router = useRouter()
+  const router = useRouter();
   if (item.market) {
-    const market = item.market
-    const isPvp = market.category?.toLowerCase() === "pvp"
+    const market = item.market;
+    const isPvp = market.category?.toLowerCase() === "pvp";
 
     if (isPvp) {
       return (
         <article
           onClick={() => {
             const pId =
-              market.parentMarketId || market.parent_market_id || market.id
-            router.push(`/markets?tab=pvp-arena&id=${pId}`)
+              market.parentMarketId || market.parent_market_id || market.id;
+            router.push(`/markets?tab=pvp-arena&id=${pId}`);
           }}
-          className="verity-card p-5 border border-indigo-200 dark:border-indigo-950 bg-indigo-50/20 hover:border-indigo-400 dark:hover:border-indigo-800 transition-all cursor-pointer group relative flex flex-col justify-between"
+          className="verity-card group relative flex cursor-pointer flex-col justify-between border border-sky-blue/15 bg-sky-blue/5 p-5 transition-all hover:border-sky-blue/45"
         >
-          <div className="absolute top-4 right-4 flex items-center gap-1 bg-indigo-500/10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider shadow-subtle">
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-sky-blue/10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold text-sky-blue uppercase tracking-wider shadow-subtle">
             <Swords className="h-3 w-3" />
             PvP Matchup
           </div>
@@ -429,35 +429,35 @@ function ActivityItem({
             <span className="font-mono text-[10px] font-bold text-ash uppercase tracking-wider">
               World Cup Arena
             </span>
-            <h3 className="text-xl font-bold tracking-tight text-charcoal-primary dark:text-white mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            <h3 className="text-xl font-bold tracking-tight text-charcoal-primary mt-1 group-hover:text-sky-blue transition-colors">
               {market.question}
             </h3>
-            <p className="text-xs text-graphite dark:text-zinc-400 mt-2 leading-relaxed font-sans">
+            <p className="text-xs text-graphite mt-2 leading-relaxed font-sans">
               Predict all propositions for the match. Battle head-to-head for
               Arena XP, boosts, and bragging rights.
             </p>
           </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-dashed border-indigo-100 dark:border-indigo-950/60 pt-3">
+          <div className="mt-6 flex items-center justify-between border-t border-dashed border-sky-blue/15 pt-3">
             <div className="flex items-center gap-2 font-mono text-[10px] text-ash">
               <Timer className="h-3.5 w-3.5" />
               <span>
                 Closes: {new Date(market.deadline).toLocaleDateString()}
               </span>
             </div>
-            <span className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 font-sans">
+            <span className="flex items-center gap-1 text-xs font-semibold text-sky-blue font-sans">
               Predict Now
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </div>
         </article>
-      )
+      );
     }
 
     const totalUsdc =
-      Number(market.usdc_yes_amount) + Number(market.usdc_no_amount)
+      Number(market.usdc_yes_amount) + Number(market.usdc_no_amount);
     const yesPercent =
-      totalUsdc > 0 ? (Number(market.usdc_yes_amount) / totalUsdc) * 100 : 50
+      totalUsdc > 0 ? (Number(market.usdc_yes_amount) / totalUsdc) * 100 : 50;
 
     return (
       <MarketCard
@@ -494,7 +494,7 @@ function ActivityItem({
           market.minimumPoolBalance || market.minimum_pool_balance
         }
       />
-    )
+    );
   }
 
   return (
@@ -512,5 +512,5 @@ function ActivityItem({
       reshared={item.viewerReshared}
       time={relativeTime(item.created_at)}
     />
-  )
+  );
 }

@@ -1,13 +1,13 @@
-import { Trophy } from "lucide-react"
-import { useMemo } from "react"
+import { Trophy } from "lucide-react";
+import { useMemo } from "react";
 
 interface PvpClaimBannerProps {
-  picks: any[] | undefined
-  claimedMarketIds: Set<string>
-  onClaim: (marketIds: string[], totalWinnings: number) => Promise<void>
-  className?: string
-  showEmoji?: boolean
-  showEmptyState?: boolean
+  picks: any[] | undefined;
+  claimedMarketIds: Set<string>;
+  onClaim: (marketIds: string[], totalWinnings: number) => Promise<void>;
+  className?: string;
+  showEmoji?: boolean;
+  showEmptyState?: boolean;
 }
 
 export default function PvpClaimBanner({
@@ -27,28 +27,28 @@ export default function PvpClaimBanner({
           !claimedMarketIds.has(p.marketId),
       ) || [],
     [picks, claimedMarketIds],
-  )
+  );
 
   const totalWinnings = useMemo(
     () =>
       claimablePicks.reduce((acc: number, p: any) => acc + (p.shares ?? 0), 0),
     [claimablePicks],
-  )
+  );
 
   const handleClaimAll = async () => {
-    const marketIds = claimablePicks.map((p: any) => p.marketId)
-    await onClaim(marketIds, totalWinnings)
-  }
+    const marketIds = claimablePicks.map((p: any) => p.marketId);
+    await onClaim(marketIds, totalWinnings);
+  };
 
   if (claimablePicks.length === 0) {
     if (showEmptyState) {
       return (
-        <div className="p-8 text-center text-sm text-ash border border-dashed border-border dark:border-zinc-800 rounded-[12px] bg-parchment-card dark:bg-zinc-950/20">
+        <div className="p-8 text-center text-sm text-ash border border-dashed border-border rounded-[12px] bg-parchment-card ">
           No active PvP events right now. Check back soon for new matchups!
         </div>
-      )
+      );
     }
-    return null
+    return null;
   }
 
   return (
@@ -73,5 +73,5 @@ export default function PvpClaimBanner({
         Claim
       </button>
     </div>
-  )
+  );
 }

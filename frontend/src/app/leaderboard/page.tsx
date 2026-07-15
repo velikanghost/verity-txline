@@ -1,21 +1,25 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { usePvpLeaderboardQuery } from "@/store/verity/verityQueries"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { Zap, Users, Info, CircleHelp, Medal } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { usePvpLeaderboardQuery } from "@/store/verity/verityQueries";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { Zap, Users, Info, CircleHelp, Medal } from "lucide-react";
+import Link from "next/link";
 
-type LeaderboardTab = "xp" | "referrers" | "points-system"
+type LeaderboardTab = "xp" | "referrers" | "points-system";
 
-export default function LeaderboardPage() {
-  const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp")
-  const { profile: loggedInProfile } = useWalletProfile()
+export function LeaderboardContent({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
+  const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp");
+  const { profile: loggedInProfile } = useWalletProfile();
   const {
     data: leaderboardData,
     isLoading,
     error,
-  } = usePvpLeaderboardQuery(loggedInProfile?.id)
+  } = usePvpLeaderboardQuery(loggedInProfile?.id);
 
   const pvpRules = [
     {
@@ -63,35 +67,39 @@ export default function LeaderboardPage() {
       logic:
         "Players with more than 30 Arena XP and no recorded PvP losses receive the lavender Special Grade tag alongside their Arena grade.",
     },
-  ]
+  ];
 
   return (
-    <div className="flex flex-col gap-4 py-4 max-w-[672px] mx-auto">
+    <div
+      className={`tournament-ranking mx-auto flex max-w-[672px] flex-col gap-4 ${embedded ? "pb-4" : "py-4"}`}
+    >
       {/* Header Banner */}
-      <section className="verity-card relative overflow-hidden p-5 sm:p-6 bg-linear-to-br from-indigo-50/40 via-purple-50/20 to-transparent dark:from-indigo-950/10 dark:via-purple-950/5">
-        <div className="absolute -right-3 -top-3 h-24 w-24 rounded-full bg-indigo-500/10" />
-        <div className="relative max-w-[480px]">
-          <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">
-            World Cup PvP Arena
-          </p>
-          <h1 className="text-[32px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight dark:text-white sm:text-[40px]">
-            World Cup PvP Leaderboard
-          </h1>
-          <p className="mt-3 text-[14px] leading-[1.47] tracking-[-0.2px] text-graphite dark:text-zinc-400">
-            Track Arena XP earned from Verity&apos;s World Cup head-to-head
-            prediction events.
-          </p>
-        </div>
-      </section>
+      {!embedded && (
+        <section className="verity-card game-grid relative overflow-hidden p-5 sm:p-6">
+          <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#1479ff]/22 blur-3xl" />
+          <div className="relative max-w-[480px]">
+            <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#59a2ff]">
+              Global player rankings
+            </p>
+            <h1 className="text-[32px] font-semibold leading-[1.06] tracking-[-0.7px] text-midnight sm:text-[40px]">
+              Who rules the arena?
+            </h1>
+            <p className="mt-3 text-[14px] leading-[1.47] tracking-[-0.2px] text-graphite ">
+              Track XP, duel records, and the players climbing toward World Cup
+              glory.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Tabs */}
-      <div className="flex border-b border-border dark:border-zinc-800 gap-2 overflow-x-auto pb-px">
+      <div className="tournament-ranking-tabs flex gap-2 overflow-x-auto border-b border-border pb-px ">
         <button
           onClick={() => setActiveTab("xp")}
           className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors ${
             activeTab === "xp"
-              ? "border-charcoal-primary text-charcoal-primary dark:border-white dark:text-white"
-              : "border-transparent text-ash hover:text-charcoal-primary dark:hover:text-white"
+              ? "border-charcoal-primary text-charcoal-primary "
+              : "border-transparent text-ash hover:text-charcoal-primary "
           }`}
         >
           <Zap className="h-4 w-4" />
@@ -101,8 +109,8 @@ export default function LeaderboardPage() {
           onClick={() => setActiveTab("referrers")}
           className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors ${
             activeTab === "referrers"
-              ? "border-charcoal-primary text-charcoal-primary dark:border-white dark:text-white"
-              : "border-transparent text-ash hover:text-charcoal-primary dark:hover:text-white"
+              ? "border-charcoal-primary text-charcoal-primary "
+              : "border-transparent text-ash hover:text-charcoal-primary "
           }`}
         >
           <Users className="h-4 w-4" />
@@ -112,8 +120,8 @@ export default function LeaderboardPage() {
           onClick={() => setActiveTab("points-system")}
           className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors ${
             activeTab === "points-system"
-              ? "border-charcoal-primary text-charcoal-primary dark:border-white dark:text-white"
-              : "border-transparent text-ash hover:text-charcoal-primary dark:hover:text-white"
+              ? "border-charcoal-primary text-charcoal-primary "
+              : "border-transparent text-ash hover:text-charcoal-primary "
           }`}
         >
           <Info className="h-4 w-4" />
@@ -125,11 +133,11 @@ export default function LeaderboardPage() {
       <div className="flex flex-col gap-3 min-h-[350px]">
         {isLoading && (
           <div className="verity-card overflow-hidden">
-            <div className="p-4 border-b border-border dark:border-zinc-800 bg-white-surface/40 dark:bg-zinc-900/40">
-              <div className="h-4 w-32 rounded bg-stone-surface dark:bg-zinc-800 animate-pulse" />
-              <div className="h-3 w-48 rounded bg-stone-surface dark:bg-zinc-800 animate-pulse mt-1.5" />
+            <div className="p-4 border-b border-border bg-white-surface/40 ">
+              <div className="h-4 w-32 rounded bg-stone-surface animate-pulse" />
+              <div className="h-3 w-48 rounded bg-stone-surface animate-pulse mt-1.5" />
             </div>
-            <div className="divide-y divide-border dark:divide-zinc-800">
+            <div className="divide-y divide-border ">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
@@ -137,26 +145,26 @@ export default function LeaderboardPage() {
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Rank Number Skeleton */}
-                    <div className="h-6 w-6 shrink-0 rounded-full bg-stone-surface dark:bg-zinc-800/80" />
+                    <div className="h-6 w-6 shrink-0 rounded-full bg-stone-surface " />
 
                     {/* User Details Skeleton */}
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       {/* Avatar Skeleton */}
-                      <div className="h-9 w-9 shrink-0 rounded-full bg-stone-surface dark:bg-zinc-800/80" />
+                      <div className="h-9 w-9 shrink-0 rounded-full bg-stone-surface " />
                       {/* Text Skeleton */}
                       <div className="min-w-0 space-y-1.5 flex-1 max-w-[150px]">
-                        <div className="h-4 w-3/4 rounded bg-stone-surface dark:bg-zinc-800/80" />
-                        <div className="h-3 w-1/2 rounded bg-stone-surface dark:bg-zinc-800/80" />
+                        <div className="h-4 w-3/4 rounded bg-stone-surface " />
+                        <div className="h-3 w-1/2 rounded bg-stone-surface " />
                       </div>
                     </div>
                   </div>
 
                   {/* Score / Grade Skeleton */}
                   <div className="flex items-center gap-4 shrink-0 text-right">
-                    <div className="h-5 w-16 rounded bg-stone-surface/60 dark:bg-zinc-800/60 hidden sm:block" />
+                    <div className="h-5 w-16 rounded bg-stone-surface/60 hidden sm:block" />
                     <div className="space-y-1">
-                      <div className="h-4 w-10 rounded bg-stone-surface dark:bg-zinc-800/80 ml-auto" />
-                      <div className="h-3 w-14 rounded bg-stone-surface dark:bg-zinc-800/80 ml-auto" />
+                      <div className="h-4 w-10 rounded bg-stone-surface ml-auto" />
+                      <div className="h-3 w-14 rounded bg-stone-surface ml-auto" />
                     </div>
                   </div>
                 </div>
@@ -166,7 +174,7 @@ export default function LeaderboardPage() {
         )}
 
         {error && (
-          <div className="verity-card p-8 text-center text-sm text-coral-red">
+          <div className="tournament-ranking-error verity-card p-8 text-center text-sm text-coral-red">
             Failed to load leaderboard data: {error.message}
           </div>
         )}
@@ -175,8 +183,8 @@ export default function LeaderboardPage() {
           <>
             {activeTab === "xp" && (
               <div className="verity-card overflow-hidden">
-                <div className="p-4 border-b border-border dark:border-zinc-800 bg-white-surface/40 dark:bg-zinc-900/40">
-                  <h3 className="text-sm font-semibold tracking-tight text-charcoal-primary dark:text-white">
+                <div className="p-4 border-b border-border bg-white-surface/40 ">
+                  <h3 className="text-sm font-semibold tracking-tight text-charcoal-primary ">
                     World Cup Arena XP
                   </h3>
                   <p className="text-xs text-ash mt-0.5">
@@ -188,7 +196,7 @@ export default function LeaderboardPage() {
                     No rankings available yet.
                   </div>
                 ) : (
-                  <div className="divide-y divide-border dark:divide-zinc-800">
+                  <div className="divide-y divide-border ">
                     {leaderboardData?.xp?.map((user: any, index: number) => (
                       <UserLeaderboardRow
                         key={user.id}
@@ -202,7 +210,7 @@ export default function LeaderboardPage() {
                     {(() => {
                       const isUserInXpList = leaderboardData?.xp?.some(
                         (u: any) => u.id === loggedInProfile?.id,
-                      )
+                      );
                       if (
                         !isUserInXpList &&
                         loggedInProfile &&
@@ -211,7 +219,7 @@ export default function LeaderboardPage() {
                       ) {
                         return (
                           <>
-                            <div className="flex items-center justify-center py-2 bg-stone-50/50 dark:bg-zinc-950/20 border-t border-dashed border-border dark:border-zinc-800">
+                            <div className="flex items-center justify-center py-2 bg-stone-50/50 border-t border-dashed border-border ">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-ash font-mono">
                                 ••• You are ranked{" "}
                                 {leaderboardData.currentUserXpRank} •••
@@ -232,9 +240,9 @@ export default function LeaderboardPage() {
                               isCurrentUser={true}
                             />
                           </>
-                        )
+                        );
                       }
-                      return null
+                      return null;
                     })()}
                   </div>
                 )}
@@ -243,8 +251,8 @@ export default function LeaderboardPage() {
 
             {activeTab === "referrers" && (
               <div className="verity-card overflow-hidden">
-                <div className="p-4 border-b border-border dark:border-zinc-800 bg-white-surface/40 dark:bg-zinc-900/40">
-                  <h3 className="text-sm font-semibold tracking-tight text-charcoal-primary dark:text-white">
+                <div className="p-4 border-b border-border bg-white-surface/40 ">
+                  <h3 className="text-sm font-semibold tracking-tight text-charcoal-primary ">
                     Top Referrers
                   </h3>
                   <p className="text-xs text-ash mt-0.5">
@@ -256,7 +264,7 @@ export default function LeaderboardPage() {
                     No referrals recorded yet.
                   </div>
                 ) : (
-                  <div className="divide-y divide-border dark:divide-zinc-800">
+                  <div className="divide-y divide-border ">
                     {leaderboardData?.referrers?.map(
                       (user: any, index: number) => (
                         <UserLeaderboardRow
@@ -274,7 +282,7 @@ export default function LeaderboardPage() {
                       const isUserInReferrersList =
                         leaderboardData?.referrers?.some(
                           (u: any) => u.id === loggedInProfile?.id,
-                        )
+                        );
                       if (
                         !isUserInReferrersList &&
                         loggedInProfile &&
@@ -283,7 +291,7 @@ export default function LeaderboardPage() {
                       ) {
                         return (
                           <>
-                            <div className="flex items-center justify-center py-2 bg-stone-50/50 dark:bg-zinc-950/20 border-t border-dashed border-border dark:border-zinc-800">
+                            <div className="flex items-center justify-center py-2 bg-stone-50/50 border-t border-dashed border-border ">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-ash font-mono">
                                 ••• You are ranked{" "}
                                 {leaderboardData.currentUserReferralRank} •••
@@ -305,9 +313,9 @@ export default function LeaderboardPage() {
                               isCurrentUser={true}
                             />
                           </>
-                        )
+                        );
                       }
-                      return null
+                      return null;
                     })()}
                   </div>
                 )}
@@ -316,16 +324,16 @@ export default function LeaderboardPage() {
 
             {activeTab === "points-system" && (
               <div className="flex flex-col gap-3">
-                <div className="verity-card p-5 bg-linear-to-br from-indigo-50/20 to-transparent dark:from-indigo-950/5">
+                <div className="verity-card p-5 bg-linear-to-br from-sky-500/5 to-transparent">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-sky-blue/10 text-sky-blue">
                       <Medal className="h-5 w-5" />
                     </span>
                     <div>
-                      <h3 className="text-base font-semibold tracking-tight text-charcoal-primary dark:text-white">
+                      <h3 className="text-base font-semibold tracking-tight text-charcoal-primary ">
                         World Cup PvP Scoring
                       </h3>
-                      <p className="text-sm text-graphite dark:text-zinc-400 mt-1">
+                      <p className="text-sm text-graphite mt-1">
                         These are the scoring and Arena XP rules used for the
                         current World Cup PvP test.
                       </p>
@@ -337,21 +345,21 @@ export default function LeaderboardPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-sm">
                       <thead>
-                        <tr className="border-b border-border dark:border-zinc-800 bg-white-surface/40 dark:bg-zinc-900/40 text-xs font-mono font-bold uppercase tracking-wider text-ash">
+                        <tr className="border-b border-border bg-white-surface/40 text-xs font-mono font-bold uppercase tracking-wider text-ash">
                           <th className="p-4 w-[160px]">PvP Rule</th>
                           <th className="p-4">How It Works</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-border dark:divide-zinc-800">
+                      <tbody className="divide-y divide-border ">
                         {pvpRules.map((item) => (
                           <tr
                             key={item.role}
-                            className="hover:bg-white-surface/20 dark:hover:bg-zinc-900/20"
+                            className="hover:bg-white-surface/20 "
                           >
-                            <td className="p-4 font-semibold text-charcoal-primary dark:text-white align-top">
+                            <td className="p-4 font-semibold text-charcoal-primary align-top">
                               {item.role}
                             </td>
-                            <td className="p-4 text-graphite dark:text-zinc-300 leading-relaxed">
+                            <td className="p-4 text-graphite leading-relaxed">
                               {item.logic}
                             </td>
                           </tr>
@@ -366,7 +374,11 @@ export default function LeaderboardPage() {
         )}
       </div>
     </div>
-  )
+  );
+}
+
+export default function LeaderboardPage() {
+  return <LeaderboardContent />;
 }
 
 function UserLeaderboardRow({
@@ -377,31 +389,31 @@ function UserLeaderboardRow({
   extraInfo,
   isCurrentUser,
 }: {
-  user: any
-  rank: number
-  scoreLabel: string
-  scoreValue: number
-  extraInfo?: string
-  isCurrentUser?: boolean
+  user: any;
+  rank: number;
+  scoreLabel: string;
+  scoreValue: number;
+  extraInfo?: string;
+  isCurrentUser?: boolean;
 }) {
-  const isTopThree = rank <= 3
+  const isTopThree = rank <= 3;
   const rankColors = [
-    "bg-amber-400 text-amber-950 dark:bg-amber-500/20 dark:text-amber-300", // Gold
-    "bg-zinc-300 text-zinc-950 dark:bg-zinc-700/30 dark:text-zinc-300", // Silver
-    "bg-amber-600 text-amber-50 dark:bg-amber-700/20 dark:text-amber-400", // Bronze
-  ]
-  const grade = getArenaGrade(scoreLabel, scoreValue)
+    "bg-amber-400 text-amber-950 ", // Gold
+    "bg-zinc-300 text-zinc-950 ", // Silver
+    "bg-amber-600 text-amber-50 ", // Bronze
+  ];
+  const grade = getArenaGrade(scoreLabel, scoreValue);
   const hasSpecialGrade =
     scoreLabel === "XP" &&
     scoreValue > 30 &&
-    Number(user.pvpMatchesLostCount ?? 0) === 0
+    Number(user.pvpMatchesLostCount ?? 0) === 0;
 
   return (
     <div
       className={`flex items-center justify-between p-4 transition-colors ${
         isCurrentUser
-          ? "bg-indigo-50/50 dark:bg-indigo-950/20 border-y border-indigo-150 dark:border-indigo-900/50"
-          : "hover:bg-white-surface/20 dark:hover:bg-zinc-900/20"
+          ? "bg-sky-blue/5 border-y border-sky-blue/15"
+          : "hover:bg-white-surface/20 "
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -416,14 +428,14 @@ function UserLeaderboardRow({
 
         {/* User Details */}
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="h-9 w-9 shrink-0 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 relative flex items-center justify-center font-bold text-zinc-500">
+          <div className="h-9 w-9 shrink-0 rounded-full overflow-hidden bg-zinc-200 relative flex items-center justify-center font-bold text-zinc-500">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
                 alt={user.displayName || user.username}
                 className="h-full w-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.style.display = "none"
+                  e.currentTarget.style.display = "none";
                 }}
               />
             ) : (
@@ -433,7 +445,7 @@ function UserLeaderboardRow({
           <div className="min-w-0">
             <Link
               href={`/profile/${encodeURIComponent(user.id)}`}
-              className="block text-sm font-semibold tracking-tight text-charcoal-primary dark:text-white truncate hover:underline"
+              className="block text-sm font-semibold tracking-tight text-charcoal-primary truncate hover:underline"
             >
               {user.displayName || user.username}
             </Link>
@@ -455,13 +467,13 @@ function UserLeaderboardRow({
             </span>
           )}
           {hasSpecialGrade && (
-            <span className="rounded bg-violet-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-300 font-mono">
+            <span className="rounded bg-sunburst-yellow/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sunburst-yellow font-mono">
               Special Grade
             </span>
           )}
         </div>
         <div className="text-right">
-          <span className="font-semibold text-sm text-charcoal-primary dark:text-white font-mono">
+          <span className="font-semibold text-sm text-charcoal-primary font-mono">
             {scoreValue}
           </span>
           <span className="text-[10px] text-ash font-mono uppercase tracking-wider block leading-none mt-0.5">
@@ -470,51 +482,51 @@ function UserLeaderboardRow({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function getArenaGrade(scoreLabel: string, arenaXp: number) {
-  if (scoreLabel !== "XP") return null
-  if (arenaXp < 30) return null
+  if (scoreLabel !== "XP") return null;
+  if (arenaXp < 30) return null;
 
   if (arenaXp <= 499) {
     return {
       name: "Bronze",
-      color: "bg-amber-700/10 text-amber-700 dark:text-amber-500",
-    }
+      color: "bg-amber-700/10 text-amber-700 ",
+    };
   }
   if (arenaXp <= 1499) {
     return {
       name: "Silver",
-      color: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-300",
-    }
+      color: "bg-zinc-500/10 text-zinc-500 ",
+    };
   }
   if (arenaXp <= 2999) {
     return {
       name: "Gold",
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    }
+      color: "bg-amber-500/10 text-amber-600 ",
+    };
   }
   if (arenaXp <= 4999) {
     return {
       name: "Platinum",
-      color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
-    }
+      color: "bg-cyan-500/10 text-cyan-600 ",
+    };
   }
   if (arenaXp <= 6999) {
     return {
       name: "Diamond",
-      color: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
-    }
+      color: "bg-sky-blue/10 text-sky-blue",
+    };
   }
   if (arenaXp <= 9000) {
     return {
       name: "Legend",
-      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-    }
+      color: "bg-sunburst-yellow/10 text-sunburst-yellow",
+    };
   }
   return {
     name: "Mythic",
-    color: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400",
-  }
+    color: "bg-fuchsia-500/10 text-fuchsia-600 ",
+  };
 }

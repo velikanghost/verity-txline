@@ -1,39 +1,36 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Edit3, Share, MoreHorizontal, LogOut, Sun, Moon } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useAuth } from "@/components/providers/AuthModals"
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Edit3, Share, MoreHorizontal, LogOut } from "lucide-react";
+import { useAuth } from "@/components/providers/AuthModals";
 import ProfileActivityTabs, {
   type ProfileActivityTab,
-} from "@/components/social/ProfileActivityTabs"
-import SocialUserListModal from "@/components/social/SocialUserListModal"
-import { useFeed } from "@/hooks/useFeed"
-import { useWalletProfile } from "@/hooks/useWalletProfile"
-import { displayHandle, displayName, type Profile } from "@/lib/verity"
+} from "@/components/social/ProfileActivityTabs";
+import SocialUserListModal from "@/components/social/SocialUserListModal";
+import { useFeed } from "@/hooks/useFeed";
+import { useWalletProfile } from "@/hooks/useWalletProfile";
+import { displayHandle, displayName, type Profile } from "@/lib/verity";
 import {
   useProfileActivityQuery,
   useUserPortfolioQuery,
   useReferralsQuery,
-} from "@/store/verity/verityQueries"
-import { toast } from "@/lib/toast"
+} from "@/store/verity/verityQueries";
+import { toast } from "@/lib/toast";
 
 export default function ProfileEditor() {
-  const router = useRouter()
-  const { profile } = useWalletProfile()
-  const { items } = useFeed()
-  const { data: referralsData } = useReferralsQuery()
-  const [activeTab, setActiveTab] = useState<ProfileActivityTab>("markets")
+  const router = useRouter();
+  const { profile } = useWalletProfile();
+  const { items } = useFeed();
+  const { data: referralsData } = useReferralsQuery();
+  const [activeTab, setActiveTab] = useState<ProfileActivityTab>("markets");
   const [peopleModal, setPeopleModal] = useState<
     "followers" | "following" | null
-  >(null)
-  const isConnected = Boolean(profile)
+  >(null);
+  const isConnected = Boolean(profile);
 
-  const { login, logout } = useAuth()
-  const { setTheme, resolvedTheme } = useTheme()
-  const [optionsOpen, setOptionsOpen] = useState(false)
-  const isDark = resolvedTheme === "dark"
+  const { login, logout } = useAuth();
+  const [optionsOpen, setOptionsOpen] = useState(false);
 
   const { data: tabItems = [], isLoading: isActivityLoading } =
     useProfileActivityQuery(
@@ -44,22 +41,22 @@ export default function ProfileEditor() {
           ? "comments"
           : "posts",
       profile?.id,
-    )
+    );
 
   const { data: positions = [], isLoading: isPositionsLoading } =
-    useUserPortfolioQuery(profile?.id || "")
+    useUserPortfolioQuery(profile?.id || "");
 
   const resolvedPositions = positions.filter(
     (pos) => pos.status === "resolved" && pos.resolved_outcome !== null,
-  )
+  );
   const wonPositions = resolvedPositions.filter(
     (pos) => pos.resolved_outcome === pos.side,
-  )
+  );
 
   const accuracy =
     resolvedPositions.length > 0
       ? Math.round((wonPositions.length / resolvedPositions.length) * 100)
-      : 0
+      : 0;
 
   const isTabLoading =
     activeTab === "markets"
@@ -68,20 +65,20 @@ export default function ProfileEditor() {
         ? isPositionsLoading
         : activeTab === "activity"
           ? isActivityLoading
-          : false
+          : false;
 
   const localProfileItems = useMemo(
     () =>
       profile ? items.filter((item) => item.author.id === profile.id) : [],
     [items, profile],
-  )
-  const marketItems = localProfileItems.filter((item) => item.market)
+  );
+  const marketItems = localProfileItems.filter((item) => item.market);
   const knownUsers = useMemo(() => {
-    const users = new Map<string, Profile>()
-    items.forEach((item) => users.set(item.author.id, item.author))
-    if (profile) users.set(profile.id, profile)
-    return Array.from(users.values())
-  }, [items, profile])
+    const users = new Map<string, Profile>();
+    items.forEach((item) => users.set(item.author.id, item.author));
+    if (profile) users.set(profile.id, profile);
+    return Array.from(users.values());
+  }, [items, profile]);
 
   if (!isConnected) {
     return (
@@ -102,13 +99,13 @@ export default function ProfileEditor() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex flex-col gap-3 py-3 sm:py-4">
       <section className="verity-card overflow-hidden">
-        <div className="h-24 bg-brand-primary sm:h-28" />
+        <div className="game-grid h-24 bg-gradient-to-r from-[#0758bd] via-[#1479ff] to-[#35a5ff] sm:h-28" />
 
         <div className="px-4 pb-4 sm:px-5 sm:pb-5">
           <div className="-mt-10 flex items-end justify-between gap-3">
@@ -118,7 +115,7 @@ export default function ProfileEditor() {
                 className="clickable verity-pill hidden h-10 items-center justify-center gap-2 bg-parchment-card px-4 text-sm font-semibold tracking-[-0.18px] text-charcoal-primary shadow-subtle hover:bg-stone-surface sm:inline-flex ring-4 ring-surface-solid"
                 onClick={() => {
                   if (typeof window !== "undefined") {
-                    void navigator.clipboard?.writeText(window.location.href)
+                    void navigator.clipboard?.writeText(window.location.href);
                   }
                 }}
                 type="button"
@@ -145,38 +142,16 @@ export default function ProfileEditor() {
 
                 {optionsOpen && (
                   <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-48 rounded-[12px] border border-border bg-surface-solid p-1.5 shadow-sm">
-                    <button
-                      className="flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left text-xs font-semibold text-charcoal-primary hover:bg-stone-surface transition-colors cursor-pointer"
-                      onClick={() => {
-                        setTheme(isDark ? "light" : "dark")
-                        setOptionsOpen(false)
-                      }}
-                      type="button"
-                    >
-                      <span className="flex items-center gap-2">
-                        {isDark ? (
-                          <>
-                            <Sun className="h-4 w-4 text-ash" /> Light Mode
-                          </>
-                        ) : (
-                          <>
-                            <Moon className="h-4 w-4 text-ash" /> Dark Mode
-                          </>
-                        )}
-                      </span>
-                    </button>
-
                     {isConnected && (
                       <>
-                        <div className="my-1 h-px bg-border/60" />
                         {referralsData?.referralLink && (
                           <button
                             className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-xs font-semibold text-charcoal-primary hover:bg-stone-surface transition-colors cursor-pointer"
                             onClick={() => {
-                              const link = `${window.location.origin}/?ref=${referralsData.referralLink}`
-                              void navigator.clipboard.writeText(link)
-                              toast.success("Referral link copied!")
-                              setOptionsOpen(false)
+                              const link = `${window.location.origin}/?ref=${referralsData.referralLink}`;
+                              void navigator.clipboard.writeText(link);
+                              toast.success("Referral link copied!");
+                              setOptionsOpen(false);
                             }}
                             type="button"
                           >
@@ -187,9 +162,9 @@ export default function ProfileEditor() {
                         <button
                           className="flex w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-xs font-semibold text-coral-red hover:bg-red-500/10 transition-colors cursor-pointer"
                           onClick={() => {
-                            logout()
-                            setOptionsOpen(false)
-                            router.push("/")
+                            logout();
+                            setOptionsOpen(false);
+                            router.push("/");
                           }}
                           type="button"
                         >
@@ -254,7 +229,7 @@ export default function ProfileEditor() {
                 {accuracy}% accuracy
               </span>
               {isConnected && profile && (
-                <span className="font-mono text-xs text-ash font-semibold dark:text-indigo-400">
+                <span className="pixel-reward text-[10px] text-sky-blue">
                   ⭐ {(profile.arenaXp ?? 0).toLocaleString()} XP
                 </span>
               )}
@@ -285,11 +260,11 @@ export default function ProfileEditor() {
         users={knownUsers}
       />
     </div>
-  )
+  );
 }
 
 function ProfileAvatar({ profile }: { profile: Profile | null }) {
-  const avatarUrl = profile?.avatar_url || profile?.avatarUrl
+  const avatarUrl = profile?.avatar_url || profile?.avatarUrl;
 
   if (avatarUrl) {
     return (
@@ -297,28 +272,28 @@ function ProfileAvatar({ profile }: { profile: Profile | null }) {
         className="h-20 w-20 shrink-0 rounded-[24px] bg-cover bg-center ring-4 ring-white shadow-subtle sm:h-24 sm:w-24 sm:rounded-[28px]"
         style={{ backgroundImage: `url(${avatarUrl})` }}
       />
-    )
+    );
   }
 
   return (
     <div className="verity-blob h-20 w-20 shrink-0 bg-sky-blue ring-4 ring-white sm:h-24 sm:w-24">
       <span className="verity-blob-smile" />
     </div>
-  )
+  );
 }
 
 function ProfileTabs({
   activeTab,
   onChange,
 }: {
-  activeTab: ProfileActivityTab
-  onChange: (tab: ProfileActivityTab) => void
+  activeTab: ProfileActivityTab;
+  onChange: (tab: ProfileActivityTab) => void;
 }) {
   const tabs: Array<{ id: ProfileActivityTab; label: string }> = [
     { id: "markets", label: "Markets" },
     { id: "predictions", label: "Predictions" },
     { id: "activity", label: "Activity" },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-3 border-t border-dashed border-stone-surface px-2">
@@ -340,5 +315,5 @@ function ProfileTabs({
         </button>
       ))}
     </div>
-  )
+  );
 }
