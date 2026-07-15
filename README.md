@@ -50,7 +50,6 @@ verity-txline/
 ├── backend/    # NestJS API: TxLINE client, keeper, Circle Solana wallets, social/PvP
 ├── frontend/   # Next.js user app (custodial, no wallet popups)
 ├── admin/      # Next.js admin console (market + PvP-event builder, metrics)
-└── docs/       # Internal planning notes (gitignored)
 ```
 
 `frontend`, `backend`, and `admin` are a **pnpm workspace**. `solana` is a standalone
@@ -58,22 +57,24 @@ Anchor project (npm) with its own toolchain — see [solana/README.md](solana/RE
 
 ## Key facts
 
-| | |
-| --- | --- |
-| Settlement program (devnet) | `8t3WbL4A91QGdUwdz9EAAW1yCtyVyEmmMBGRFcG89a21` |
-| TxLINE program (devnet) | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
-| Collateral | USDC (SPL); SOL is the gas token |
-| Wallets | Custodial **Circle** Solana wallets (`SOL-DEVNET`), backend-signed |
-| Toolchain | Anchor 0.31.1 · Agave 4.0.2 · NestJS 11 · Next.js 16 / React 19 |
+|                             |                                                                    |
+| --------------------------- | ------------------------------------------------------------------ |
+| Settlement program (devnet) | `8t3WbL4A91QGdUwdz9EAAW1yCtyVyEmmMBGRFcG89a21`                     |
+| TxLINE program (devnet)     | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J`                     |
+| Collateral                  | USDC (SPL); SOL is the gas token                                   |
+| Wallets                     | Custodial **Circle** Solana wallets (`SOL-DEVNET`), backend-signed |
+| Toolchain                   | Anchor 0.31.1 · Agave 4.0.2 · NestJS 11 · Next.js 16 / React 19    |
 
 ## Getting started
 
 ### Prerequisites
+
 - **Node.js 20+** and **pnpm**
 - **MongoDB** (local or remote)
 - For the on-chain program: **Anchor 0.31.1** + **Agave/Solana 4.0.2** (see [solana/README.md](solana/README.md))
 
 ### Setup
+
 ```bash
 git clone <repo> verity-txline
 cd verity-txline
@@ -86,6 +87,7 @@ cp admin/.env.example    admin/.env
 ```
 
 ### Run
+
 ```bash
 pnpm dev:backend    # NestJS API   → http://localhost:5050/api
 pnpm dev:frontend   # user app     → http://localhost:3000
