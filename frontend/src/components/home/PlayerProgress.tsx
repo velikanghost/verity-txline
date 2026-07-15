@@ -1,19 +1,20 @@
 "use client";
 
-import { Flame, Shield, Star, Trophy } from "lucide-react";
+import { Flame, Shield, Swords, Trophy } from "lucide-react";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
-import { useMissionsQuery } from "@/store/verity/verityQueries";
 
 const XP_PER_LEVEL = 500;
 
 export function PlayerProgress() {
   const { profile } = useWalletProfile();
-  const { data: missions = [] } = useMissionsQuery(profile?.id);
   const xp = profile?.arenaXp ?? 0;
   const level = Math.floor(xp / XP_PER_LEVEL) + 1;
   const levelProgress = xp % XP_PER_LEVEL;
   const progressPercent = Math.round((levelProgress / XP_PER_LEVEL) * 100);
-  const openQuests = missions.filter((mission) => !mission.completed).length;
+  const duelsPlayed =
+    (profile?.pvpMatchesWonCount ?? 0) +
+    (profile?.pvpMatchesLostCount ?? 0) +
+    (profile?.pvpMatchesDrawnCount ?? 0);
 
   return (
     <section
@@ -52,14 +53,14 @@ export function PlayerProgress() {
 
       <div className="game-status-card flex items-center gap-3 rounded-[20px] border border-border bg-surface-solid p-4">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#35e881]/10 text-[#27bd69]">
-          <Star className="h-5 w-5" aria-hidden="true" />
+          <Swords className="h-5 w-5" aria-hidden="true" />
         </span>
         <div>
           <p className="font-mono text-[8px] font-black uppercase tracking-[0.16em] text-ash">
-            Open quests
+            Duels played
           </p>
           <p className="font-game mt-0.5 text-xl font-black text-charcoal-primary ">
-            {openQuests}
+            {duelsPlayed}
           </p>
         </div>
       </div>

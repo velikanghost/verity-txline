@@ -12,17 +12,17 @@ Runs on `http://localhost:5050/api` (Swagger at `/api/docs`).
 | Module | Purpose |
 | --- | --- |
 | **solana** | The chain layer. `SolanaService` (keeper-signed `init_market`/`settle`, pool reads), `TxlineService` (TxLINE REST + proof client), `CircleSolanaWalletService` (per-user custodial `SOL-DEVNET` wallets + tx signing), `WorldCupMarketService` (create market + deploy pool). |
-| **markets** | Market CRUD + the `MarketsKeeperService` settlement loop (below). |
-| **pvp** | PvP Arena: duels, matchmaking, ticket scoring. Fixture-anchored child markets deploy Solana pools and settle via TxLINE; `deriveStatConfig` maps prop groups to settleable stat configs. |
+| **markets** | Market CRUD + the `MarketsKeeperService` settlement loop (below) + admin **force-settle** (`POST /markets/:id/force-settle`) as a keeper-miss safety net. |
+| **pvp** | PvP Arena: **slates** (cross-game contests), duels, matchmaking, ticket scoring. Each slate prop is a real TxLINE-settled parimutuel market that's individually backable on the home feed and links to its slate. |
 | **auth** | Passwordless email OTP (Resend) → JWT. Serializes the user's Solana wallet address. |
-| **users** | Profiles, XP/signal points, followers, Solana wallet id/address. |
+| **users** | Profiles, XP/arena points, followers, Solana wallet id/address. |
 | **posts** / **comments** / **interactions** | Social feed containers, threaded comments, likes/reshares. |
 | **notifications** / **socket** | Activity feed + Socket.IO real-time broadcasts. |
-| **missions** / **coupons** / **categories** | XP missions (incl. the LP-liquidity quest), promo boosts, feed taxonomy. |
 
-Removed in the pivot: the EVM `blockchain`, LLM `agent`, `liquidity`, and Circle
-`nanopayments`/`royalty` modules — TxLINE-verified settlement replaces oracle/subjective
-resolution, and creator/LP royalties are now on-chain in the Anchor program.
+Removed: the EVM `blockchain`, LLM `agent`, `liquidity`, Circle `nanopayments`/`royalty`,
+and the `missions` / `coupons` / `categories` modules. TxLINE-verified settlement replaces
+oracle/subjective resolution, and markets are a **pure parimutuel** — no LPs and no creator
+royalty on-chain (only a treasury fee).
 
 ## Market resolution keeper
 
@@ -50,13 +50,16 @@ authorizes `init_market`/`settle` only, and is distinct from each user's Circle 
 ## Custodial Solana wallets (`CircleSolanaWalletService`)
 
 Each user gets a Circle developer-controlled EOA on `SOL-DEVNET`. User actions
-(`stake`/`add_liquidity`/`claim`/`send`) are built server-side as a single Solana transaction,
-base64-encoded, signed via Circle's `signTransaction`, and broadcast — no wallet popup.
+(`stake`/`claim`/`send`) are built server-side as a single Solana transaction, base64-encoded,
+signed via Circle's `signTransaction`, and broadcast — no wallet popup.
 
-## Key endpoints (`/solana`)
+## Key endpoints
 
-`admin/create-market`, `create-market`, `stake`, `add-liquidity`, `claim`, `send`, `balance`
-(USDC + SOL), `markets`, `market/:id/pool`, `fixtures`.
+`/solana`: `admin/create-market`, `admin/prune-stale`, `stake`, `claim`, `send`, `balance`
+(USDC + SOL), `markets`, `market/:id/pool`, `fixtures`. \
+`/pvp`: `slates` (admin — create a PvP game event), `ticket`, `status`, `active-events`,
+`leaderboards`, `history`. \
+`/markets`: `:id/force-settle` (admin).
 
 ## Getting started
 

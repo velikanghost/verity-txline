@@ -3,6 +3,8 @@ import {
   OnModuleInit,
   OnModuleDestroy,
   Logger,
+  BadRequestException,
+  NotFoundException,
 } from "@nestjs/common"
 import { InjectModel } from "@nestjs/mongoose"
 import { Model } from "mongoose"
@@ -91,62 +93,7 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
           }
         }
 
-        const seq = await this.getLatestScoresSeq(market.txlineFixtureId!)
-        if (seq == null) {
-          // Fixture has no published scores batch yet; retry next loop.
-          continue
-        }
-
-        const proof = await this.txlineService.getStatValidation(
-          market.txlineFixtureId!,
-          seq,
-          market.txlineStatKey!,
-        )
-        // Any market with a shared second stat (totals, winner, BTTS, 3-way, …)
-        // combines a second proven stat; fetch its fresh proof at the same seq.
-        const proofB =
-          market.txlineStatKeyB != null && market.txlineStatKeyB !== 0
-            ? await this.txlineService.getStatValidation(
-                market.txlineFixtureId!,
-                seq,
-                market.txlineStatKeyB,
-              )
-            : null
-        const result = await this.solanaService.settleMarket(
-          market.txlineFixtureId!,
-          market.solanaMarketNonce!,
-          proof,
-          proofB,
-        )
-
-        market.solanaSettled = true
-        market.solanaResolveTxSig = result.txSig
-
-        if (result.voided) {
-          market.status = "voided"
-        } else {
-          // Outcomes are stored in on-chain order (index 0 = default), so the
-          // winning index maps straight through. Binary falls back to YES/NO.
-          const idx = result.winningOutcome
-          const winningOutcome =
-            market.outcomes?.[idx] ?? (idx === 1 ? "YES" : "NO")
-          market.winningOutcomeIndex = idx
-          market.status = "resolved"
-          market.resolvedOutcome = winningOutcome
-          await market.save()
-          await this.pvpService.resolvePvpMatchesForMarket(
-            marketId,
-            winningOutcome,
-          )
-        }
-        await market.save()
-
-        this.socketGateway.broadcastToRoom("feed", "feed-updated", {})
-        this.socketGateway.broadcastToRoom(
-          `market:${marketId}`,
-          "market-updated",
-          { marketId },
-        )
+        const result = await this.settleSolanaMarketDoc(market)
         this.logger.log(
           `[Keeper] Settled Solana market ${marketId} via TxLINE (tx ${result.txSig})`,
         )
@@ -156,6 +103,96 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
         )
       }
     }
+  }
+
+  /**
+   * Fetch a fresh TxLINE proof, settle the market on-chain via CPI, and mirror
+   * the outcome into Mongo (+ PvP resolution hook). Shared by the keeper loop
+   * and the admin force-settle endpoint. Throws if it can't settle yet.
+   */
+  async settleSolanaMarketDoc(market: MarketDocument): Promise<{
+    status: "resolved" | "voided"
+    txSig: string
+    resolvedOutcome?: string
+  }> {
+    const marketId = market._id.toString()
+    if (market.txlineFixtureId == null || market.solanaMarketNonce == null) {
+      throw new BadRequestException("Market is not an on-chain TxLINE market.")
+    }
+
+    const seq = await this.getLatestScoresSeq(market.txlineFixtureId)
+    if (seq == null) {
+      throw new BadRequestException(
+        "No published scores batch for this fixture yet — try again once the match has data.",
+      )
+    }
+
+    const proof = await this.txlineService.getStatValidation(
+      market.txlineFixtureId,
+      seq,
+      market.txlineStatKey!,
+    )
+    // Any market with a shared second stat (totals, winner, BTTS, 3-way, …)
+    // combines a second proven stat; fetch its fresh proof at the same seq.
+    const proofB =
+      market.txlineStatKeyB != null && market.txlineStatKeyB !== 0
+        ? await this.txlineService.getStatValidation(
+            market.txlineFixtureId,
+            seq,
+            market.txlineStatKeyB,
+          )
+        : null
+    const result = await this.solanaService.settleMarket(
+      market.txlineFixtureId,
+      market.solanaMarketNonce,
+      proof,
+      proofB,
+    )
+
+    market.solanaSettled = true
+    market.solanaResolveTxSig = result.txSig
+
+    let resolvedOutcome: string | undefined
+    if (result.voided) {
+      market.status = "voided"
+    } else {
+      // Outcomes are stored in on-chain order (index 0 = default), so the
+      // winning index maps straight through. Binary falls back to YES/NO.
+      const idx = result.winningOutcome
+      resolvedOutcome = market.outcomes?.[idx] ?? (idx === 1 ? "YES" : "NO")
+      market.winningOutcomeIndex = idx
+      market.status = "resolved"
+      market.resolvedOutcome = resolvedOutcome
+      await market.save()
+      await this.pvpService.resolvePvpMatchesForMarket(marketId, resolvedOutcome)
+    }
+    await market.save()
+
+    this.socketGateway.broadcastToRoom("feed", "feed-updated", {})
+    this.socketGateway.broadcastToRoom(`market:${marketId}`, "market-updated", {
+      marketId,
+    })
+
+    return {
+      status: result.voided ? "voided" : "resolved",
+      txSig: result.txSig,
+      resolvedOutcome,
+    }
+  }
+
+  /**
+   * Admin force-settle: settle a single Solana market now (keeper-miss safety
+   * net). Validates the market is still open before settling.
+   */
+  async forceSettleMarket(marketId: string) {
+    const market = await this.marketModel.findById(marketId)
+    if (!market) {
+      throw new NotFoundException("Market not found.")
+    }
+    if (market.status === "resolved" || market.status === "voided") {
+      throw new BadRequestException("Market is already settled.")
+    }
+    return this.settleSolanaMarketDoc(market)
   }
 
   /**

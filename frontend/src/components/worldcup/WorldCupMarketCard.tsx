@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, CheckCircle2, Coins, Trophy } from "lucide-react";
+import Link from "next/link";
+import { CalendarClock, CheckCircle2, Coins, Swords, Trophy } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/providers/AuthModals";
 import {
@@ -169,7 +170,7 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
                 <span className="font-mono text-[9px] font-semibold text-[#697290]">
                   {fmtUsdc(pools[index])} USDC backed
                 </span>
-                {!resolved && !voided && (
+                {!resolved && !voided && !market.parentMarketId && (
                   <button
                     type="button"
                     onClick={() => submitStake(index)}
@@ -204,6 +205,14 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
           <p className="rounded-xl border border-[#ffc844]/15 bg-[#ffc844]/10 p-3 text-xs font-bold text-[#ffc844]">
             Match voided — your entry can be reclaimed.
           </p>
+        ) : market.parentMarketId ? (
+          <Link
+            href={`/pvp?slate=${market.parentMarketId}`}
+            className="game-button-primary clickable flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 font-game text-sm font-black text-white"
+          >
+            <Swords className="h-4 w-4" aria-hidden="true" />
+            Enter in PvP
+          </Link>
         ) : (
           <div className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-[#070a15]/60 p-2">
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2">

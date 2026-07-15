@@ -4,12 +4,18 @@ The administrative control panel for the TxLINE World Cup arena. Built with **Ne
 Router)**, **React 19**, and **Tailwind CSS v4** + shadcn UI primitives. Runs independently of
 the user app on `http://localhost:3001`.
 
-Admins create World Cup markets, deploy PvP matchups, moderate, and monitor keeper/wallet
-balances. Access is restricted to accounts flagged `"admin"` in MongoDB (email-OTP sign-in).
+Admins create markets and PvP game events, and monitor keeper/wallet balances. Access is
+restricted to accounts flagged `"admin"` in MongoDB (email-OTP sign-in).
 
-## World Cup market builder (`WorldCupTab`)
+## Markets tab (`MarketsAdmin`)
 
-The primary tool. Instead of raw stat keys, it is a **guided market-type picker**:
+The primary tool — one surface with a mode toggle for the two things an admin creates:
+
+- **Individual Market** — a single TxLINE-settled prop on one fixture.
+- **PvP Game Event** — a slate of props (across one or more fixtures) that players build
+  lineups from and duel over (`POST /pvp/slates`).
+
+Both are built from the same **guided market-type picker** (no raw stat keys):
 
 1. **Match** — a dropdown of live TxLINE fixtures (pulled from `GET /solana/fixtures`).
 2. **Market** — one grouped list of every settleable market in plain English, using the
@@ -24,17 +30,18 @@ The primary tool. Instead of raw stat keys, it is a **guided market-type picker*
 4. An auto-written (editable) **question** and a live **settlement-rule preview**
    (e.g. `YES if Australia goals − Brazil goals > 0`).
 
-Each selection is compiled into the on-chain config (`statKey`, `statKeyB`, `op`, `logic`,
-thresholds, comparisons) and `POST`ed to `/solana/admin/create-market`, which deploys the
-parimutuel pool. Settlement then runs automatically via the backend keeper + TxLINE.
+Each selection is compiled into the on-chain config (`statKey`, `statKeyB`, per-outcome
+`rules`, `outcomeCount`) and `POST`ed to `/solana/admin/create-market` (individual) or
+`/pvp/slates` (PvP event), which deploys the parimutuel pool(s). Settlement then runs
+automatically via the backend keeper + TxLINE.
 
-## Other tabs
+The Markets list shows every created market with a **Force settle** action per unresolved
+market — a keeper-miss safety net that fetches a fresh TxLINE proof and settles on-chain now
+(`POST /markets/:id/force-settle`) — plus a **Prune stale** action for pre-redeploy accounts.
 
-- **Moderation** — manage markets, batch-claim creator LP, deploy PvP matchup events.
-- **Metrics / Analytics** — on-chain volume, users, bets, fees, and keeper balances.
-- **Coupons** — generate/revoke promotional boosts.
-- **Missions** — configure XP missions (incl. the add-liquidity quest).
-- **Categories** — feed taxonomy.
+## Metrics tab
+
+On-chain volume, users, bets, fees, and keeper balances.
 
 ## Balances header
 

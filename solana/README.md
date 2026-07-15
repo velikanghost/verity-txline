@@ -2,9 +2,10 @@
 
 A parimutuel prop-market settlement program that resolves **trustlessly** by CPI-ing into
 [TxLINE](https://txline.txodds.com)'s on-chain `validate_stat` instruction. Bettors stake USDC
-on YES/NO for a World Cup match stat; at settlement a keeper submits fresh TxLINE Merkle
-proof(s), the program verifies them against TxLINE's signed on-chain roots, and winners + LPs
-claim pro-rata. No oracle trust beyond TxLINE.
+on one of a market's **N outcomes** (2–4) for a World Cup match stat; at settlement a keeper
+submits fresh TxLINE Merkle proof(s), the program verifies them against TxLINE's signed on-chain
+roots, and winners claim pro-rata (losing pools fund winners). It's a **pure parimutuel** — no
+LPs and no creator royalty; the only skim is a treasury fee. No oracle trust beyond TxLINE.
 
 - Devnet program id: `8t3WbL4A91QGdUwdz9EAAW1yCtyVyEmmMBGRFcG89a21`
 - TxLINE program: devnet `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J`,
@@ -24,31 +25,32 @@ claim pro-rata. No oracle trust beyond TxLINE.
   the stat key) is the uniqueness seed, so several markets on one fixture can share a base stat
   key (winner / draw / totals all read P1 goals) without their PDAs colliding.
 - **Vault** PDA — `["vault", market]`, the market's USDC token account.
-- **Position** PDA — `["position", market, owner]`, per-account stake + LP accounting.
+- **Position** PDA — `["position", market, owner]`, per-account per-outcome stake accounting.
 
 ## Instructions
 
 ```
-init_market(fixture_id, nonce, stat_key, stat_key_b, op, logic,
-            stat_period, threshold, comparison, threshold_b, comparison_b,
-            deadline, fee_bps, creator_fee_share_bps, lp_fee_share_bps)
+init_market(fixture_id, nonce, stat_key, stat_key_b, stat_period,
+            outcome_count, rules[], deadline, fee_bps)
 ```
-Creates a market; the winning condition is fixed here and is immutable.
+Creates a market with `outcome_count` outcomes (2–4). Outcome `0` is the **default / else**
+bucket; each of `rules[]` (length `outcome_count − 1`) is the predicate for outcomes `1..N`,
+evaluated in order (first true wins, else outcome 0). The winning conditions are fixed here and
+immutable. A binary market is just `outcome_count = 2` with one rule; a 3-way match result is
+`outcome_count = 3` (0 = Draw, 1 = A−B > 0, 2 = A−B < 0).
 
-- `stake(side, amount)` — directional bet (side 0 = NO, 1 = YES).
-- `add_liquidity(amount)` — LP deposit split 50/50 across both sides. The LP's losing half
-  funds winners (directional risk); the LP earns a fee slice in return.
+- `stake(outcome, amount)` — stake USDC on outcome index `0..N−1`.
 - `settle(ts, fixture_summary, fixture_proof, main_tree_proof, stat_value, stat_period,
-  event_stat_root, stat_proof, stat_b?)` — keeper-only. CPIs `validate_stat`; the boolean
-  verdict sets the winning side and snapshots the fee split. Zero stake on the winning side
-  voids the market (everyone refunded).
-- `claim()` — winner / LP payout: `distributable * winning_stake / winning_pool` plus the
-  caller's LP fee share.
-- `claim_creator_royalty()` / `claim_treasury()` — one-time fee slices.
+  event_stat_root, stat_proof, stat_b?)` — keeper-only. CPIs `validate_stat` (once per rule that
+  needs it), picks the winning outcome, and skims the treasury fee. Zero stake on the winning
+  outcome voids the market (everyone refunded).
+- `claim()` — winner payout: `distributable * winning_stake / winning_pool` (voided markets
+  refund the caller's stakes).
+- `claim_treasury()` — keeper claims the one-time treasury fee.
 
 ## Settlement modes
 
-`settle` combines up to two proven stats. Which mode a market uses is fixed at `init_market`:
+Each outcome's rule combines up to two proven stats; the mode is fixed per rule at `init_market`:
 
 | Mode | Stored as | Rule evaluated | Example |
 | --- | --- | --- | --- |
@@ -84,7 +86,7 @@ cargo-build-sbf --version   # expect: 4.0.0 / platform-tools v1.53 / rustc 1.89.
 # Offline deterministic tests (mock-txline via the localnet feature)
 cargo-build-sbf --features localnet
 anchor idl build -p verity_worldcup -o target/idl/verity_worldcup.json -t target/types/verity_worldcup.ts
-anchor test --skip-build          # 7/7: single-stat, Subtract winner, AND BTTS + payouts
+anchor test --skip-build          # single-stat, arithmetic winner, logical BTTS, 3-way + payouts
 
 # Real devnet build + deploy (real TxLINE program id)
 cargo-build-sbf

@@ -3,7 +3,8 @@
 The user-facing app for the TxLINE World Cup arena, built with **Next.js (App Router)**,
 **React 19**, and **Tailwind CSS v4**. Custodial by design — users sign in with email OTP, get a
 **Circle Solana wallet** provisioned automatically, and stake/claim without ever seeing a wallet
-popup (the backend builds + signs each Solana transaction).
+popup (the backend builds + signs each Solana transaction). Ships as a single fixed light
+"arcade" theme (Poppins + Silkscreen; no theme toggle).
 
 Runs on `http://localhost:3000`.
 
@@ -11,20 +12,25 @@ Runs on `http://localhost:3000`.
 
 | Route | View |
 | --- | --- |
-| `/` | **Home feed / PvP Arena** — upcoming matchups, live duels, ticket builders. |
-| `/markets` | **Markets** — tabs for General, PvP Arena, and **World Cup** prop markets. |
-| `/markets/worldcup` | **World Cup markets** — standalone list of TxLINE-settled prop markets. |
-| `/profile/[id]` | Public profile: stats, positions, rank, XP, past duels. |
+| `/` | **Home** — signed-out: landing hero + how-it-works; signed-in: player progress + World Cup markets. |
+| `/pvp` | **PvP Arena** — contest carousel, cross-game lineup builder, live duels. |
+| `/search` | Search open PvP contests. |
+| `/leaderboard` | Rankings (also embedded in the profile's **Rankings** tab). |
+| `/profile` | Account: **Profile · Portfolio · Rankings** tabs. |
+| `/profile/[id]` | Public profile: stats, positions, XP, past duels. |
 | `/portfolio` | Balances (USDC + SOL), position values, active duels, history. |
+| `/markets`, `/markets/worldcup` | Standalone lists of TxLINE-settled World Cup prop markets. |
 | `/notifications` | Comments, PvP results, market resolution events. |
 | `/posts/[id]` | Single matchup/market thread with comments. |
 
 ## World Cup market cards
 
 `components/worldcup/` renders TxLINE markets: each card shows the **match name**
-(e.g. "Australia vs Brazil"), the question, live YES/NO pool sizes, and — once resolved — a
+(e.g. "Australia vs Brazil"), the question, live per-outcome pool sizes, and — once resolved — a
 **verifiable resolution receipt** linking to the Solana settlement transaction on the explorer.
-Staking and claiming POST to `/solana/stake` and `/solana/claim`; the backend signs via Circle.
+Standalone markets stake/claim directly via `/solana/stake` and `/solana/claim` (backend signs
+via Circle); a market that belongs to a **PvP game event** instead shows an **"Enter in PvP"**
+button that routes to `/pvp?slate=…`, where it's backed as part of a duel lineup.
 
 ## Custom hooks
 

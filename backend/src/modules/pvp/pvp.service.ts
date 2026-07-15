@@ -25,7 +25,7 @@ import {
 import { Post, PostDocument } from "../posts/posts.model"
 import { SocketGateway } from "../socket/socket.gateway"
 import { NotificationsService } from "../notifications/notifications.service"
-import { CreatePvpEventDto, CreateSlateDto, SubmitTicketDto } from "./pvp.dto"
+import { CreateSlateDto, SubmitTicketDto } from "./pvp.dto"
 import { PublicKey, TransactionInstruction } from "@solana/web3.js"
 import { SolanaService } from "../solana/solana.service"
 import { WorldCupMarketService } from "../solana/worldcup-market.service"
@@ -33,7 +33,6 @@ import { CircleSolanaWalletService } from "../solana/circle-solana-wallet.servic
 import { calculatePvpResultXp, calculatePvpScore } from "./pvp-scoring"
 import type { PvpResult } from "./pvp-scoring"
 import { ConfigService } from "@nestjs/config"
-import { CouponsService } from "../coupons/coupons.service"
 
 export const BOT_PROFILES = [
   { username: "alex_g", displayName: "Alex Green" },
@@ -331,330 +330,7 @@ export class PvpService {
     private readonly worldCupMarketService: WorldCupMarketService,
     private readonly circleSolanaWalletService: CircleSolanaWalletService,
     private readonly configService: ConfigService,
-    private readonly couponsService: CouponsService,
   ) {}
-
-  async createPvpEvent(adminId: string, dto: CreatePvpEventDto) {
-    const admin = await this.userModel.findById(adminId)
-    if (!admin || admin.role !== "admin") {
-      throw new ForbiddenException("Only admins can create PvP events.")
-    }
-
-    // Parse teamA and teamB from the question (e.g. "Mexico vs Southafrica")
-    let teamA = "YES"
-    let teamB = "NO"
-    const question = dto.question.trim()
-    const vsMatch = question.match(/(.+?)\s+vs\.?\s+(.+)/i)
-    if (vsMatch) {
-      teamA = vsMatch[1].trim()
-      teamB = vsMatch[2].trim()
-    } else {
-      const dashMatch = question.match(/(.+?)\s+-\s+(.+)/)
-      if (dashMatch) {
-        teamA = dashMatch[1].trim()
-        teamB = dashMatch[2].trim()
-      }
-    }
-
-    let post: PostDocument | null = null
-    let parentMarket: MarketDocument | null = null
-    const childMarketIds: Types.ObjectId[] = []
-
-    try {
-      const childMarkets: MarketDocument[] = []
-      const deadlineUnix = Math.floor(new Date(dto.deadline).getTime() / 1000)
-      const now = new Date()
-      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      const fundingDeadline =
-        new Date(dto.deadline) < sevenDaysFromNow
-          ? new Date(dto.deadline)
-          : sevenDaysFromNow
-      const fundingDeadlineUnix = Math.floor(fundingDeadline.getTime() / 1000)
-
-      // Option grouping is fully deterministic (determineOptionGroup below);
-      // the removed LLM categorizer was only a fallback.
-      const optionGroupsMap: Record<string, string> = {}
-
-      // Map option groups to their clean names (and make sure match_winner/moneyline becomes major)
-      const cleanGroupsMap: Record<string, string> = {}
-      for (const [opt, grp] of Object.entries(optionGroupsMap)) {
-        cleanGroupsMap[opt] =
-          grp === "match_winner" || grp === "moneyline" ? "major" : grp
-      }
-
-      const groups: Record<string, string[]> = {}
-      for (let i = 0; i < dto.options.length; i++) {
-        const optionName = dto.options[i]
-        let optionGroup = determineOptionGroup(optionName, teamA, teamB)
-        if (optionGroup.startsWith("unique_")) {
-          // If our deterministic check did not find a standard group, fall back to AI categorization
-          optionGroup = cleanGroupsMap[optionName] || optionGroup
-        }
-        if (optionGroup === "match_winner" || optionGroup === "moneyline") {
-          optionGroup = "major"
-        }
-        if (!groups[optionGroup]) {
-          groups[optionGroup] = []
-        }
-        groups[optionGroup].push(optionName)
-      }
-
-      // We will loop over each option group to register and fund them on-chain first
-      const deployedMarkets: Array<{
-        childMarketId: Types.ObjectId
-        questionSuffix: string
-        optionName: string
-        outcomes: string[]
-        handicap: number | null
-        optionGroup: string
-        outcomeCount: number
-      }> = []
-
-      const lockTime = dto.lockTime
-        ? new Date(dto.lockTime)
-        : new Date(dto.deadline)
-
-      for (const [optionGroup, groupOptions] of Object.entries(groups)) {
-        const outcomeCount = groupOptions.length === 1 ? 2 : groupOptions.length
-
-        // Formulate question and optionName
-        let questionSuffix = ""
-        let optionName = ""
-        if (optionGroup === "major") {
-          questionSuffix = "Major"
-          optionName = "Major"
-        } else if (optionGroup === "spread") {
-          questionSuffix = "Spread"
-          optionName = "Spread"
-        } else if (optionGroup === "totals") {
-          questionSuffix = "Totals"
-          optionName = "Totals"
-        } else if (optionGroup === "btts") {
-          questionSuffix = "BTTS"
-          optionName = "BTTS"
-        } else if (optionGroup === "offsides") {
-          questionSuffix = "Offsides"
-          optionName = "Offsides"
-        } else if (optionGroup === "extra_time_penalties") {
-          questionSuffix = "Extra Time / Penalties Winner"
-          optionName = "Extra Time / Penalties"
-        } else {
-          const capitalized = optionGroup
-            .split("_")
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(" ")
-          questionSuffix = capitalized
-          optionName = capitalized
-        }
-
-        // Determine handicap if applicable
-        let handicap: number | null = null
-        if (
-          optionGroup === "spread" ||
-          optionGroup === "totals" ||
-          optionGroup === "offsides" ||
-          optionGroup === "yellow_cards" ||
-          optionGroup === "cards"
-        ) {
-          // Try to extract from the first option containing a number
-          for (const opt of groupOptions) {
-            const numMatch = opt.match(/([+-]?\d+(?:\.\d+)?)/)
-            if (numMatch) {
-              handicap = Math.abs(parseFloat(numMatch[1]))
-              break
-            }
-          }
-        }
-
-        // When this event is anchored to a real fixture, drop any prop TxLINE
-        // cannot trustlessly settle (3-way winner, BTTS, offsides, fouls,
-        // first-goal, …) so we never create a market we can't resolve.
-        if (
-          dto.fixtureId != null &&
-          deriveMarketSpec(optionGroup, handicap, teamA, teamB) == null
-        ) {
-          this.logger.warn(
-            `Skipping unsettleable PvP prop "${optionGroup}" for fixture ${dto.fixtureId}`,
-          )
-          continue
-        }
-
-        // Generate clean outcomes (e.g. for Major, draw or win team names)
-        const outcomes =
-          groupOptions.length === 1
-            ? [groupOptions[0].trim(), "NO"]
-            : groupOptions.map((opt) => opt.trim())
-
-        const childMarketId = new Types.ObjectId()
-        childMarketIds.push(childMarketId)
-
-        deployedMarkets.push({
-          childMarketId,
-          questionSuffix,
-          optionName,
-          outcomes,
-          handicap,
-          optionGroup,
-          outcomeCount,
-        })
-      }
-
-      // 4. All on-chain transactions succeeded! Write everything to MongoDB.
-      const postId = new Types.ObjectId()
-      const parentMarketId = new Types.ObjectId()
-
-      // Create Post
-      post = await this.postModel.create({
-        _id: postId,
-        authorId: new Types.ObjectId(adminId),
-        type: "market",
-        content: dto.question.trim(),
-      })
-
-      // Create Parent Market
-      parentMarket = await this.marketModel.create({
-        _id: parentMarketId,
-        postId: postId,
-        authorId: new Types.ObjectId(adminId),
-        question: dto.question.trim(),
-        category: "pvp",
-        deadline: new Date(dto.deadline),
-        lockTime,
-        resolutionSource: dto.resolutionSource.trim(),
-        yesCondition: teamA,
-        noCondition: teamB,
-        status: "tradable",
-        marketType: "parent",
-      })
-
-      // Create Child Markets in DB, each backed by an on-chain Solana pool
-      // that settles via TxLINE. Requires a fixtureId on the event.
-      for (const item of deployedMarkets) {
-        const hasFixture = dto.fixtureId != null
-        // Unsettleable groups were already filtered out above when a fixture is
-        // set, so a spec is guaranteed here for the on-chain path.
-        const spec = hasFixture
-          ? deriveMarketSpec(item.optionGroup, item.handicap, teamA, teamB)
-          : null
-
-        const child = await this.marketModel.create({
-          _id: item.childMarketId,
-          postId: postId,
-          authorId: new Types.ObjectId(adminId),
-          question: `${dto.question.trim()} - ${item.questionSuffix}`,
-          category: "pvp",
-          deadline: new Date(dto.deadline),
-          lockTime,
-          resolutionSource: dto.resolutionSource.trim(),
-          yesCondition: item.outcomes[0] || "YES",
-          noCondition: item.outcomes[1] || "NO",
-          status: hasFixture ? "tradable" : "funding_pool",
-          marketType: "child",
-          parentMarketId: parentMarketId,
-          optionName: item.optionName,
-          teamName: teamA, // Keep teamA as primary associated team
-          optionGroup: item.optionGroup,
-          // On-chain markets store outcomes in on-chain order (index 0 = default).
-          outcomeCount: spec ? spec.outcomeCount : item.outcomeCount,
-          outcomes: spec ? spec.outcomes : item.outcomes,
-          handicap: item.handicap,
-          txlineFixtureId: hasFixture ? dto.fixtureId : null,
-          txlineMatchup: hasFixture ? `${teamA} vs ${teamB}` : null,
-          txlineStatKey: spec ? spec.statKey : null,
-          txlineStatKeyB: spec && usesSecondStat(spec) ? spec.statKeyB : null,
-          txlineStatPeriod: spec ? spec.statPeriod : null,
-          txlineOutcomeCount: spec ? spec.outcomeCount : 2,
-          txlineOutcomeRules: spec ? spec.rules : [],
-        })
-
-        // Deploy the on-chain parimutuel pool for this prop.
-        if (hasFixture && spec) {
-          const pool = await this.solanaService.createMarketPoolFor({
-            fixtureId: dto.fixtureId!,
-            statKey: spec.statKey,
-            statKeyB: usesSecondStat(spec) ? spec.statKeyB : undefined,
-            statPeriod: spec.statPeriod,
-            outcomeCount: spec.outcomeCount,
-            rules: spec.rules,
-            deadlineUnix,
-          })
-          child.solanaMarketNonce = pool.nonce
-          child.solanaMarketPda = pool.marketPda
-          child.solanaVaultPda = pool.vaultPda
-          child.solanaCreateTxSig = pool.txSig
-          await child.save()
-        }
-
-        childMarkets.push(child)
-      }
-
-      this.logger.log(
-        `Admin ${adminId} successfully deployed PvP Event: ${parentMarket._id} with ${childMarkets.length} child options and pre-deposited USDC.`,
-      )
-
-      // Broadcast updates
-      this.socketGateway.broadcastToRoom("feed", "feed-updated", {})
-
-      return {
-        parentMarketId: parentMarket._id.toString(),
-        question: parentMarket.question,
-        childMarkets: childMarkets.map((c) => ({
-          id: c._id.toString(),
-          optionName: c.optionName,
-          status: c.status,
-        })),
-      }
-    } catch (error) {
-      this.logger.error(
-        `Failed to deploy PvP Event. Rolling back created database documents: ${error.message}`,
-      )
-
-      // Rollback child market docs. Any on-chain pool already deployed is left
-      // as-is (harmless orphan on devnet); the Mongo docs are removed.
-      for (const childId of childMarketIds) {
-        try {
-          const res = await this.marketModel.findByIdAndDelete(childId)
-          this.logger.log(
-            `Rollback: Deleted child market ${childId}. Result: ${JSON.stringify(res)}`,
-          )
-        } catch (dbErr) {
-          this.logger.error(
-            `Rollback error deleting child market ${childId}: ${dbErr.message}`,
-          )
-        }
-      }
-
-      // Rollback parent market
-      if (parentMarket) {
-        try {
-          const res = await this.marketModel.findByIdAndDelete(parentMarket._id)
-          this.logger.log(
-            `Rollback: Deleted parent market ${parentMarket._id}. Result: ${JSON.stringify(res)}`,
-          )
-        } catch (dbErr) {
-          this.logger.error(
-            `Rollback error deleting parent market ${parentMarket._id}: ${dbErr.message}`,
-          )
-        }
-      }
-
-      // Rollback post
-      if (post) {
-        try {
-          const res = await this.postModel.findByIdAndDelete(post._id)
-          this.logger.log(
-            `Rollback: Deleted post ${post._id}. Result: ${JSON.stringify(res)}`,
-          )
-        } catch (dbErr) {
-          this.logger.error(
-            `Rollback error deleting post ${post._id}: ${dbErr.message}`,
-          )
-        }
-      }
-
-      throw error
-    }
-  }
 
   /**
    * Create a PvP **slate**: a named contest that groups prop markets across
@@ -1184,11 +860,9 @@ export class PvpService {
     let welcomeBoostMultiplier = 1.0
 
     if (isNewUser) {
-      // Count only tickets where a coupon was NOT used
       const ticketCount = await this.pvpTicketModel.countDocuments({
         userId: user._id,
         status: { $ne: "cancelled" },
-        couponCode: { $in: [null, undefined] },
       })
       if (ticketCount === 0) {
         welcomeBoostMultiplier = 2.0
@@ -1242,55 +916,15 @@ export class PvpService {
       selectedBoostObject = best.obj
     }
 
-    // 2. Validate coupon if provided
-    let appliedCoupon: string | null = null
-    let couponMultiplier: number | null = null
-
-    if (dto.couponCode) {
-      try {
-        const coupon = await this.couponsService.validateCoupon(dto.couponCode)
-
-        // Check per-user limit
-        const userUsageCount = await this.pvpTicketModel.countDocuments({
-          userId: new Types.ObjectId(userId),
-          couponCode: coupon.code,
-          status: { $ne: "cancelled" },
-        })
-
-        if (userUsageCount >= coupon.maxUsesPerUser) {
-          throw new BadRequestException(
-            `You have already used this coupon code the maximum allowed number of times (${coupon.maxUsesPerUser}).`,
-          )
-        }
-
-        couponMultiplier = coupon.multiplier
-        appliedCoupon = coupon.code
-      } catch (err: any) {
-        this.logger.warn(
-          `User ${userId} provided invalid coupon code ${dto.couponCode}: ${err.message}`,
-        )
-      }
-    }
-
-    // 3. Coupon Bypasses Active User Boost
+    // 2. Use the active user boost (if any) and consume it.
     let xpBoostMultiplier = 1.0
     let doubleBoostActive = false
     let shouldConsumeUserBoost = false
 
-    if (appliedCoupon && couponMultiplier) {
-      // Coupon is applied: use coupon, bypass and preserve active user boosts
-      xpBoostMultiplier = couponMultiplier
+    if (activeUserBoostMultiplier > 1.0) {
+      xpBoostMultiplier = activeUserBoostMultiplier
       doubleBoostActive = true
-      this.logger.log(
-        `User ${userId} applied coupon ${appliedCoupon} (${couponMultiplier}x). Bypassing and preserving other boosts.`,
-      )
-    } else {
-      // No coupon applied: use active user boost (if any) and consume it
-      if (activeUserBoostMultiplier > 1.0) {
-        xpBoostMultiplier = activeUserBoostMultiplier
-        doubleBoostActive = true
-        shouldConsumeUserBoost = true
-      }
+      shouldConsumeUserBoost = true
     }
 
     // 4. Consume user boost if resolved as active
@@ -1413,7 +1047,6 @@ export class PvpService {
         status: "queued",
         doubleBoostActive,
         xpBoostMultiplier,
-        couponCode: appliedCoupon,
         boostType: shouldConsumeUserBoost ? selectedUserBoostType : null,
         boostSourceId:
           shouldConsumeUserBoost && selectedBoostObject
@@ -1482,13 +1115,6 @@ export class PvpService {
         }
       }
       throw createErr
-    }
-
-    if (appliedCoupon) {
-      await this.couponsService.incrementUsage(appliedCoupon)
-      this.logger.log(
-        `User ${userId} successfully applied coupon ${appliedCoupon}. New multiplier: ${xpBoostMultiplier}x.`,
-      )
     }
 
     // Perform matchmaking
@@ -2463,7 +2089,6 @@ export class PvpService {
       ticketsCount = await this.pvpTicketModel.countDocuments({
         userId: user._id,
         status: { $ne: "cancelled" },
-        couponCode: { $in: [null, undefined] },
       })
       if (ticketsCount === 0) {
         isEligible = true
@@ -2949,31 +2574,6 @@ export class PvpService {
       adminAddress: keeper,
       solBalance: balances.sol,
       usdcBalance: balances.usdc,
-    }
-  }
-
-  async batchClaimCreatorLiquidity(adminId: string) {
-    const admin = await this.userModel.findById(adminId)
-    if (!admin || admin.role !== "admin") {
-      throw new ForbiddenException("Only admins can claim creator liquidity.")
-    }
-
-    // On Solana each creator claims their own royalty directly via the
-    // program's `claim_creator_royalty` instruction, so there is no batch admin
-    // claim step. Returned for API compatibility with the admin dashboard.
-    const resolvedMarkets = await this.marketModel.countDocuments({
-      category: "pvp",
-      marketType: "child",
-      status: "resolved",
-    })
-    return {
-      summary: {
-        totalMarkets: resolvedMarkets,
-        claimed: 0,
-        skipped: resolvedMarkets,
-        failed: 0,
-      },
-      results: [],
     }
   }
 

@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { apiRequest } from "@/store/apiClient";
 import { toast } from "@/lib/toast";
 import { HelpCircle, ChevronRight, Check, Receipt, X } from "lucide-react";
 import {
@@ -121,7 +120,7 @@ interface PvpTicketBuilderProps {
   onToggleSelection: (optId: string, selection: string) => void;
   onSetBetAmount: (amount: number) => void;
   onSetShowTooltip: (show: boolean) => void;
-  onSubmitTicket: (couponCode?: string) => void;
+  onSubmitTicket: () => void;
   onProvideLiquidity: (amounts: Record<string, number>) => Promise<void>;
   onAddLiquidity: (marketId: string) => void;
 }
@@ -158,10 +157,6 @@ export default function PvpTicketBuilder({
     .filter((b: any) => b.source === "referral")
     .reduce((sum: number, b: any) => sum + (b.matchesRemaining || 0), 0);
 
-  // Coupon state
-  const [couponCode, setCouponCode] = useState("");
-  const [couponMultiplier, setCouponMultiplier] = useState<number | null>(null);
-  const [couponError, setCouponError] = useState<string | null>(null);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"single" | "liquidity">("single");
   const [liquidityAmounts, setLiquidityAmounts] = useState<
@@ -193,30 +188,6 @@ export default function PvpTicketBuilder({
       });
     }
   }, [pvpSelections, liquidityPerSelection]);
-
-  useEffect(() => {
-    const code = couponCode.trim();
-    if (!code) {
-      setCouponMultiplier(null);
-      setCouponError(null);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        const res = await apiRequest<{ success: boolean; multiplier: number }>(
-          `/coupons/validate/${code}`,
-        );
-        setCouponMultiplier(res.multiplier);
-        setCouponError(null);
-      } catch (err: any) {
-        setCouponMultiplier(null);
-        setCouponError(err.message || "Invalid coupon");
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [couponCode]);
 
   const totalVolume = useMemo(() => {
     if (!selectedPvpEvent?.options) return 0;

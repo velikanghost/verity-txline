@@ -4,52 +4,13 @@ import { useState, useEffect } from "react"
 import { apiRequest } from "@/store/apiClient"
 import { io } from "socket.io-client"
 import { toast } from "react-hot-toast"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { LogOut, TrendingUp, BarChart4, Sparkles, Ticket, FolderOpen, Trophy, Swords } from "lucide-react"
+import { LogOut, BarChart4, Store } from "lucide-react"
 
 // Import modular sub-components
 import LoginPanel from "@/components/LoginPanel"
 import BalancesCard from "@/components/BalancesCard"
-import MarketsTable from "@/components/MarketsTable"
-import CreateMarketDrawer from "@/components/CreateMarketDrawer"
-import ResolveMarketDrawer from "@/components/ResolveMarketDrawer"
 import MetricsTab from "@/components/MetricsTab"
-import CouponsTab from "@/components/CouponsTab"
-import MissionsTab from "@/components/MissionsTab"
-import CategoriesTab from "@/components/CategoriesTab"
-import WorldCupTab from "@/components/WorldCupTab"
-import SlateBuilderTab from "@/components/SlateBuilderTab"
-
-interface Market {
-  id: string
-  question: string
-  category: string
-  deadline: string
-  status: string
-  resolutionSource?: string
-  yesCondition?: string
-  noCondition?: string
-  outcomes?: string[]
-  outcomeCount?: number
-  proposalReasoning?: string | null
-  proposalCitations?: string[] | null
-  proposalProposer?: string | null
-  proposalDisputer?: string | null
-  disputed?: boolean
-  proposedOutcome?: boolean | null
-  proposedOutcomeIndex?: number | null
-  proposedAt?: string | null
-  disputeWindowSeconds?: number
-  resolvedOutcome?: string | null
-}
+import MarketsAdmin from "@/components/MarketsAdmin"
 
 interface AdminMetrics {
   users: {
@@ -97,36 +58,8 @@ interface AdminMetrics {
 export default function AdminPage() {
   const [token, setToken] = useState("")
   const [isAuthorized, setIsAuthorized] = useState(false)
-  const [loading, setLoading] = useState(false)
 
-  // Active Tab
-  const [activeTab, setActiveTab] = useState<
-    | "moderation"
-    | "metrics"
-    | "coupons"
-    | "missions"
-    | "categories"
-    | "worldcup"
-    | "slates"
-  >("moderation")
-
-  // Markets state
-  const [markets, setMarkets] = useState<Market[]>([])
-  const [marketsLoading, setMarketsLoading] = useState(false)
-
-  // Filter & Search & Sort states
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [sortBy, setSortBy] = useState("newest")
-
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
-
-  // Drawers open/close states
-  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
-  const [isResolveDrawerOpen, setIsResolveDrawerOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<"markets" | "metrics">("markets")
 
   // Admin Wallet & Balance State
   const [adminBalances, setAdminBalances] = useState<{
@@ -142,39 +75,17 @@ export default function AdminPage() {
     usdcBalance: number
   } | null>(null)
   const [contractBalancesLoading, setContractBalancesLoading] = useState(false)
-  const [isClaimingCreatorLiquidity, setIsClaimingCreatorLiquidity] = useState(false)
 
   // Metrics Data State
   const [metricsData, setMetricsData] = useState<AdminMetrics | null>(null)
   const [metricsLoading, setMetricsLoading] = useState(false)
   const [metricsTimeframe, setMetricsTimeframe] = useState<string>("7d")
 
-  // Arbitration / Settle State
-  const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
-
-  const [winningOutcome, setWinningOutcome] = useState<string>("YES")
-  const [resolveTxHash, setResolveTxHash] = useState("")
-  const [adminAddress, setAdminAddress] = useState(
-    "0x0000000000000000000000000000000000000000",
-  )
-
-  const [now, setNow] = useState(Date.now())
-  useEffect(() => {
-    if (!selectedMarketId) return
-    const timer = setInterval(() => {
-      setNow(Date.now())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [selectedMarketId])
-
   // Fetch admin status/balances
   async function fetchAdminStatus() {
     try {
       const data = await apiRequest<any>("/pvp/admin-status")
       setAdminBalances(data)
-      if (data.adminAddress) {
-        setAdminAddress(data.adminAddress)
-      }
     } catch (err: any) {
       console.error("Failed to fetch admin status/balances:", err)
     }
@@ -185,7 +96,9 @@ export default function AdminPage() {
     setMetricsLoading(true)
     try {
       const tf = timeframe || metricsTimeframe
-      const data = await apiRequest<AdminMetrics>(`/pvp/admin-metrics?timeframe=${tf}`)
+      const data = await apiRequest<AdminMetrics>(
+        `/pvp/admin-metrics?timeframe=${tf}`,
+      )
       setMetricsData(data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load admin metrics.")
@@ -207,41 +120,12 @@ export default function AdminPage() {
     }
   }
 
-  // Batch claim creator liquidity
-  async function handleBatchClaimCreatorLiquidity() {
-    setIsClaimingCreatorLiquidity(true)
-    const loadingToast = toast.loading("Batch claiming creator liquidity from resolved PvP markets...")
-    try {
-      const result = await apiRequest<any>("/pvp/admin/claim-creator-liquidity", {
-        method: "POST",
-      })
-      toast.dismiss(loadingToast)
-      
-      const { claimed, skipped, failed } = result.summary || { claimed: 0, skipped: 0, failed: 0 }
-      toast.success(
-        `Batch claim completed! Claimed: ${claimed}, Skipped: ${skipped}, Failed: ${failed}`,
-        { duration: 5000 }
-      )
-      
-      // Refresh balances & markets
-      void fetchAdminStatus()
-      void fetchContractBalances()
-      void fetchMarkets()
-    } catch (err: any) {
-      toast.dismiss(loadingToast)
-      toast.error(err.message || "Failed to batch claim creator liquidity.")
-    } finally {
-      setIsClaimingCreatorLiquidity(false)
-    }
-  }
-
   // Check auth on load
   useEffect(() => {
     const storedToken = localStorage.getItem("verity_admin_auth_token")
     if (storedToken) {
       setToken(storedToken)
       setIsAuthorized(true)
-      void fetchMarkets()
       void fetchAdminStatus()
       void fetchMetricsData()
       void fetchContractBalances()
@@ -259,20 +143,19 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isAuthorized) return
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5080"
+    const socketUrl =
+      process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
+      "http://localhost:5080"
     const socket = io(`${socketUrl}/socket`, {
       transports: ["websocket"],
     })
 
     socket.on("connect", () => {
-      console.log("Admin socket client connected successfully")
       socket.emit("join-room", "feed")
     })
 
     socket.on("feed-updated", () => {
-      console.log("Feed updated, refreshing admin dashboard in real-time...")
       void fetchMetricsData()
-      void fetchMarkets()
       void fetchAdminStatus()
       void fetchContractBalances()
     })
@@ -282,57 +165,6 @@ export default function AdminPage() {
     }
   }, [isAuthorized, metricsTimeframe])
 
-  // Fetch standard & PvP child markets for moderation
-  async function fetchMarkets() {
-    setMarketsLoading(true)
-    try {
-      const data = await apiRequest<any[]>("/markets?admin=true")
-      const parsed: Market[] = data.map((item: any) => ({
-        id: item.id || item._id,
-        question: item.question,
-        category: item.category,
-        deadline: item.deadline,
-        status: item.status,
-        resolutionSource: item.resolutionSource || item.resolution_source,
-        yesCondition: item.yesCondition || item.yes_condition,
-        noCondition: item.noCondition || item.no_condition,
-        outcomes: item.outcomes || [],
-        outcomeCount: item.outcomeCount ?? 2,
-        proposalReasoning: item.proposalReasoning || item.proposal_reasoning,
-        proposalCitations: item.proposalCitations || item.proposal_citations,
-        proposalProposer: item.proposalProposer || item.proposal_proposer,
-        proposalDisputer: item.proposalDisputer || item.proposal_disputer,
-        disputed: item.disputed ?? false,
-        proposedOutcome: item.proposedOutcome ?? null,
-        proposedAt: item.proposedAt || item.proposed_at || null,
-        disputeWindowSeconds: item.disputeWindowSeconds ?? 120,
-        resolvedOutcome: item.resolvedOutcome || item.resolved_outcome || null,
-      }))
-      setMarkets(parsed)
-    } catch (err: any) {
-      toast.error(err.message || "Failed to load markets.")
-    } finally {
-      setMarketsLoading(false)
-    }
-  }
-
-  // Approve Qualified prediction market
-  async function handleApproveTrading(marketId: string) {
-    setLoading(true)
-    try {
-      await apiRequest(`/markets/${marketId}/approve-trading`, {
-        method: "POST",
-      })
-      toast.success("Market approved for trading!")
-      void fetchMarkets()
-      void fetchMetricsData()
-    } catch (err: any) {
-      toast.error(err.message || "Failed to approve market.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   function handleLogOut() {
     localStorage.removeItem("verity_admin_auth_token")
     setIsAuthorized(false)
@@ -340,40 +172,7 @@ export default function AdminPage() {
     toast.success("Logged out successfully.")
   }
 
-  const getProposedOutcomeText = (market: Market) => {
-    if (
-      market.proposedOutcomeIndex !== null &&
-      market.proposedOutcomeIndex !== undefined
-    ) {
-      return market.outcomes?.[market.proposedOutcomeIndex] || "None"
-    }
-    if (market.proposedOutcome === null || market.proposedOutcome === undefined)
-      return "None"
-    const opts =
-      market.outcomes && market.outcomes.length > 0
-        ? market.outcomes
-        : ["YES", "NO"]
-    if (market.proposedOutcome === true) {
-      return opts[0] || "YES"
-    } else {
-      return opts[1] || "NO"
-    }
-  }
-
-  const handleOpenArbitrateResolve = (market: Market) => {
-    setSelectedMarketId(market.id)
-    setResolveTxHash("")
-    const outcomes =
-      market.outcomes && market.outcomes.length > 0
-        ? market.outcomes
-        : ["YES", "NO"]
-    setWinningOutcome(outcomes[0])
-    setIsResolveDrawerOpen(true)
-  }
-
-  // Load auth context wrapper
   const handleAuthSuccess = () => {
-    void fetchMarkets()
     void fetchAdminStatus()
     void fetchMetricsData()
     void fetchContractBalances()
@@ -413,15 +212,15 @@ export default function AdminPage() {
             {/* Navigation Tabs */}
             <nav className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg">
               <button
-                onClick={() => setActiveTab("moderation")}
+                onClick={() => setActiveTab("markets")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  activeTab === "moderation"
+                  activeTab === "markets"
                     ? "bg-white text-stone-950 shadow-xs"
                     : "text-stone-600 hover:text-stone-900"
                 }`}
               >
-                <TrendingUp className="h-3.5 w-3.5" />
-                Moderation
+                <Store className="h-3.5 w-3.5" />
+                Markets
               </button>
               <button
                 onClick={() => setActiveTab("metrics")}
@@ -433,61 +232,6 @@ export default function AdminPage() {
               >
                 <BarChart4 className="h-3.5 w-3.5" />
                 Metrics
-              </button>
-              <button
-                onClick={() => setActiveTab("coupons")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  activeTab === "coupons"
-                    ? "bg-white text-stone-950 shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                <Ticket className="h-3.5 w-3.5" />
-                Coupons
-              </button>
-              <button
-                onClick={() => setActiveTab("missions")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  activeTab === "missions"
-                    ? "bg-white text-stone-950 shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Missions
-              </button>
-              <button
-                onClick={() => setActiveTab("categories")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  activeTab === "categories"
-                    ? "bg-white text-stone-950 shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                <FolderOpen className="h-3.5 w-3.5" />
-                Categories
-              </button>
-              <button
-                onClick={() => setActiveTab("worldcup")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  activeTab === "worldcup"
-                    ? "bg-white text-stone-950 shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                <Trophy className="h-3.5 w-3.5" />
-                World Cup
-              </button>
-              <button
-                onClick={() => setActiveTab("slates")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  activeTab === "slates"
-                    ? "bg-white text-stone-950 shadow-xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                <Swords className="h-3.5 w-3.5" />
-                PvP Slates
               </button>
             </nav>
           </div>
@@ -504,39 +248,16 @@ export default function AdminPage() {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6 flex-1 w-full">
-        {/* Balances & Operations Top Row */}
+        {/* Balances Top Row */}
         <BalancesCard
           adminBalances={adminBalances}
           contractBalances={contractBalances}
           contractBalancesLoading={contractBalancesLoading}
           onRefreshContractBalances={fetchContractBalances}
-          activeTab={activeTab}
-          onOpenCreateDrawer={() => setIsCreateDrawerOpen(true)}
-          onBatchClaimCreatorLiquidity={handleBatchClaimCreatorLiquidity}
-          isClaiming={isClaimingCreatorLiquidity}
         />
 
-        {/* Tab content conditional rendering */}
-        {activeTab === "moderation" && (
-          <MarketsTable
-            marketsLoading={marketsLoading}
-            markets={markets}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            categoryFilter={categoryFilter}
-            setCategoryFilter={setCategoryFilter}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            itemsPerPage={itemsPerPage}
-            fetchMarkets={fetchMarkets}
-            handleApproveTrading={handleApproveTrading}
-            handleOpenArbitrateResolve={handleOpenArbitrateResolve}
-          />
-        )}
+        {/* Tab content */}
+        {activeTab === "markets" && <MarketsAdmin />}
         {activeTab === "metrics" && (
           <MetricsTab
             metricsLoading={metricsLoading}
@@ -548,40 +269,7 @@ export default function AdminPage() {
             contractBalancesLoading={contractBalancesLoading}
           />
         )}
-        {activeTab === "coupons" && <CouponsTab />}
-        {activeTab === "missions" && <MissionsTab />}
-        {activeTab === "categories" && <CategoriesTab />}
-        {activeTab === "worldcup" && <WorldCupTab />}
-        {activeTab === "slates" && <SlateBuilderTab />}
       </main>
-
-      {/* Create PvP Event Drawer */}
-      <CreateMarketDrawer
-        isOpen={isCreateDrawerOpen}
-        onClose={() => setIsCreateDrawerOpen(false)}
-        adminBalances={adminBalances}
-        fetchMarkets={fetchMarkets}
-        fetchAdminStatus={fetchAdminStatus}
-        fetchMetricsData={fetchMetricsData}
-      />
-
-      {/* Arbitrate Resolve/Dispute Drawer */}
-      <ResolveMarketDrawer
-        isOpen={isResolveDrawerOpen}
-        onClose={() => setIsResolveDrawerOpen(false)}
-        selectedMarketId={selectedMarketId}
-        markets={markets}
-        fetchMarkets={fetchMarkets}
-        fetchAdminStatus={fetchAdminStatus}
-        fetchMetricsData={fetchMetricsData}
-        winningOutcome={winningOutcome}
-        setWinningOutcome={setWinningOutcome}
-        resolveTxHash={resolveTxHash}
-        setResolveTxHash={setResolveTxHash}
-        adminAddress={adminAddress}
-        setAdminAddress={setAdminAddress}
-        now={now}
-      />
     </div>
   )
 }
