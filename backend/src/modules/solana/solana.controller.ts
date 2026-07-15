@@ -213,6 +213,9 @@ export class SolanaController {
       id: m._id.toString(),
       question: m.question,
       status: m.status,
+      // When set, this market is part of a PvP slate — the home UI routes
+      // bets on it into that PvP event instead of staking inline.
+      parentMarketId: m.parentMarketId ? m.parentMarketId.toString() : null,
       fixtureId: m.txlineFixtureId,
       matchup: m.txlineMatchup ?? null,
       statKey: m.txlineStatKey,

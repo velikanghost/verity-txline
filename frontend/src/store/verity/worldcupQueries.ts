@@ -5,6 +5,8 @@ export interface WorldCupMarket {
   id: string
   question: string
   status: string
+  /** Set when this market is part of a PvP slate — bets route to that event. */
+  parentMarketId: string | null
   fixtureId: number
   matchup: string | null
   statKey: number

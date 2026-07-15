@@ -1,8 +1,6 @@
 "use client"
 
-import Sidebar from "@/components/layout/Sidebar"
 import MobileNav from "@/components/layout/MobileNav"
-import MobileLeaderboardButton from "@/components/layout/MobileLeaderboardButton"
 import AppHeader from "@/components/layout/AppHeader"
 import { useSocket } from "@/hooks/useSocket"
 import { useWalletProfile } from "@/hooks/useWalletProfile"
@@ -23,18 +21,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="mx-auto flex min-h-screen w-full max-w-[1300px] justify-center gap-3 px-4 sm:px-3 xl:gap-6 xl:px-5">
-        <div className="sticky top-0 hidden h-screen w-[76px] shrink-0 flex-col py-4 sm:flex xl:w-[280px]">
-          <Sidebar />
-        </div>
-
-        {/* Single full-width column — every page owns its own layout. */}
-        <main className="min-w-0 flex-1 max-w-[1080px] pb-24 sm:pb-0">
-          <AppHeader />
-          {children}
-        </main>
+      {/* Mobile-only: a single phone-width column centered on every screen. */}
+      <div className="mx-auto min-h-screen w-full max-w-[600px] px-4">
+        <AppHeader />
+        <main className="min-w-0 pb-24 sm:pb-10">{children}</main>
       </div>
-      <MobileLeaderboardButton />
       <MobileNav />
     </>
   )

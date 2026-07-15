@@ -21,7 +21,6 @@ import { PvpController } from "./pvp.controller"
 import { SocketModule } from "../socket/socket.module"
 import { NotificationsModule } from "../notifications/notifications.module"
 import { SolanaModule } from "../solana/solana.module"
-import { CouponsModule } from "../coupons/coupons.module"
 
 @Module({
   imports: [
@@ -37,7 +36,6 @@ import { CouponsModule } from "../coupons/coupons.module"
     SocketModule,
     NotificationsModule,
     SolanaModule,
-    CouponsModule,
   ],
   controllers: [PvpController],
   providers: [PvpService],

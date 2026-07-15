@@ -156,7 +156,7 @@ export default function LineupBuilder({
   }
 
   return (
-    <div className="flex flex-col gap-5 pb-28 lg:pb-6">
+    <div className="flex flex-col gap-5 pb-8">
       {/* Slate header */}
       <div className="flex flex-col gap-1 pb-1">
         <h1 className="text-2xl font-black leading-tight text-charcoal-primary dark:text-white">
@@ -264,9 +264,9 @@ export default function LineupBuilder({
         })}
       </div>
 
-      {/* Sticky summary / submit */}
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+64px)] z-40 px-4 lg:sticky lg:bottom-4 lg:px-0">
-        <div className="verity-card mx-auto flex max-w-[820px] flex-col gap-2.5 border border-stone-200/70 bg-warm-canvas p-3 dark:border-zinc-800">
+      {/* Sticky summary / submit — floats above the bottom nav, aligned to column */}
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+104px)] z-30">
+        <div className="verity-card flex w-full flex-col gap-2.5 border border-stone-200/70 bg-warm-canvas p-3 shadow-md dark:border-zinc-800">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash">

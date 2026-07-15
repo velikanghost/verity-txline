@@ -11,6 +11,7 @@ import {
   Request,
 } from "@nestjs/common"
 import { MarketsService } from "./markets.service"
+import { MarketsKeeperService } from "./marketskeeper.service"
 import {
   FetchMarketsQueryDto,
   CastFreeVoteDto,
@@ -32,7 +33,21 @@ import { AdminGuard } from "../../common/guards/admin.guard"
 @ApiTags("markets")
 @Controller("markets")
 export class MarketsController {
-  constructor(private readonly marketsService: MarketsService) {}
+  constructor(
+    private readonly marketsService: MarketsService,
+    private readonly marketsKeeperService: MarketsKeeperService,
+  ) {}
+
+  @Post(":marketId/force-settle")
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      "Admin-only: force-settle a Solana market now via a fresh TxLINE proof (keeper-miss safety net)",
+  })
+  async forceSettle(@Param("marketId") marketId: string) {
+    return this.marketsKeeperService.forceSettleMarket(marketId)
+  }
 
   @Get()
   @ApiOperation({ summary: "Fetch all prediction markets with filters" })

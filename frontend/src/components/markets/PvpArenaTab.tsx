@@ -273,7 +273,7 @@ export default function PvpArenaTab({
     [redeemMultipleWinnings, queryClient, setClaimedMarketIds],
   )
 
-  async function handleSubmitPvpTicket(couponCode?: string) {
+  async function handleSubmitPvpTicket() {
     if (!profile || !user?.walletAddress) {
       toast.error("Connect your wallet to queue for the Arena.")
       return
@@ -372,7 +372,6 @@ export default function PvpArenaTab({
       await submitTicketMutation.mutateAsync({
         parentMarketId: selectedPvpEvent.id,
         picks,
-        couponCode,
       })
       await refetchPvpStatus()
       toast.success(

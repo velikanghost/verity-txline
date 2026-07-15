@@ -131,6 +131,36 @@ export default function WorldCupTab() {
     }
   }
 
+  // Admin force-settle: keeper-miss safety net. Fetches a fresh TxLINE proof
+  // and settles the market on-chain now.
+  const [settlingId, setSettlingId] = useState<string | null>(null)
+  const forceSettle = async (m: WorldCupMarket) => {
+    if (
+      !confirm(
+        `Force-settle "${m.question}" now via a fresh TxLINE proof? The match must have published data.`,
+      )
+    )
+      return
+    setSettlingId(m.id)
+    try {
+      const res = await apiRequest<{
+        status: string
+        txSig: string
+        resolvedOutcome?: string
+      }>(`/markets/${m.id}/force-settle`, { method: "POST" })
+      toast.success(
+        res.status === "voided"
+          ? "Market voided."
+          : `Settled → ${res.resolvedOutcome} (${res.txSig.slice(0, 8)}…)`,
+      )
+      await load()
+    } catch (e: any) {
+      toast.error(e?.message || "Force settle failed")
+    } finally {
+      setSettlingId(null)
+    }
+  }
+
   const loadFixtures = async () => {
     setFixturesLoading(true)
     try {
@@ -429,6 +459,18 @@ export default function WorldCupTab() {
                     settled {m.solanaResolveTxSig.slice(0, 8)}…
                   </div>
                 )}
+                {!m.solanaSettled &&
+                  m.status !== "resolved" &&
+                  m.status !== "voided" && (
+                    <button
+                      onClick={() => forceSettle(m)}
+                      disabled={settlingId === m.id}
+                      className="mt-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+                      title="Settle now via a fresh TxLINE proof (keeper-miss safety net)"
+                    >
+                      {settlingId === m.id ? "Settling…" : "Force settle"}
+                    </button>
+                  )}
               </li>
             ))}
           </ul>

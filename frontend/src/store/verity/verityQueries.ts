@@ -667,7 +667,6 @@ export function useSubmitPvpTicketMutation() {
     mutationFn: (body: {
       parentMarketId: string
       picks: { marketId: string; selection: string; amountUsdc: number }[]
-      couponCode?: string
     }) =>
       apiRequest<any>("/pvp/ticket", {
         method: "POST",
@@ -732,26 +731,6 @@ export function usePvpMatchHistoryQuery() {
   })
 }
 
-export function useCreatePvpEventMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (body: {
-      question: string
-      deadline: string
-      lockTime?: string
-      resolutionSource: string
-      options: string[]
-    }) =>
-      apiRequest<any>("/pvp/events", {
-        method: "POST",
-        body: JSON.stringify(body),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["pvp-active-events"] })
-    },
-  })
-}
-
 export function useClaimableWinningsQuery() {
   return useQuery({
     queryKey: ["pvp-claimable-winnings"] as const,
@@ -809,110 +788,3 @@ export function usePublicMetricsQuery() {
   })
 }
 
-export interface Mission {
-  id: string
-  title: string
-  xpReward?: number | null
-  actionUrl: string
-  completed: boolean
-  missionType: "social" | "activity"
-  verificationKey?: string | null
-  rewardMultiplier?: number | null
-  rewardMatchesCount?: number | null
-}
-
-export function useMissionsQuery(userId?: string) {
-  return useQuery({
-    queryKey: ["missions", userId || ""] as const,
-    queryFn: () => apiRequest<Mission[]>("/missions"),
-    enabled: Boolean(userId),
-  })
-}
-
-export function useCompleteMissionMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (missionId: string) =>
-      apiRequest<{ success: boolean; xpEarned: number; totalXp: number }>(
-        `/missions/${missionId}/complete`,
-        { method: "POST" },
-      ),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["missions"] })
-      void qc.invalidateQueries({ queryKey: ["wallet-profile"] })
-      void qc.invalidateQueries({ queryKey: ["profile"] })
-      void qc.invalidateQueries({ queryKey: ["pvp-leaderboards"] })
-    },
-  })
-}
-
-export function useCreateMissionMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (body: {
-      title: string
-      xpReward: number
-      actionUrl: string
-      missionType?: "social" | "activity"
-      verificationKey?: string | null
-    }) =>
-      apiRequest<any>("/missions", {
-        method: "POST",
-        body: JSON.stringify(body),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["missions"] })
-    },
-  })
-}
-
-export function useLinkTwitterMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (body: { twitterUsername: string }) =>
-      apiRequest<{ success: boolean; twitterUsername: string | null }>(
-        "/missions/link-twitter",
-        {
-          method: "POST",
-          body: JSON.stringify(body),
-        },
-      ),
-    onSuccess: (data) => {
-      qc.setQueryData(["profile"], (old: any) => {
-        if (!old) return old
-        return {
-          ...old,
-          twitterUsername: data.twitterUsername,
-          twitter_username: data.twitterUsername,
-        }
-      })
-      qc.setQueryData(["wallet-profile"], (old: any) => {
-        if (!old) return old
-        return {
-          ...old,
-          twitterUsername: data.twitterUsername,
-          twitter_username: data.twitterUsername,
-        }
-      })
-      void qc.invalidateQueries({ queryKey: ["profile"] })
-      void qc.invalidateQueries({ queryKey: ["wallet-profile"] })
-      void qc.invalidateQueries({ queryKey: ["missions"] })
-    },
-  })
-}
-
-export interface Category {
-  _id: string
-  slug: string
-  displayName: string
-  isActive: boolean
-  createdAt?: string
-  updatedAt?: string
-}
-
-export function useGetCategoriesQuery() {
-  return useQuery({
-    queryKey: ["categories"] as const,
-    queryFn: () => apiRequest<Category[]>("/categories"),
-  })
-}

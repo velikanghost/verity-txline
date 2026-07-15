@@ -1,8 +1,7 @@
 "use client"
 
 import { toast } from "react-hot-toast"
-import { Button } from "@/components/ui/button"
-import { Wallet, Copy, Plus, Coins, ArrowDownToLine, RefreshCw } from "lucide-react"
+import { Wallet, Copy, Coins, RefreshCw } from "lucide-react"
 
 interface BalancesCardProps {
   adminBalances: {
@@ -17,10 +16,6 @@ interface BalancesCardProps {
   } | null
   contractBalancesLoading: boolean
   onRefreshContractBalances: () => void
-  activeTab: string
-  onOpenCreateDrawer: () => void
-  onBatchClaimCreatorLiquidity: () => void
-  isClaiming: boolean
 }
 
 export default function BalancesCard({
@@ -28,10 +23,6 @@ export default function BalancesCard({
   contractBalances,
   contractBalancesLoading,
   onRefreshContractBalances,
-  activeTab,
-  onOpenCreateDrawer,
-  onBatchClaimCreatorLiquidity,
-  isClaiming,
 }: BalancesCardProps) {
   if (!adminBalances) return null
 
@@ -41,7 +32,7 @@ export default function BalancesCard({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       {/* Admin Wallet Card */}
       <div className="p-5 bg-white border border-stone-200 rounded-2xl flex items-center gap-4 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-8 -mt-8 opacity-50 pointer-events-none" />
@@ -137,35 +128,6 @@ export default function BalancesCard({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Admin Actions Card */}
-      <div className="p-5 bg-stone-50 border border-stone-200 rounded-2xl flex flex-col justify-center gap-2 shadow-inner">
-        {activeTab === "moderation" ? (
-          <>
-            <Button
-              onClick={onBatchClaimCreatorLiquidity}
-              disabled={isClaiming}
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg h-9 text-xs tracking-wide shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              <ArrowDownToLine className={`h-3.5 w-3.5 ${isClaiming ? "animate-bounce" : ""}`} />
-              {isClaiming ? "Claiming LP..." : "Batch Claim Creator LP"}
-            </Button>
-            <Button
-              onClick={onOpenCreateDrawer}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg h-9 text-xs tracking-wide shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Create PvP Event
-            </Button>
-          </>
-        ) : (
-          <div className="text-center py-2">
-            <span className="text-xs text-stone-500 italic">
-              Switch to Moderation tab to perform actions.
-            </span>
-          </div>
-        )}
       </div>
     </div>
   )

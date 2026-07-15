@@ -15,9 +15,6 @@ import { SocketModule } from "./modules/socket/socket.module"
 import { NotificationsModule } from "./modules/notifications/notifications.module"
 import { SolanaModule } from "./modules/solana/solana.module"
 import { PvpModule } from "./modules/pvp/pvp.module"
-import { CouponsModule } from "./modules/coupons/coupons.module"
-import { MissionsModule } from "./modules/missions/missions.module"
-import { CategoriesModule } from "./modules/categories/categories.module"
 
 @Module({
   imports: [
@@ -50,9 +47,6 @@ import { CategoriesModule } from "./modules/categories/categories.module"
     NotificationsModule,
     SolanaModule,
     PvpModule,
-    CouponsModule,
-    MissionsModule,
-    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

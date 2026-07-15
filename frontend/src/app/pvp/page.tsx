@@ -1,7 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Swords } from "lucide-react"
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { ArrowRight, Swords } from "lucide-react"
 import { useAuth } from "@/components/providers/AuthModals"
 import { useWalletProfile } from "@/hooks/useWalletProfile"
 import { useUsdcBalance } from "@/hooks/useUsdcBalance"
@@ -20,7 +21,17 @@ import DuelHistory from "@/components/markets/DuelHistory"
 type MobileTab = "arena" | "stats" | "history"
 
 export default function PvpArenaPage() {
-  const { authenticated } = useAuth()
+  return (
+    <Suspense fallback={null}>
+      <PvpArenaContent />
+    </Suspense>
+  )
+}
+
+function PvpArenaContent() {
+  const { authenticated, login } = useAuth()
+  const searchParams = useSearchParams()
+  const slateParam = searchParams.get("slate")
   const { profile } = useWalletProfile()
   const { formattedBalance } = useUsdcBalance()
 
@@ -60,10 +71,16 @@ export default function PvpArenaPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [mobileTab, setMobileTab] = useState<MobileTab>("arena")
 
-  // Default to the first slate once loaded.
+  // Preselect the slate from ?slate= (e.g. arriving from a home market),
+  // otherwise default to the first slate once loaded.
   useEffect(() => {
-    if (!selectedId && slates.length > 0) setSelectedId(slates[0].id)
-  }, [slates, selectedId])
+    if (selectedId || slates.length === 0) return
+    if (slateParam && slates.some((s) => s.id === slateParam)) {
+      setSelectedId(slateParam)
+    } else {
+      setSelectedId(slates[0].id)
+    }
+  }, [slates, selectedId, slateParam])
 
   const selectedSlate = slates.find((s) => s.id === selectedId) || null
   const { data: pvpStatus, refetch: refetchStatus } =
@@ -123,7 +140,29 @@ export default function PvpArenaPage() {
             onSelect={setSelectedId}
           />
 
-          {selectedSlate &&
+          {!authenticated ? (
+            <div className="verity-card flex flex-col items-center gap-3 p-8 text-center">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+                <Swords className="h-5 w-5" />
+              </span>
+              <h2 className="text-xl font-black text-charcoal-primary dark:text-white">
+                Get started to duel
+              </h2>
+              <p className="max-w-sm text-sm text-ash">
+                Sign up in seconds with your email — we&apos;ll set up your
+                wallet. Then build a lineup from the slate above and get matched
+                head-to-head.
+              </p>
+              <button
+                onClick={login}
+                className="clickable mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-charcoal-primary px-6 text-sm font-black text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            selectedSlate &&
             (hasLineup ? (
               <DuelPanel status={pvpStatus} />
             ) : (
@@ -131,7 +170,8 @@ export default function PvpArenaPage() {
                 slate={selectedSlate}
                 onSubmitted={() => void refetchStatus()}
               />
-            ))}
+            ))
+          )}
         </div>
 
         {/* Sidebar */}

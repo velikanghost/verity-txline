@@ -9,31 +9,19 @@ import {
   Param,
 } from "@nestjs/common"
 import { PvpService } from "./pvp.service"
-import { CreatePvpEventDto, CreateSlateDto, SubmitTicketDto } from "./pvp.dto"
+import { CreateSlateDto, SubmitTicketDto } from "./pvp.dto"
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard"
 import { AdminGuard } from "../../common/guards/admin.guard"
 import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
-  ApiResponse,
 } from "@nestjs/swagger"
 
 @ApiTags("pvp")
 @Controller("pvp")
 export class PvpController {
   constructor(private readonly pvpService: PvpService) {}
-
-  @Post("events")
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary:
-      "Admin-only: Deploy a new PvP Parent + Child Markets event with dynamic options (min 3)",
-  })
-  async createPvpEvent(@Request() req: any, @Body() dto: CreatePvpEventDto) {
-    return this.pvpService.createPvpEvent(req.user.id, dto)
-  }
 
   @Post("slates")
   @UseGuards(JwtAuthGuard, AdminGuard)
@@ -177,20 +165,5 @@ export class PvpController {
   })
   async getContractBalances(@Request() req: any) {
     return this.pvpService.getContractBalances(req.user.id)
-  }
-
-  @Post("admin/claim-creator-liquidity")
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary:
-      "Admin-only: Batch claim creator liquidity from all resolved PvP markets",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "Returns per-market claim results and summary",
-  })
-  async batchClaimCreatorLiquidity(@Request() req: any) {
-    return this.pvpService.batchClaimCreatorLiquidity(req.user.id)
   }
 }
