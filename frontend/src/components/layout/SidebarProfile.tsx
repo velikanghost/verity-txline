@@ -4,7 +4,7 @@ import { useAuth } from "@/components/providers/AuthModals"
 import { useUsdcBalance } from "@/hooks/useUsdcBalance"
 import { shortAddress } from "@/lib/solana"
 import { displayHandle, displayName as getDisplayName } from "@/lib/verity"
-import { LogOut, Copy, Check, Wallet } from "lucide-react"
+import { LogIn, LogOut, Copy, Check, Wallet } from "lucide-react"
 import { useState } from "react"
 import { toast } from "@/lib/toast"
 import Link from "next/link"
@@ -31,11 +31,13 @@ export default function SidebarProfile() {
   if (!authenticated || !user) {
     return (
       <button
-        className="verity-pill flex h-11 w-full items-center justify-center gap-2 bg-inverse px-4 text-sm font-semibold tracking-[-0.18px] text-inverse-text transition-opacity hover:opacity-90 cursor-pointer"
+        aria-label="Log in"
+        className="sidebar-login-button flex h-11 w-full items-center justify-center gap-2 px-2 font-game text-sm font-black text-white transition-all hover:-translate-y-0.5 cursor-pointer xl:px-4"
         onClick={login}
         type="button"
       >
-        <span className="hidden xl:inline">Get Started</span>
+        <LogIn className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="hidden xl:inline">Log in</span>
       </button>
     )
   }
@@ -53,9 +55,9 @@ export default function SidebarProfile() {
   }
 
   return (
-    <div className="verity-card flex flex-col gap-3 p-3 xl:p-4 border border-border bg-surface-solid shadow-subtle">
+    <div className="sidebar-account-card verity-card flex flex-col items-center gap-2 border border-border bg-surface-solid p-2 shadow-subtle xl:items-stretch xl:gap-3 xl:p-4">
       {/* Top Section: Avatar, User Details, Logout */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col items-center gap-2 xl:flex-row xl:justify-between">
         <Link
           href="/profile"
           className="flex items-center gap-3 min-w-0 hover:opacity-85 transition-opacity"
@@ -82,6 +84,16 @@ export default function SidebarProfile() {
         </button>
       </div>
 
+      <div
+        className="sidebar-compact-balance flex w-full flex-col items-center gap-1 rounded-lg px-1.5 py-1.5 font-mono text-[8px] font-black xl:hidden"
+        title={isBalanceLoading ? "Loading USDC balance" : `${formattedBalance} USDC`}
+      >
+        <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
+        <span className="max-w-full truncate">
+          {isBalanceLoading ? "..." : `$${formattedBalance}`}
+        </span>
+      </div>
+
       <div className="hidden xl:block h-px bg-stone-surface" />
 
       {/* Bottom Section: Wallet Address & Balance (Only visible on wide layout) */}
@@ -101,7 +113,8 @@ export default function SidebarProfile() {
         </button>
 
         {/* Balance */}
-        <div className="font-mono text-xs font-bold text-charcoal-primary shrink-0">
+        <div className="flex shrink-0 items-center gap-1 font-mono text-xs font-bold text-charcoal-primary">
+          <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
           {isBalanceLoading ? "..." : `${formattedBalance} USDC`}
         </div>
       </div>

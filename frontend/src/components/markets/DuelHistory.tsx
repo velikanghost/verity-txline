@@ -5,10 +5,54 @@ import { useState } from "react";
 import { History, X, Swords, Award } from "lucide-react";
 import { parseEventTeams } from "./PvpMatchupCarousel";
 import { usePvpMatchHistoryQuery } from "@/store/verity/verityQueries";
+import { PREVIEW_DUEL_HISTORY } from "@/lib/previewData";
 
-export default function DuelHistory() {
-  const { data: matchHistory = [] } = usePvpMatchHistoryQuery();
-  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
+interface DuelHistoryPick {
+  marketId: string;
+  optionName: string;
+  selection: string;
+  isCorrect: boolean | null;
+  yesCondition?: string | null;
+  noCondition?: string | null;
+  resolvedOutcome?: string | null;
+  investedUsdc?: number;
+  winningsUsdc?: number;
+}
+
+interface DuelHistoryMatch {
+  matchId: string;
+  resolvedAt: string;
+  parentMarketId?: string;
+  eventQuestion: string;
+  outcome: "WIN" | "LOSS" | "DRAW";
+  myScore: number;
+  oppScore: number;
+  xpEarned: number;
+  doubleBoostActive?: boolean;
+  myPicks: DuelHistoryPick[];
+  oppPicks: DuelHistoryPick[];
+  opponent: {
+    id?: string;
+    username: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+}
+
+export default function DuelHistory({
+  preview = false,
+}: {
+  preview?: boolean;
+}) {
+  const { data: liveMatchHistory = [] } = usePvpMatchHistoryQuery({
+    enabled: !preview,
+  });
+  const matchHistory: DuelHistoryMatch[] = preview
+    ? (PREVIEW_DUEL_HISTORY as DuelHistoryMatch[])
+    : (liveMatchHistory as DuelHistoryMatch[]);
+  const [selectedMatch, setSelectedMatch] = useState<DuelHistoryMatch | null>(
+    null,
+  );
 
   return (
     <div className="pvp-history-card verity-card overflow-hidden flex flex-col bg-white ">
@@ -38,7 +82,7 @@ export default function DuelHistory() {
         </div>
       ) : (
         <div className="flex flex-col gap-2.5 p-4 max-h-[360px] overflow-y-auto">
-          {matchHistory.map((item: any) => {
+          {matchHistory.map((item) => {
             const { teamA, teamB } = parseEventTeams(item.eventQuestion);
             return (
               <button
@@ -183,12 +227,12 @@ export default function DuelHistory() {
                     {(() => {
                       const totalBet =
                         selectedMatch.myPicks?.reduce(
-                          (acc: number, p: any) => acc + (p.investedUsdc ?? 5),
+                          (acc, pick) => acc + (pick.investedUsdc ?? 5),
                           0,
                         ) ?? 0;
                       const totalWon =
                         selectedMatch.myPicks?.reduce(
-                          (acc: number, p: any) => acc + (p.winningsUsdc ?? 0),
+                          (acc, pick) => acc + (pick.winningsUsdc ?? 0),
                           0,
                         ) ?? 0;
                       const net = totalWon - totalBet;
@@ -217,9 +261,9 @@ export default function DuelHistory() {
                 </div>
 
                 <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-1">
-                  {selectedMatch.myPicks?.map((pick: any) => {
+                  {selectedMatch.myPicks?.map((pick) => {
                     const oppPick = selectedMatch.oppPicks?.find(
-                      (p: any) => p.marketId === pick.marketId,
+                      (candidate) => candidate.marketId === pick.marketId,
                     );
                     const bet = pick.investedUsdc ?? 5;
                     const won = pick.winningsUsdc ?? 0;

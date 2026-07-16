@@ -7,9 +7,15 @@ import { Toaster } from "@/lib/toast"
 import { queryClient } from "@/lib/queryClient"
 import AuthModals from "./AuthModals"
 import { useAuthStore } from "@/store/authStore"
+import { useThemeStore } from "@/store/themeStore"
 
 export default function AppProviders({ children }: { children: ReactNode }) {
   const setReferrerInput = useAuthStore((s) => s.setReferrerInput)
+  const hydrateTheme = useThemeStore((s) => s.hydrate)
+
+  useEffect(() => {
+    hydrateTheme()
+  }, [hydrateTheme])
 
   useEffect(() => {
     if (typeof window !== "undefined") {

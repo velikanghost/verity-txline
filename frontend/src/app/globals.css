@@ -137,6 +137,71 @@
   color-scheme: light;
 }
 
+/* Stadium Dusk keeps the tournament colour story, but lowers the luminous
+   surfaces and separates readable copy from the near-black poster outlines. */
+:root[data-theme="stadium"] {
+  --warm-canvas: #101923;
+  --stone-surface: #152430;
+  --parchment-card: #1b2936;
+  --graphite: #c4ced5;
+  --charcoal-primary: #f2ecdd;
+  --midnight: #f2ecdd;
+  --ash: #aab7c0;
+  --fog: #243743;
+  --smoke: #8798a3;
+  --white-surface: #1b2936;
+
+  --background: #101923;
+  --foreground: #f2ecdd;
+  --surface: rgba(27, 41, 54, 0.94);
+  --surface-solid: #1b2936;
+  --surface-muted: #223541;
+  --surface-hover: rgba(109, 159, 211, 0.14);
+  --border: rgba(242, 236, 221, 0.16);
+  --border-strong: rgba(109, 159, 211, 0.58);
+  --muted: #aab7c0;
+  --inverse: #6d9fd3;
+  --inverse-text: #07111b;
+  --panel-border: rgba(242, 236, 221, 0.16);
+  --panel-shadow:
+    0 18px 50px rgba(2, 7, 12, 0.38), inset 0 1px 0 rgba(242, 236, 221, 0.06);
+  --panel-shadow-hover:
+    0 20px 54px rgba(2, 7, 12, 0.48), inset 0 1px 0 rgba(242, 236, 221, 0.08);
+  --blob-face: #223541;
+
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: #1b2936;
+  --popover-foreground: var(--foreground);
+  --primary: #6d9fd3;
+  --primary-foreground: #07111b;
+  --secondary: #223541;
+  --secondary-foreground: var(--foreground);
+  --muted-foreground: #aab7c0;
+  --accent: #6d9fd3;
+  --accent-foreground: #07111b;
+  --input: rgba(242, 236, 221, 0.18);
+  --ring: #6d9fd3;
+  --shadow-subtle:
+    0 10px 30px rgba(2, 7, 12, 0.32), inset 0 1px 0 rgba(242, 236, 221, 0.06);
+  --shadow-sm:
+    0 16px 44px rgba(2, 7, 12, 0.48), inset 0 1px 0 rgba(242, 236, 221, 0.07);
+  --sidebar: #1b2936;
+  --sidebar-foreground: #f2ecdd;
+  --sidebar-primary: #6d9fd3;
+  --sidebar-primary-foreground: #07111b;
+  --sidebar-accent: #223541;
+  --sidebar-accent-foreground: #f2ecdd;
+  --sidebar-border: rgba(242, 236, 221, 0.16);
+  --sidebar-ring: #6d9fd3;
+
+  --color-royal-blue: #6d9fd3;
+  --color-brand-primary: #6d9fd3;
+  --color-brand-secondary: #64c6a1;
+  --color-brand-accent: #6d9fd3;
+  color-scheme: dark;
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
    BODY
    ─────────────────────────────────────────────────────────────────────────── */
@@ -601,35 +666,6 @@ body {
     linear-gradient(to bottom, transparent 52%, rgba(2, 4, 13, 0.34));
 }
 
-.proof-ball-scene {
-  right: clamp(-13rem, -10vw, -5rem);
-  top: 17vh;
-  width: min(54vw, 720px);
-  aspect-ratio: 1;
-  opacity: 0.34;
-  filter: saturate(1.1);
-  animation: cinematic-ball-drift 14s ease-in-out infinite;
-  will-change: transform;
-}
-
-.proof-ball-halo {
-  background: color-mix(in srgb, var(--scene-accent) 15%, transparent);
-  filter: blur(70px);
-  animation: cinematic-halo-pulse 8s ease-in-out infinite;
-}
-
-.proof-ball-body {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: cinematic-ball-rotate 58s linear infinite;
-}
-
-.proof-ball-orbit {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: cinematic-orbit-rotate 42s linear infinite;
-}
-
 .cinematic-light-sweep {
   height: 150%;
   background: linear-gradient(
@@ -653,40 +689,6 @@ body {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   will-change: transform, opacity;
-}
-
-@keyframes cinematic-ball-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(-2deg);
-  }
-  50% {
-    transform: translate3d(-18px, -24px, 0) rotate(1.5deg);
-  }
-}
-
-@keyframes cinematic-ball-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes cinematic-orbit-rotate {
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
-@keyframes cinematic-halo-pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(0.94);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.06);
-  }
 }
 
 @keyframes cinematic-light-pass {
@@ -718,18 +720,6 @@ body {
 }
 
 @media (max-width: 639px) {
-  .proof-ball-scene {
-    right: -58vw;
-    top: 22vh;
-    width: 118vw;
-    opacity: 0.2;
-    filter: none;
-  }
-
-  .proof-ball-halo {
-    filter: blur(46px);
-  }
-
   .cinematic-particle:nth-child(n + 7) {
     display: none;
   }
@@ -920,10 +910,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .proof-ball-scene,
-  .proof-ball-body,
-  .proof-ball-orbit,
-  .proof-ball-halo,
   .cinematic-light-sweep,
   .cinematic-particle {
     animation: none;
@@ -1653,6 +1639,8 @@ body {
    ─────────────────────────────────────────────────────────────────────────────── */
 .zero-duel-page {
   --zero-ink: #241b4a;
+  --zero-text: #241b4a;
+  --zero-muted: #706982;
   --zero-mint: #afe9d9;
   --zero-mint-soft: #d7f3ea;
   --zero-cream: #fff9ec;
@@ -1663,11 +1651,35 @@ body {
   --zero-pink: #eca8cb;
   --zero-blue: #a6c7d3;
   --zero-yellow: #f2d66a;
+  --zero-soft-line: rgba(36, 27, 74, 0.18);
+  --zero-soft-shadow: rgba(36, 27, 74, 0.17);
   position: relative;
   border: 3px solid var(--zero-ink);
   background: var(--zero-cream);
-  color: var(--zero-ink);
-  box-shadow: 9px 10px 0 rgba(36, 27, 74, 0.17);
+  color: var(--zero-text);
+  box-shadow: 9px 10px 0 var(--zero-soft-shadow);
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease;
+}
+
+:root[data-theme="stadium"] .zero-duel-page {
+  --zero-ink: #07111b;
+  --zero-text: #f2ecdd;
+  --zero-muted: #aab7c0;
+  --zero-mint: #223c46;
+  --zero-mint-soft: #2b4b55;
+  --zero-cream: #101923;
+  --zero-paper: #1b2936;
+  --zero-purple: #587b9b;
+  --zero-purple-deep: #6d9fd3;
+  --zero-coral: #e94763;
+  --zero-pink: #725466;
+  --zero-blue: #35566b;
+  --zero-yellow: #d9b84a;
+  --zero-soft-line: rgba(242, 236, 221, 0.16);
+  --zero-soft-shadow: rgba(2, 7, 12, 0.7);
 }
 
 .zero-duel-hero {
@@ -1675,20 +1687,20 @@ body {
   background:
     radial-gradient(
       circle at 35% 54%,
-      rgba(255, 255, 255, 0.82),
+      color-mix(in srgb, var(--zero-paper) 82%, transparent),
       transparent 19rem
     ),
     linear-gradient(
       125deg,
       transparent 0 78%,
-      rgba(236, 168, 203, 0.74) 78% 87%,
+      color-mix(in srgb, var(--zero-pink) 74%, transparent) 78% 87%,
       transparent 87%
     ),
     linear-gradient(
       35deg,
-      rgba(182, 168, 226, 0.48) 0 18%,
+      color-mix(in srgb, var(--zero-purple) 48%, transparent) 0 18%,
       transparent 18% 77%,
-      rgba(242, 214, 106, 0.72) 77% 83%,
+      color-mix(in srgb, var(--zero-yellow) 72%, transparent) 77% 83%,
       transparent 83%
     ),
     var(--zero-mint);
@@ -1701,7 +1713,7 @@ body {
   width: 250px;
   height: 250px;
   border-radius: 50%;
-  background: rgba(236, 168, 203, 0.72);
+  background: color-mix(in srgb, var(--zero-pink) 72%, transparent);
   content: "";
 }
 
@@ -1722,7 +1734,7 @@ body {
 .zero-duel-topbar {
   min-height: 64px;
   border-bottom: 3px solid var(--zero-ink);
-  background: rgba(175, 233, 217, 0.94);
+  background: color-mix(in srgb, var(--zero-mint) 94%, transparent);
   padding: 12px 24px;
 }
 
@@ -1772,8 +1784,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 390px;
-  padding: 38px 54px 48px;
+  min-height: 0;
+  padding: 26px 44px 34px;
 }
 
 .zero-duel-copy {
@@ -1788,9 +1800,9 @@ body {
   align-items: center;
   border: 3px solid var(--zero-ink);
   border-radius: 999px;
-  background: white;
+  background: var(--zero-paper);
   box-shadow: 4px 4px 0 var(--zero-ink);
-  color: var(--zero-ink);
+  color: var(--zero-text);
   padding: 9px 14px;
   font-size: 9px;
 }
@@ -1856,7 +1868,7 @@ body {
 
 .zero-duel-proof-pill {
   min-height: 44px;
-  background: white;
+  background: var(--zero-paper);
   box-shadow: 4px 4px 0 var(--zero-ink);
   font-size: 9px;
 }
@@ -1869,12 +1881,12 @@ body {
   border: 4px solid var(--zero-ink);
   border-radius: 32px;
   background:
-    radial-gradient(circle at 70% 23%, white 0 7px, transparent 8px),
-    radial-gradient(circle at 78% 23%, white 0 7px, transparent 8px),
+    radial-gradient(circle at 70% 23%, var(--zero-paper) 0 7px, transparent 8px),
+    radial-gradient(circle at 78% 23%, var(--zero-paper) 0 7px, transparent 8px),
     repeating-linear-gradient(
       90deg,
       transparent 0 38px,
-      rgba(36, 27, 74, 0.06) 39px 40px
+      color-mix(in srgb, var(--zero-text) 6%, transparent) 39px 40px
     ),
     linear-gradient(
       135deg,
@@ -1914,7 +1926,8 @@ body {
   z-index: 3;
   border: 3px solid var(--zero-ink);
   border-radius: 999px;
-  background: white;
+  background: var(--zero-paper);
+  color: var(--zero-text);
   box-shadow: 4px 4px 0 var(--zero-ink);
   padding: 8px 13px;
   font-family: var(--font-silkscreen), monospace;
@@ -1930,7 +1943,9 @@ body {
   z-index: 2;
   display: flex;
   justify-content: center;
-  filter: drop-shadow(8px 10px 0 rgba(36, 27, 74, 0.24));
+  filter: drop-shadow(
+    8px 10px 0 color-mix(in srgb, var(--zero-ink) 45%, transparent)
+  );
   animation: zero-float 5.5s ease-in-out infinite;
 }
 
@@ -1946,7 +1961,7 @@ body {
   gap: 10px;
   border: 3px solid var(--zero-ink);
   border-radius: 16px;
-  background: white;
+  background: var(--zero-paper);
   box-shadow: 5px 5px 0 var(--zero-ink);
   padding: 12px;
   text-align: center;
@@ -1976,16 +1991,398 @@ body {
     radial-gradient(circle at 50% 50%, var(--zero-ink) 0 8px, transparent 9px),
     conic-gradient(
       from 20deg,
-      white 0 12%,
+      var(--zero-paper) 0 12%,
       var(--zero-ink) 12% 18%,
-      white 18% 38%,
+      var(--zero-paper) 18% 38%,
       var(--zero-ink) 38% 44%,
-      white 44% 64%,
+      var(--zero-paper) 44% 64%,
       var(--zero-ink) 64% 70%,
-      white 70%
+      var(--zero-paper) 70%
     );
   box-shadow: 4px 5px 0 var(--zero-ink);
   animation: zero-ball 7s ease-in-out infinite;
+}
+
+/* The Duel Station is the contest controller, not a decorative hero. */
+.duel-station-stage {
+  isolation: isolate;
+  width: min(100%, 940px);
+  max-width: 100%;
+  min-height: 330px;
+  transform: none;
+}
+
+.duel-station-stage::before,
+.duel-station-stage::after {
+  z-index: -1;
+}
+
+.duel-station-watermark {
+  position: absolute;
+  right: 5%;
+  top: 25px;
+  z-index: -1;
+  opacity: 0.22;
+  filter: drop-shadow(
+    7px 8px 0 color-mix(in srgb, var(--zero-ink) 44%, transparent)
+  );
+  transform: rotate(5deg) scale(1.08);
+}
+
+.duel-station-content {
+  position: relative;
+  z-index: 2;
+  padding: 68px 22px 104px;
+}
+
+.duel-station-carousel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.duel-station-carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.duel-station-carousel-controls > span {
+  margin-right: 4px;
+  opacity: 0.7;
+}
+
+.duel-station-carousel-controls button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 2px solid var(--zero-ink);
+  border-radius: 50%;
+  background: var(--zero-paper);
+  color: var(--zero-text);
+  box-shadow: 2px 2px 0 var(--zero-ink);
+  transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+.duel-station-carousel-controls button:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--zero-ink);
+}
+
+.duel-station-carousel-controls button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.duel-station-carousel-controls svg {
+  width: 15px;
+  height: 15px;
+}
+
+.duel-station-track {
+  display: flex;
+  max-width: 100%;
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 2px 18px 9px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 16px,
+    black calc(100% - 16px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 16px,
+    black calc(100% - 16px),
+    transparent 100%
+  );
+}
+
+.duel-station-track::-webkit-scrollbar {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .duel-station-track,
+  .duel-station-contest-card {
+    cursor: grab;
+  }
+
+  .duel-station-track[data-dragging="true"],
+  .duel-station-track[data-dragging="true"] * {
+    cursor: grabbing !important;
+    user-select: none;
+  }
+}
+
+.duel-station-contest-card {
+  position: relative;
+  display: flex;
+  width: 272px;
+  min-height: 116px;
+  flex: 0 0 272px;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  border: 3px solid var(--zero-ink);
+  border-radius: 18px;
+  background: var(--zero-paper);
+  box-shadow: 5px 5px 0 var(--zero-ink);
+  color: var(--zero-text);
+  padding: 13px 14px;
+  scroll-snap-align: center;
+  text-align: left;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.duel-station-contest-card[data-selected="true"] {
+  background: var(--zero-purple);
+  box-shadow: 6px 6px 0 var(--zero-ink);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.duel-station-card-topline,
+.duel-station-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.duel-station-card-topline > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.duel-station-card-topline i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #20c889;
+  box-shadow: 0 0 0 3px rgba(32, 200, 137, 0.15);
+}
+
+.duel-station-card-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+.duel-station-card-title svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--zero-purple-deep) 16%, transparent);
+  padding: 4px;
+}
+
+.duel-station-card-title strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.duel-station-card-meta {
+  justify-content: flex-start;
+  margin-top: auto;
+  opacity: 0.72;
+}
+
+.duel-station-card-check {
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 3px solid var(--zero-ink);
+  border-radius: 0 16px 0 12px;
+  background: var(--zero-coral);
+  color: white;
+}
+
+.duel-station-card-check svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 4;
+}
+
+.duel-station-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.duel-station-dots button {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--zero-ink);
+  border-radius: 50%;
+  background: var(--zero-paper);
+  transition: width 150ms ease, border-radius 150ms ease, background 150ms ease;
+}
+
+.duel-station-dots button[data-active="true"] {
+  width: 23px;
+  border-radius: 999px;
+  background: var(--zero-text);
+}
+
+:root[data-theme="stadium"]
+  .zero-duel-page
+  .duel-station-contest-card[data-selected="true"] {
+  color: #fff9ec;
+}
+
+:root[data-theme="stadium"] .zero-duel-page .duel-station-card-topline i {
+  background: #66d5a8;
+}
+
+.zero-duel-hero,
+.zero-duel-arena,
+.zero-duel-topbar,
+.zero-duel-poster,
+.duel-station-action-rail,
+.duel-station-contest-card,
+.zero-duel-tabs,
+.zero-duel-page .verity-card,
+.zero-duel-page .pvp-arena-category {
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.duel-station-action-rail {
+  position: absolute;
+  right: 18px;
+  bottom: 17px;
+  left: 18px;
+  z-index: 4;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 3px solid var(--zero-ink);
+  border-radius: 18px;
+  background: var(--zero-paper);
+  color: var(--zero-text);
+  box-shadow: 5px 5px 0 var(--zero-ink);
+  padding: 9px 10px 9px 15px;
+}
+
+.duel-station-selection {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.duel-station-selection small {
+  font-family: var(--font-pixel), monospace;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.duel-station-selection strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duel-station-cta {
+  display: inline-flex;
+  min-height: 42px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 3px solid var(--zero-ink);
+  border-radius: 999px;
+  background: var(--zero-coral);
+  box-shadow: 4px 4px 0 var(--zero-ink);
+  color: white;
+  padding: 0 19px;
+  font-size: 12px;
+  font-weight: 900;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.duel-station-cta:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--zero-ink);
+}
+
+.duel-station-cta svg {
+  width: 15px;
+  height: 15px;
+}
+
+.duel-station-state {
+  position: absolute;
+  inset: 64px 24px 24px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.duel-station-state strong {
+  font-size: 20px;
+}
+
+.duel-station-state span {
+  max-width: 330px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.duel-station-state button {
+  margin-top: 3px;
+  border: 2px solid var(--zero-ink);
+  border-radius: 999px;
+  background: var(--zero-paper);
+  color: var(--zero-text);
+  box-shadow: 3px 3px 0 var(--zero-ink);
+  padding: 7px 14px;
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .zero-duel-spark {
@@ -2025,7 +2422,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-top: 3px solid var(--zero-ink);
-  background: white;
+  background: var(--zero-paper);
 }
 
 .zero-duel-facts > div {
@@ -2062,11 +2459,15 @@ body {
   background:
     radial-gradient(
       circle at 96% 12%,
-      rgba(244, 165, 205, 0.36),
+      color-mix(in srgb, var(--zero-pink) 36%, transparent),
       transparent 15rem
     ),
     var(--zero-cream);
-  padding: 46px 44px 64px;
+  padding: 30px 44px 64px;
+}
+
+#prediction-ticket {
+  scroll-margin-top: 96px;
 }
 
 .zero-duel-arena-head {
@@ -2079,7 +2480,7 @@ body {
 
 .zero-duel-arena-head h2 {
   margin-top: 16px;
-  color: var(--zero-ink);
+  color: var(--zero-text);
   font-family: var(--font-poppins), ui-sans-serif, sans-serif;
   font-size: clamp(2.4rem, 5vw, 3.7rem);
   font-weight: 950;
@@ -2089,7 +2490,7 @@ body {
 
 .zero-duel-arena-head p {
   margin-top: 10px;
-  color: #5e5676;
+  color: var(--zero-muted);
   font-size: 14px;
   font-weight: 600;
 }
@@ -2101,7 +2502,7 @@ body {
   margin-top: 10px;
   border: 3px solid var(--zero-ink);
   border-radius: 999px;
-  background: white;
+  background: var(--zero-paper);
   box-shadow: 4px 4px 0 var(--zero-ink);
   padding: 10px 14px;
   font-size: 9px;
@@ -2114,12 +2515,12 @@ body {
 
 .zero-duel-tabs {
   border: 3px solid var(--zero-ink);
-  background: white;
+  background: var(--zero-paper);
   box-shadow: 5px 5px 0 var(--zero-ink);
 }
 
 .zero-duel-tabs button {
-  color: var(--zero-ink);
+  color: var(--zero-text);
 }
 
 .zero-duel-tabs button.is-active {
@@ -2132,7 +2533,7 @@ body {
   border: 3px solid var(--zero-ink) !important;
   border-radius: 18px !important;
   background: var(--zero-paper) !important;
-  color: var(--zero-ink) !important;
+  color: var(--zero-text) !important;
   box-shadow: 6px 6px 0 var(--zero-ink) !important;
 }
 
@@ -2145,11 +2546,11 @@ body {
 .zero-duel-page .pvp-arena-category h3,
 .zero-duel-page .pvp-arena-category h4,
 .zero-duel-page .text-charcoal-primary {
-  color: var(--zero-ink) !important;
+  color: var(--zero-text) !important;
 }
 
 .zero-duel-page .text-ash {
-  color: #706982 !important;
+  color: var(--zero-muted) !important;
 }
 
 .zero-duel-page .pvp-empty-slate {
@@ -2163,10 +2564,10 @@ body {
   background:
     radial-gradient(
       circle at 50% 36%,
-      rgba(141, 235, 209, 0.48),
+      color-mix(in srgb, var(--zero-mint) 48%, transparent),
       transparent 7rem
     ),
-    white !important;
+    var(--zero-paper) !important;
 }
 
 .zero-duel-page .pvp-empty-slate::before {
@@ -2186,15 +2587,15 @@ body {
 }
 
 .zero-duel-page .pvp-slate-carousel > div:first-child h2 {
-  color: var(--zero-ink) !important;
+  color: var(--zero-text) !important;
   font-size: 24px;
   letter-spacing: -0.035em;
 }
 
 .zero-duel-page .pvp-slate-card {
   border: 3px solid var(--zero-ink) !important;
-  background: white !important;
-  color: var(--zero-ink) !important;
+  background: var(--zero-paper) !important;
+  color: var(--zero-text) !important;
   box-shadow: 5px 5px 0 var(--zero-ink) !important;
 }
 
@@ -2223,7 +2624,7 @@ body {
 }
 
 .zero-duel-page .pvp-arena-category > div:first-child {
-  border-bottom: 2px dashed rgba(36, 27, 74, 0.2);
+  border-bottom: 0;
 }
 
 .zero-duel-page button.bg-\[\#1479ff\] {
@@ -2234,7 +2635,7 @@ body {
 }
 
 .zero-duel-page .bg-\[\#FAF9F6\] {
-  border: 2px solid rgba(36, 27, 74, 0.22) !important;
+  border: 2px solid var(--zero-soft-line) !important;
   background: var(--zero-cream) !important;
 }
 
@@ -2242,9 +2643,9 @@ body {
 .zero-duel-page select,
 .zero-duel-page textarea {
   border: 2px solid var(--zero-ink) !important;
-  background: white !important;
-  color: var(--zero-ink) !important;
-  box-shadow: 2px 2px 0 rgba(36, 27, 74, 0.2);
+  background: var(--zero-paper) !important;
+  color: var(--zero-text) !important;
+  box-shadow: 2px 2px 0 var(--zero-soft-line);
 }
 
 .zero-duel-page .game-button-primary {
@@ -2266,8 +2667,415 @@ body {
   padding-left: 14px;
 }
 
+.zero-duel-page .pvp-matchmaking-card {
+  min-height: 330px;
+  border: 3px solid var(--zero-ink) !important;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in srgb, var(--zero-mint) 48%, transparent),
+      transparent 13rem
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--zero-pink) 30%, transparent),
+      transparent 35%
+    ),
+    var(--zero-paper) !important;
+  color: var(--zero-text) !important;
+  box-shadow: 6px 6px 0 var(--zero-ink) !important;
+}
+
+.pvp-matchmaking-beam {
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  left: -20%;
+  width: 20%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--zero-yellow) 22%, transparent),
+    transparent
+  );
+  filter: blur(5px);
+  transform: skewX(-16deg);
+  animation: pvp-matchmaking-scan 4.8s ease-in-out infinite;
+}
+
+.pvp-matchmaking-live,
+.pvp-matchmaking-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 2px solid var(--zero-ink);
+  border-radius: 999px;
+  background: var(--zero-paper);
+  box-shadow: 3px 3px 0 var(--zero-ink);
+  padding: 7px 10px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pvp-matchmaking-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #35c991;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #35c991 18%, transparent);
+  animation: pvp-matchmaking-live 1.4s ease-in-out infinite;
+}
+
+.pvp-matchmaking-locked {
+  border-color: color-mix(in srgb, var(--zero-ink) 38%, transparent);
+  box-shadow: none;
+  color: var(--zero-muted);
+}
+
+.pvp-matchmaking-avatar {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border: 3px solid var(--zero-ink);
+  border-radius: 22px;
+  box-shadow: 5px 5px 0 var(--zero-ink);
+  font-family: var(--font-pixel), monospace;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.pvp-matchmaking-avatar.is-player {
+  background: var(--zero-purple);
+  color: white;
+}
+
+.pvp-matchmaking-avatar.is-rival {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 7px,
+      color-mix(in srgb, var(--zero-ink) 6%, transparent) 7px 9px
+    ),
+    var(--zero-mint-soft);
+  color: var(--zero-muted);
+}
+
+.pvp-matchmaking-versus strong {
+  max-width: 100%;
+  color: var(--zero-text);
+}
+
+.pvp-matchmaking-versus small {
+  margin-top: 3px;
+  color: var(--zero-muted);
+  font-family: var(--font-pixel), monospace;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pvp-matchmaking-radar {
+  position: relative;
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border: 2px solid var(--zero-ink);
+  border-radius: 50%;
+  background: var(--zero-paper);
+  color: var(--zero-purple-deep);
+}
+
+.pvp-matchmaking-radar::before,
+.pvp-matchmaking-radar::after,
+.pvp-matchmaking-radar > span {
+  position: absolute;
+  inset: 7px;
+  border: 2px solid color-mix(in srgb, var(--zero-purple-deep) 42%, transparent);
+  border-radius: 50%;
+  content: "";
+  animation: pvp-matchmaking-radar 2.1s ease-out infinite;
+}
+
+.pvp-matchmaking-radar::after {
+  animation-delay: 0.7s;
+}
+
+.pvp-matchmaking-radar > span {
+  animation-delay: 1.4s;
+}
+
+.pvp-matchmaking-radar svg {
+  position: relative;
+  z-index: 2;
+}
+
+.pvp-matchmaking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 5px;
+}
+
+.pvp-matchmaking-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--zero-purple-deep);
+  animation: pvp-matchmaking-dot 1.2s ease-in-out infinite;
+}
+
+.pvp-matchmaking-dots i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.pvp-matchmaking-dots i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@keyframes pvp-matchmaking-scan {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateX(0) skewX(-16deg);
+  }
+  38% {
+    opacity: 0.8;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: translateX(680%) skewX(-16deg);
+  }
+}
+
+@keyframes pvp-matchmaking-radar {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.42);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes pvp-matchmaking-live {
+  50% {
+    opacity: 0.42;
+  }
+}
+
+@keyframes pvp-matchmaking-dot {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@media (max-width: 639px) {
+  .zero-duel-page .pvp-matchmaking-card {
+    min-height: 315px;
+  }
+
+  .pvp-matchmaking-live,
+  .pvp-matchmaking-locked {
+    padding: 6px 8px;
+    font-size: 6px;
+  }
+
+  .pvp-matchmaking-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    font-size: 20px;
+  }
+
+  .pvp-matchmaking-radar {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pvp-matchmaking-beam,
+  .pvp-matchmaking-live i,
+  .pvp-matchmaking-radar::before,
+  .pvp-matchmaking-radar::after,
+  .pvp-matchmaking-radar > span,
+  .pvp-matchmaking-dots i {
+    animation: none !important;
+  }
+}
+
+.zero-duel-page .pvp-comparison-row {
+  border: 2px solid var(--zero-ink);
+  border-radius: 18px;
+  background: var(--zero-paper);
+  box-shadow: 4px 4px 0 var(--zero-ink);
+  padding: 14px;
+  color: var(--zero-text);
+}
+
+.zero-duel-page .pvp-comparison-row.is-settled {
+  background:
+    linear-gradient(
+      105deg,
+      color-mix(in srgb, var(--zero-mint) 24%, transparent),
+      transparent 48%
+    ),
+    var(--zero-paper);
+}
+
+.pvp-comparison-result-badge {
+  flex: none;
+  border: 1px solid color-mix(in srgb, var(--zero-ink) 35%, transparent);
+  border-radius: 999px;
+  background: var(--zero-mint-soft);
+  color: var(--zero-text);
+  padding: 4px 7px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.pvp-comparison-cell {
+  display: flex;
+  min-width: 0;
+  min-height: 54px;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--zero-ink) 22%, transparent);
+  border-radius: 11px;
+  background: var(--zero-cream);
+  padding: 9px 10px;
+}
+
+.pvp-comparison-cell > span {
+  color: var(--zero-muted);
+  font-family: var(--font-pixel), monospace;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pvp-comparison-cell > strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 4px;
+  color: var(--zero-text);
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pvp-comparison-cell.is-result,
+.pvp-comparison-cell.is-points {
+  animation: pvp-comparison-reveal 220ms ease-out both;
+}
+
+.pvp-comparison-cell.is-searching {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 8px,
+      color-mix(in srgb, var(--zero-ink) 4%, transparent) 8px 10px
+    ),
+    var(--zero-cream);
+}
+
+.pvp-rival-searching {
+  display: flex !important;
+  align-items: center;
+  color: var(--zero-muted) !important;
+}
+
+.pvp-rival-searching i {
+  width: 4px;
+  height: 4px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--zero-purple-deep);
+  margin-left: 3px;
+  animation: pvp-rival-search-dot 1.2s ease-in-out infinite;
+}
+
+.pvp-rival-searching i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.pvp-rival-searching i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.pvp-comparison-cell.is-result {
+  background: color-mix(in srgb, var(--zero-purple) 16%, var(--zero-paper));
+}
+
+.pvp-comparison-cell.is-result > strong {
+  color: var(--zero-purple-deep);
+}
+
+.pvp-comparison-cell.is-points {
+  align-items: center;
+  text-align: center;
+}
+
+.pvp-comparison-cell.is-points > strong {
+  color: var(--zero-muted);
+}
+
+.pvp-comparison-cell.is-points.is-correct > strong {
+  color: #29b87e;
+}
+
+@keyframes pvp-comparison-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pvp-rival-search-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pvp-comparison-cell.is-result,
+  .pvp-comparison-cell.is-points,
+  .pvp-rival-searching i {
+    animation: none !important;
+  }
+}
+
 .zero-duel-page .pvp-lineup-summary {
-  background: white !important;
+  background: var(--zero-paper) !important;
 }
 
 .zero-duel-page .pvp-stats-card > div:nth-child(2) {
@@ -2285,7 +3093,7 @@ body {
 .zero-duel-page .pvp-history-card > div:not(:first-child) > div {
   border: 2px solid var(--zero-ink) !important;
   background: var(--zero-cream) !important;
-  box-shadow: 3px 3px 0 rgba(36, 27, 74, 0.85) !important;
+  box-shadow: 3px 3px 0 var(--zero-ink) !important;
 }
 
 /* PvP hierarchy polish — hard poster shadows belong to major surfaces only. */
@@ -2296,14 +3104,14 @@ body {
 
 .zero-duel-page .pvp-arena-category:hover {
   transform: none;
-  box-shadow: 0 4px 0 rgba(36, 27, 74, 0.14) !important;
+  box-shadow: 0 4px 0 var(--zero-soft-shadow) !important;
 }
 
 .zero-duel-page .pvp-arena-category[data-selected="true"] {
   background: linear-gradient(
     90deg,
-    rgba(175, 233, 217, 0.62),
-    white 28%
+    color-mix(in srgb, var(--zero-mint) 62%, transparent),
+    var(--zero-paper) 28%
   ) !important;
   box-shadow: inset 5px 0 0 var(--zero-purple-deep) !important;
 }
@@ -2320,7 +3128,7 @@ body {
 }
 
 .zero-duel-page .pvp-pick-row {
-  border: 1px solid rgba(36, 27, 74, 0.16);
+  border: 1px solid var(--zero-soft-line);
 }
 
 .zero-duel-page .pvp-state-card,
@@ -2328,10 +3136,10 @@ body {
   background:
     radial-gradient(
       circle at 50% 18%,
-      rgba(175, 233, 217, 0.68),
+      color-mix(in srgb, var(--zero-mint) 68%, transparent),
       transparent 8rem
     ),
-    white !important;
+    var(--zero-paper) !important;
 }
 
 .zero-duel-page .pvp-state-icon {
@@ -2438,11 +3246,11 @@ body {
 
 @media (max-width: 900px) {
   .zero-duel-hero-grid {
-    padding-inline: 30px;
+    padding: 26px 30px 32px;
   }
 
-  .zero-duel-poster {
-    min-height: 280px;
+  .duel-station-stage {
+    min-height: 325px;
   }
 
   .zero-duel-arena {
@@ -2453,6 +3261,8 @@ body {
 @media (max-width: 639px) {
   .zero-duel-page {
     border-radius: 0;
+    margin-bottom: -7rem;
+    padding-bottom: 7rem;
     box-shadow: none;
   }
 
@@ -2476,7 +3286,7 @@ body {
   .zero-duel-hero-grid {
     display: block;
     min-height: 0;
-    padding: 28px 18px 34px;
+    padding: 20px 14px 25px;
   }
 
   .zero-duel-copy,
@@ -2484,7 +3294,7 @@ body {
     display: none;
   }
 
-  .zero-duel-poster {
+  .zero-duel-poster:not(.duel-station-stage) {
     display: block;
     width: min(100%, 380px);
     min-height: 318px;
@@ -2492,6 +3302,95 @@ body {
     border-radius: 26px;
     box-shadow: 7px 8px 0 var(--zero-ink);
     transform: rotate(1deg);
+  }
+
+  .duel-station-stage {
+    display: block;
+    width: 100%;
+    min-height: 312px;
+    margin: 0 auto;
+    border-width: 3px;
+    border-radius: 24px;
+    box-shadow: 7px 7px 0 var(--zero-ink);
+    transform: none;
+  }
+
+  .duel-station-watermark {
+    right: -12px;
+    top: 42px;
+    opacity: 0.16;
+    transform: rotate(6deg) scale(0.86);
+  }
+
+  .duel-station-content {
+    padding: 63px 12px 108px;
+  }
+
+  .duel-station-carousel-head {
+    margin-bottom: 8px;
+  }
+
+  .duel-station-carousel-controls > span,
+  .duel-station-carousel-controls button {
+    display: none;
+  }
+
+  .duel-station-track {
+    gap: 10px;
+    margin-inline: -12px;
+    padding: 2px 26px 9px;
+    scroll-padding-inline: 26px;
+  }
+
+  .duel-station-contest-card {
+    width: min(82vw, 276px);
+    min-height: 115px;
+    flex-basis: min(82vw, 276px);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--zero-ink);
+    padding: 12px;
+    scroll-snap-align: center;
+  }
+
+  .duel-station-contest-card[data-selected="true"] {
+    box-shadow: 5px 5px 0 var(--zero-ink);
+  }
+
+  .duel-station-card-title {
+    font-size: 13px;
+  }
+
+  .duel-station-dots {
+    margin-top: 1px;
+  }
+
+  .duel-station-action-rail {
+    right: 12px;
+    bottom: 13px;
+    left: 12px;
+    gap: 8px;
+    border-radius: 15px;
+    box-shadow: 4px 4px 0 var(--zero-ink);
+    padding: 7px 8px 7px 11px;
+  }
+
+  .duel-station-selection small {
+    font-size: 6px;
+  }
+
+  .duel-station-selection strong {
+    font-size: 11px;
+  }
+
+  .duel-station-cta {
+    min-height: 39px;
+    box-shadow: 3px 3px 0 var(--zero-ink);
+    padding-inline: 13px;
+    font-size: 10px;
+  }
+
+  .duel-station-state {
+    inset: 58px 18px 20px;
   }
 
   .zero-duel-poster-icon {
@@ -2543,7 +3442,7 @@ body {
   }
 
   .zero-duel-arena {
-    padding: 34px 18px 54px;
+    padding: 24px 18px 22px;
   }
 
   .zero-duel-arena-head {
@@ -2589,9 +3488,12 @@ body {
    ───────────────────────────────────────────────────────────────────────────── */
 .game-app {
   --cup-ink: #241b4a;
+  --cup-text: #241b4a;
+  --cup-muted: #625a78;
   --cup-mint: #afe9d9;
   --cup-mint-soft: #d7f3ea;
   --cup-cream: #fff9ec;
+  --cup-paper: #ffffff;
   --cup-purple: #8f79d8;
   --cup-purple-soft: #b6a8e2;
   --cup-coral: #e8294f;
@@ -2600,6 +3502,22 @@ body {
   --cup-yellow: #f2d66a;
   --font-display: var(--font-poppins), ui-sans-serif, sans-serif;
   --font-pixel: var(--font-silkscreen), ui-monospace, monospace;
+}
+
+:root[data-theme="stadium"] .game-app {
+  --cup-ink: #07111b;
+  --cup-text: #f2ecdd;
+  --cup-muted: #aab7c0;
+  --cup-mint: #223c46;
+  --cup-mint-soft: #2b4b55;
+  --cup-cream: #101923;
+  --cup-paper: #1b2936;
+  --cup-purple: #6d9fd3;
+  --cup-purple-soft: #587b9b;
+  --cup-coral: #e94763;
+  --cup-pink: #725466;
+  --cup-blue: #35566b;
+  --cup-yellow: #d9b84a;
 }
 
 .game-app .verity-card .verity-card {
@@ -2613,7 +3531,7 @@ body {
 }
 
 .game-app .text-ash {
-  color: #625a78 !important;
+  color: var(--cup-muted) !important;
 }
 
 @media (max-width: 639px) {
@@ -2633,7 +3551,7 @@ body {
 .arcade-app-header {
   border-bottom: 3px solid var(--cup-ink);
   background: rgba(245, 250, 255, 0.94) !important;
-  color: var(--cup-ink);
+  color: var(--cup-text);
   box-shadow: 0 8px 0 rgba(36, 27, 74, 0.08);
 }
 
@@ -2645,7 +3563,7 @@ body {
 }
 
 .arcade-brand-wordmark {
-  color: var(--cup-ink);
+  color: var(--cup-text);
   font-family: var(--font-silkscreen), ui-monospace, monospace;
   font-size: 19px;
   font-weight: 700;
@@ -2658,22 +3576,22 @@ body {
 }
 
 .arcade-app-header > a .font-game {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .arcade-app-header .arcade-alert-button,
 .arcade-app-header > div > button:not(.game-button-primary),
 .arcade-app-header > div > div > button {
   border: 2px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 rgba(36, 27, 74, 0.85) !important;
 }
 
 .arcade-app-header .arcade-balance-pill {
   border: 2px solid var(--cup-ink) !important;
   background: var(--cup-mint-soft) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 var(--cup-ink) !important;
 }
 
@@ -2691,12 +3609,12 @@ body {
 }
 
 .arcade-nav-item {
-  color: #756e89 !important;
+  color: var(--cup-muted) !important;
 }
 
 .arcade-nav-item.is-active {
   background: rgba(157, 134, 236, 0.1);
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .arcade-nav-item.is-active .arcade-nav-object {
@@ -2745,11 +3663,11 @@ body {
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #716a82;
+  color: var(--cup-muted);
 }
 
 .arcade-nav-item.is-active .arcade-nav-label {
-  color: var(--cup-ink);
+  color: var(--cup-text);
   text-shadow: none;
 }
 
@@ -2808,7 +3726,7 @@ body {
 
 .zero-duel-copy > p,
 .zero-duel-arena-head p {
-  color: #514967 !important;
+  color: var(--zero-muted) !important;
 }
 
 .pixel-reward {
@@ -2865,20 +3783,45 @@ body {
 .tournament-sidebar {
   border: 3px solid var(--cup-ink) !important;
   background: var(--cup-cream) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 7px 8px 0 rgba(36, 27, 74, 0.18) !important;
 }
 
-.tournament-sidebar > div:first-child a > div:first-child {
-  border: 2px solid var(--cup-ink);
-  background: var(--cup-mint) !important;
-  color: var(--cup-ink) !important;
+.tournament-sidebar .sidebar-brand-emblem {
+  border: 2px solid var(--cup-ink) !important;
+  background: var(--cup-mint-soft) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 var(--cup-ink) !important;
+}
+
+.tournament-sidebar .sidebar-brand-subtitle {
+  color: var(--cup-muted) !important;
+}
+
+.tournament-sidebar .sidebar-theme-toggle .arcade-theme-toggle {
+  border: 2px solid var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 3px 3px 0 var(--cup-ink) !important;
+}
+
+.tournament-sidebar .sidebar-login-button {
+  border: 2px solid var(--cup-ink) !important;
+  border-radius: 14px;
+  background: var(--cup-coral) !important;
+  color: white !important;
+  box-shadow: 4px 4px 0 var(--cup-ink) !important;
+}
+
+.tournament-sidebar .sidebar-compact-balance {
+  border: 1px solid color-mix(in srgb, var(--cup-ink) 28%, transparent);
+  background: var(--cup-mint-soft);
+  color: var(--cup-text);
 }
 
 .tournament-sidebar .font-game,
 .tournament-sidebar nav a:not([aria-current="page"]) {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-sidebar nav {
@@ -2886,13 +3829,13 @@ body {
 }
 
 .tournament-sidebar nav a > div {
-  color: #675f7c !important;
+  color: var(--cup-muted) !important;
 }
 
 .tournament-sidebar nav a > div[class*="from-[#1479ff]"] {
   border: 2px solid var(--cup-ink);
   background: var(--cup-purple) !important;
-  color: white !important;
+  color: var(--cup-ink) !important;
   box-shadow: 4px 4px 0 var(--cup-ink) !important;
 }
 
@@ -2918,7 +3861,7 @@ body {
       transparent 82%
     ),
     var(--cup-mint) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 9px 10px 0 rgba(36, 27, 74, 0.92) !important;
 }
 
@@ -2927,7 +3870,7 @@ body {
 }
 
 .tournament-home .home-poster-title {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   font-family: var(--font-display) !important;
   font-weight: 800 !important;
   letter-spacing: -0.065em !important;
@@ -2944,7 +3887,7 @@ body {
 .tournament-home .home-season-chip span,
 .tournament-home .home-feature-list,
 .tournament-home .home-hero-copy {
-  color: #514a69 !important;
+  color: var(--cup-muted) !important;
 }
 
 .tournament-home .home-hero-copy {
@@ -2954,8 +3897,8 @@ body {
 .tournament-home .home-season-chip,
 .tournament-home .home-secondary-cta {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 4px 4px 0 var(--cup-ink) !important;
 }
 
@@ -2967,8 +3910,8 @@ body {
 
 .tournament-home .home-roadmap {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 7px 7px 0 var(--cup-ink) !important;
 }
 
@@ -2976,7 +3919,7 @@ body {
 .tournament-home .home-roadmap li:first-child {
   border: 2px solid var(--cup-ink) !important;
   background: var(--cup-cream) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-home .home-roadmap li:first-child {
@@ -2986,17 +3929,125 @@ body {
 
 .tournament-home .home-step-title,
 .tournament-home .home-roadmap h2 {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-home .home-roadmap-subtitle {
-  color: #625a78 !important;
+  color: var(--cup-muted) !important;
   font-weight: 500 !important;
 }
 
 .tournament-home .home-roadmap li:first-child > div:first-child {
   border-color: var(--cup-ink) !important;
   background: var(--cup-purple) !important;
+}
+
+.tournament-home .home-compact-duel-card {
+  position: relative;
+  display: flex;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid var(--cup-ink);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      126deg,
+      transparent 0 52%,
+      rgba(242, 214, 106, 0.92) 52% 67%,
+      transparent 67%
+    ),
+    linear-gradient(
+      152deg,
+      rgba(236, 168, 203, 0.78) 0 24%,
+      transparent 24% 74%,
+      rgba(182, 168, 226, 0.78) 74%
+    ),
+    var(--cup-mint-soft);
+  box-shadow: 7px 8px 0 var(--cup-ink);
+}
+
+.tournament-home .home-compact-duel-card::after {
+  position: absolute;
+  right: 14%;
+  top: 21%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--cup-paper);
+  box-shadow: 26px 18px 0 white;
+  content: "";
+}
+
+.tournament-home .home-compact-duel-label {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  border: 2px solid var(--cup-ink);
+  border-radius: 999px;
+  background: var(--cup-paper);
+  padding: 8px 12px;
+  box-shadow: 3px 3px 0 var(--cup-ink);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tournament-home .home-compact-duel-icon {
+  width: 150px;
+  height: 132px;
+  transform: translateY(-8px) rotate(-3deg);
+}
+
+.tournament-home .home-compact-versus {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  left: 18px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  border: 2px solid var(--cup-ink);
+  border-radius: 15px;
+  background: var(--cup-paper);
+  padding: 10px 14px;
+  box-shadow: 4px 4px 0 var(--cup-ink);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.tournament-home .home-compact-versus strong {
+  border-radius: 7px;
+  background: var(--cup-ink);
+  padding: 6px 8px;
+  color: white;
+}
+
+.tournament-home .home-rank-card {
+  border: 3px solid var(--cup-ink);
+  border-radius: 22px;
+  background:
+    linear-gradient(105deg, rgba(215, 243, 234, 0.78), transparent 42%),
+    var(--cup-paper);
+  padding: 16px 18px;
+  box-shadow: 6px 7px 0 var(--cup-ink);
+}
+
+.tournament-home .home-rank-badge {
+  border: 2px solid var(--cup-ink);
+  box-shadow: 3px 3px 0 var(--cup-ink);
+}
+
+.tournament-home .game-market-card:hover {
+  border-color: var(--cup-ink);
+  box-shadow: 8px 10px 0 var(--cup-ink);
 }
 
 @media (min-width: 640px) {
@@ -3022,13 +4073,13 @@ body {
       transparent 83%
     ),
     var(--cup-mint) !important;
-  color: var(--cup-ink);
+  color: var(--cup-text);
   box-shadow: 7px 8px 0 var(--cup-ink) !important;
 }
 
 .tournament-search .duel-search-hero h1,
 .tournament-search .duel-search-hero p {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-search .duel-search-hero > div:first-child {
@@ -3037,8 +4088,8 @@ body {
 
 .tournament-search .duel-search-input {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 4px 4px 0 var(--cup-ink) !important;
 }
 
@@ -3046,8 +4097,8 @@ body {
 .tournament-search .duel-search-empty,
 .tournament-search .duel-search-skeleton {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 5px 5px 0 var(--cup-ink) !important;
 }
 
@@ -3059,7 +4110,7 @@ body {
 
 .tournament-search .duel-search-result .font-game,
 .tournament-search .duel-search-empty .font-game {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-search .duel-search-result > span:first-child {
@@ -3071,12 +4122,12 @@ body {
 
 .tournament-player .player-view-tabs {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
+  background: var(--cup-paper) !important;
   box-shadow: 5px 5px 0 var(--cup-ink) !important;
 }
 
 .tournament-player .player-view-tabs button {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-player .player-view-tabs button[class*="from-[#1479ff]"] {
@@ -3088,8 +4139,8 @@ body {
 .tournament-player .verity-card,
 .tournament-page-panel .verity-card {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 6px 6px 0 var(--cup-ink) !important;
 }
 
@@ -3137,11 +4188,11 @@ body {
 .tournament-page-panel h1,
 .tournament-page-panel h2,
 .tournament-page-panel h3 {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .game-app .pvp-referral-code {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-player [class*="border-b-2"] {
@@ -3163,7 +4214,7 @@ body {
     ),
     linear-gradient(130deg, transparent 0 79%, rgba(182, 168, 226, 0.58) 79%),
     var(--cup-mint) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 6px 7px 0 var(--cup-ink) !important;
 }
 
@@ -3186,7 +4237,7 @@ body {
 .tournament-page-panel .verity-blob {
   border: 2px solid var(--cup-ink);
   background: var(--cup-mint-soft) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 var(--cup-ink);
 }
 
@@ -3194,7 +4245,7 @@ body {
 [data-slot="drawer-content"] {
   border: 3px solid var(--cup-ink) !important;
   background: var(--cup-cream) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 9px 9px 0 var(--cup-ink) !important;
 }
 
@@ -3222,7 +4273,7 @@ body {
       transparent 84%
     ),
     var(--cup-mint) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 7px 8px 0 var(--cup-ink) !important;
 }
 
@@ -3232,14 +4283,14 @@ body {
 .tournament-worldcup > header:first-child p,
 .tournament-ranking > section:first-child h1,
 .tournament-ranking > section:first-child p {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-missions > section:first-child > div:last-child > div,
 .tournament-missions > section:first-child > div:last-child > button {
   border: 2px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 var(--cup-ink) !important;
 }
 
@@ -3254,8 +4305,8 @@ body {
 .tournament-social-detail .verity-card,
 .tournament-profile-edit .verity-card {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 6px 6px 0 var(--cup-ink) !important;
 }
 
@@ -3291,7 +4342,7 @@ body {
 
 .tournament-markets > div:first-child button,
 .tournament-markets > div:nth-child(2) > div:first-child button {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-markets > div:first-child button[class*="from-[#1479ff]"],
@@ -3310,8 +4361,8 @@ body {
 
 .tournament-markets .verity-card {
   border-width: 3px !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 5px 5px 0 var(--cup-ink) !important;
 }
 
@@ -3319,13 +4370,13 @@ body {
 .tournament-markets [class*="bg-[#080b17]"],
 .tournament-markets [class*="bg-[#101525]"] {
   background: var(--cup-cream) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-profile-edit > div:first-child > a {
   border: 2px solid var(--cup-ink) !important;
   background: var(--cup-mint) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 var(--cup-ink) !important;
 }
 
@@ -3335,7 +4386,7 @@ body {
 .tournament-profile-edit label,
 .tournament-profile-edit .text-midnight,
 .tournament-profile-edit .text-charcoal-primary {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-profile-edit input,
@@ -3343,8 +4394,8 @@ body {
 .game-modal-surface input,
 .game-modal-surface textarea {
   border: 2px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 rgba(36, 27, 74, 0.18) !important;
 }
 
@@ -3373,7 +4424,7 @@ body {
 .tournament-social-detail h1,
 .tournament-social-detail h2,
 .tournament-social-detail h3 {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-ranking .tournament-ranking-tabs button {
@@ -3407,7 +4458,7 @@ body {
 .tournament-social-detail > div > a:first-of-type {
   border: 2px solid var(--cup-ink) !important;
   background: var(--cup-mint) !important;
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
   box-shadow: 3px 3px 0 var(--cup-ink) !important;
 }
 
@@ -3422,8 +4473,8 @@ body {
 .tournament-markets .game-market-card,
 .tournament-markets .game-panel {
   border: 3px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 6px 6px 0 var(--cup-ink) !important;
 }
 
@@ -3433,7 +4484,7 @@ body {
 .tournament-markets .game-market-card h3,
 .tournament-markets .game-market-card [class*="text-white"],
 .tournament-markets .game-panel [class*="text-white"] {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-worldcup .game-market-card > div[class*="space-y"] > div,
@@ -3464,7 +4515,7 @@ body {
 
 .tournament-worldcup .game-market-card input,
 .tournament-markets .game-market-card input {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .game-modal-surface button[class*="bg-inverse"],
@@ -3477,8 +4528,8 @@ body {
 
 .game-modal-surface button[class*="bg-parchment-card"] {
   border: 2px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
 }
 
 /* Authentication modal — tournament ticket treatment */
@@ -3525,14 +4576,14 @@ body {
 .tournament-auth-modal > div:first-child > div > div:first-child {
   border: 2px solid var(--cup-ink) !important;
   border-radius: 12px !important;
-  background: white !important;
+  background: var(--cup-paper) !important;
   color: var(--cup-purple) !important;
   box-shadow: 3px 3px 0 var(--cup-ink) !important;
 }
 
 .tournament-auth-modal > div:first-child h3,
 .tournament-auth-modal > div:first-child p {
-  color: var(--cup-ink) !important;
+  color: var(--cup-text) !important;
 }
 
 .tournament-auth-modal > div:first-child p {
@@ -3541,15 +4592,15 @@ body {
 
 .tournament-auth-modal > div:first-child > button {
   border: 2px solid var(--cup-ink) !important;
-  background: white !important;
-  color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
   box-shadow: 2px 2px 0 var(--cup-ink) !important;
 }
 
 .tournament-auth-modal form > p,
 .tournament-auth-modal form label,
 .tournament-auth-modal > div:not(:first-child) p {
-  color: #625a78 !important;
+  color: var(--cup-muted) !important;
 }
 
 .tournament-auth-modal form > p,
@@ -3561,7 +4612,7 @@ body {
 .tournament-auth-modal form > div > div:has(input) {
   border: 2px solid var(--cup-ink) !important;
   border-radius: 14px !important;
-  background: white !important;
+  background: var(--cup-paper) !important;
   box-shadow: 3px 3px 0 rgba(36, 27, 74, 0.2) !important;
 }
 
@@ -3682,6 +4733,20 @@ body {
     box-shadow: none !important;
   }
 
+  .tournament-home .home-hero-compact {
+    border-radius: 24px;
+    box-shadow: 6px 7px 0 var(--cup-ink) !important;
+  }
+
+  .tournament-home .home-compact-duel-card {
+    min-height: 220px;
+  }
+
+  .tournament-home .home-rank-card {
+    padding: 15px;
+    box-shadow: 4px 5px 0 var(--cup-ink);
+  }
+
   .tournament-search,
   .tournament-player,
   .tournament-page-panel,
@@ -3749,15 +4814,403 @@ body {
 @media (max-width: 639px) {
   html {
     min-height: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   body.game-app {
     min-height: 100dvh;
-    overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: visible !important;
     touch-action: manipulation;
   }
+}
+
+/* Stadium contrast guard: legacy purple utility colours must not leak into
+   the selected Dusk palette. Keep these after the shared tournament rules. */
+:root[data-theme="stadium"] .zero-duel-page .text-ash {
+  color: var(--zero-muted) !important;
+}
+
+:root[data-theme="stadium"] .zero-duel-page .text-ash\/80 {
+  color: color-mix(in srgb, var(--zero-muted) 88%, transparent) !important;
+}
+
+:root[data-theme="stadium"] .zero-duel-page .text-ash.opacity-70 {
+  opacity: 0.9;
+}
+
+:root[data-theme="stadium"] .game-app .zero-duel-page .pvp-referral-code {
+  color: var(--zero-text) !important;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   STADIUM DUSK — official app-wide low-luminance tournament skin
+   These rules intentionally live last so old light-only poster overrides and
+   utility classes cannot reintroduce white panels or low-contrast purple copy.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root[data-theme="stadium"] body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(109, 159, 211, 0.13), transparent 30rem),
+    radial-gradient(circle at 88% 18%, rgba(100, 198, 161, 0.09), transparent 26rem),
+    var(--background);
+}
+
+:root[data-theme="stadium"] .cinematic-vignette {
+  background:
+    radial-gradient(
+      circle at 82% 46%,
+      color-mix(in srgb, var(--scene-accent) 11%, transparent),
+      transparent 31rem
+    ),
+    radial-gradient(circle at 12% 88%, rgba(109, 159, 211, 0.08), transparent 25rem),
+    linear-gradient(to bottom, rgba(7, 17, 27, 0.08), rgba(2, 7, 12, 0.42));
+}
+
+:root[data-theme="stadium"] .arcade-app-header {
+  border-color: var(--cup-ink) !important;
+  background: rgba(16, 25, 35, 0.96) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 0 7px 0 rgba(2, 7, 12, 0.58) !important;
+}
+
+:root[data-theme="stadium"] .arcade-brand-wordmark,
+:root[data-theme="stadium"] .arcade-app-header > a .font-game {
+  color: var(--cup-text) !important;
+  text-shadow: 2px 2px 0 rgba(2, 7, 12, 0.9);
+}
+
+:root[data-theme="stadium"] .arcade-brand-emblem svg {
+  filter: drop-shadow(1px 2px 0 rgba(2, 7, 12, 0.76));
+}
+
+:root[data-theme="stadium"] .arcade-app-header > a span span:last-child {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .arcade-app-header .arcade-alert-button,
+:root[data-theme="stadium"] .arcade-app-header .arcade-theme-toggle,
+:root[data-theme="stadium"] .arcade-app-header > div > button:not(.game-button-primary),
+:root[data-theme="stadium"] .arcade-app-header > div > div > button {
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 3px 3px 0 var(--cup-ink) !important;
+}
+
+:root[data-theme="stadium"] .arcade-app-header .arcade-balance-pill {
+  background: var(--cup-mint-soft) !important;
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .arcade-mobile-nav {
+  border-color: var(--cup-ink) !important;
+  background: rgba(27, 41, 54, 0.97) !important;
+  box-shadow: 7px 8px 0 rgba(2, 7, 12, 0.84) !important;
+}
+
+:root[data-theme="stadium"] .arcade-nav-item,
+:root[data-theme="stadium"] .arcade-nav-label {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .arcade-nav-item.is-active {
+  background: var(--cup-mint-soft) !important;
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .arcade-nav-item.is-active .arcade-nav-label {
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .tournament-sidebar {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 7px 8px 0 rgba(2, 7, 12, 0.66) !important;
+}
+
+:root[data-theme="stadium"] .tournament-sidebar nav {
+  border-color: rgba(242, 236, 221, 0.16) !important;
+}
+
+:root[data-theme="stadium"] .tournament-sidebar .sidebar-brand-subtitle,
+:root[data-theme="stadium"] .tournament-sidebar nav a:not([aria-current="page"]) {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .tournament-sidebar .arcade-brand-wordmark {
+  color: var(--cup-text) !important;
+  text-shadow: 2px 2px 0 rgba(2, 7, 12, 0.9);
+}
+
+:root[data-theme="stadium"] .tournament-sidebar nav a > div[class*="from-[#1479ff]"] {
+  background: var(--cup-purple) !important;
+  color: var(--cup-ink) !important;
+}
+
+:root[data-theme="stadium"] .tournament-home .home-hero {
+  background:
+    radial-gradient(circle at 82% 12%, rgba(109, 159, 211, 0.2), transparent 17rem),
+    linear-gradient(128deg, transparent 0 76%, rgba(114, 84, 102, 0.44) 76% 84%, transparent 84%),
+    linear-gradient(28deg, rgba(88, 123, 155, 0.38) 0 17%, transparent 17% 76%, rgba(217, 184, 74, 0.32) 76% 82%, transparent 82%),
+    var(--cup-mint) !important;
+  box-shadow: 9px 10px 0 rgba(2, 7, 12, 0.78) !important;
+}
+
+:root[data-theme="stadium"] .tournament-home .home-poster-title,
+:root[data-theme="stadium"] .tournament-home .home-poster-title .game-text-gradient {
+  text-shadow: 4px 5px 0 rgba(2, 7, 12, 0.72) !important;
+}
+
+:root[data-theme="stadium"] .tournament-home .home-rank-card {
+  background:
+    linear-gradient(105deg, rgba(43, 75, 85, 0.8), transparent 46%),
+    var(--cup-paper) !important;
+}
+
+:root[data-theme="stadium"] .tournament-home .home-compact-duel-card::after {
+  box-shadow: 26px 18px 0 var(--cup-paper);
+}
+
+:root[data-theme="stadium"] .tournament-search .duel-search-hero,
+:root[data-theme="stadium"] .tournament-page-panel > section:first-child,
+:root[data-theme="stadium"] .tournament-missions > section:first-child,
+:root[data-theme="stadium"] .tournament-worldcup > header:first-child,
+:root[data-theme="stadium"] .tournament-ranking > section:first-child {
+  background:
+    radial-gradient(circle at 90% 8%, rgba(109, 159, 211, 0.18), transparent 12rem),
+    linear-gradient(132deg, transparent 0 76%, rgba(217, 184, 74, 0.22) 76% 84%, transparent 84%),
+    var(--cup-mint) !important;
+}
+
+:root[data-theme="stadium"] .tournament-search .duel-search-input::placeholder,
+:root[data-theme="stadium"] .game-app input::placeholder,
+:root[data-theme="stadium"] .game-app textarea::placeholder {
+  color: color-mix(in srgb, var(--cup-muted) 78%, transparent) !important;
+}
+
+:root[data-theme="stadium"] .tournament-search .duel-search-result .font-mono,
+:root[data-theme="stadium"] .tournament-search .duel-search-empty p:last-child,
+:root[data-theme="stadium"] .tournament-page-panel article p,
+:root[data-theme="stadium"] .tournament-player p,
+:root[data-theme="stadium"] .tournament-ranking p,
+:root[data-theme="stadium"] .tournament-worldcup p {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .tournament-page-panel article[class*="bg-sky-blue"] {
+  background: rgba(43, 75, 85, 0.72) !important;
+}
+
+:root[data-theme="stadium"] .game-modal-surface,
+:root[data-theme="stadium"] [data-slot="drawer-content"],
+:root[data-theme="stadium"] .tournament-auth-modal {
+  background: var(--cup-cream) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 9px 9px 0 rgba(2, 7, 12, 0.82) !important;
+}
+
+:root[data-theme="stadium"] .tournament-auth-overlay {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(109, 159, 211, 0.14), transparent 25rem),
+    rgba(2, 7, 12, 0.82) !important;
+}
+
+:root[data-theme="stadium"] .game-modal-surface input,
+:root[data-theme="stadium"] .game-modal-surface textarea,
+:root[data-theme="stadium"] .tournament-auth-modal input,
+:root[data-theme="stadium"] .tournament-profile-edit input,
+:root[data-theme="stadium"] .tournament-profile-edit textarea {
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 3px 3px 0 rgba(2, 7, 12, 0.46) !important;
+}
+
+:root[data-theme="stadium"] .game-app .text-ash,
+:root[data-theme="stadium"] .game-app .text-graphite,
+:root[data-theme="stadium"] .game-app .text-midnight,
+:root[data-theme="stadium"] .game-app .text-charcoal-primary {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .game-app h1,
+:root[data-theme="stadium"] .game-app h2,
+:root[data-theme="stadium"] .game-app h3,
+:root[data-theme="stadium"] .game-app h4 {
+  color: var(--cup-text);
+}
+
+:root[data-theme="stadium"] .game-app .pvp-referral-code {
+  color: var(--cup-text) !important;
+}
+
+.preview-mode-banner {
+  border-color: var(--cup-ink);
+  background: #fff4c7;
+  color: var(--cup-text);
+}
+
+.preview-mode-exit {
+  border-color: var(--cup-ink);
+  background: var(--cup-paper);
+  color: var(--cup-text);
+}
+
+:root[data-theme="stadium"] .preview-mode-banner {
+  background: var(--cup-mint-soft);
+  color: var(--cup-text);
+}
+
+/* Keep cached preview banners readable while a client transitions between app
+   builds; the current component uses the semantic classes above. */
+:root[data-theme="stadium"] .game-app [class*="bg-[#fff4c7]"] {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-mint-soft) !important;
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"]
+  .game-app
+  [class*="bg-[#fff4c7]"]
+  [class*="bg-white"] {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-theme="stadium"] body,
+  :root[data-theme="stadium"] .arcade-app-header,
+  :root[data-theme="stadium"] .arcade-mobile-nav,
+  :root[data-theme="stadium"] .tournament-sidebar,
+  :root[data-theme="stadium"] .verity-card,
+  :root[data-theme="stadium"] .game-modal-surface {
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease;
+  }
+}
+
+/* Stadium Dusk contrast cleanup for legacy literal colour utilities. */
+:root[data-theme="stadium"] .game-app [class*="text-[#241b4a]"] {
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .game-app [class*="text-[#756e89]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#71809f]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#737c9d]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#75809b]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#777f9e]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#77819b]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#79819f]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#7b859f]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#7e87aa]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#858eae]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#8792ad]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#4f5b75]"],
+:root[data-theme="stadium"] .game-app [class*="text-[#45516a]"] {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .game-app [class*="text-[#806acb]"] {
+  color: var(--cup-purple) !important;
+}
+
+:root[data-theme="stadium"] .home-rank-label {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .home-rank-xp {
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .home-rank-next {
+  color: #ced7dc !important;
+}
+
+:root[data-theme="stadium"] .home-rank-progress {
+  border-color: rgba(242, 236, 221, 0.2) !important;
+  background: rgba(242, 236, 221, 0.1) !important;
+}
+
+:root[data-theme="stadium"] .game-app .game-market-card {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 6px 7px 0 rgba(2, 7, 12, 0.88) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-glow {
+  background: var(--cup-mint) !important;
+  opacity: 0.64;
+}
+
+:root[data-theme="stadium"] .worldcup-market-title,
+:root[data-theme="stadium"] .worldcup-market-outcome-label,
+:root[data-theme="stadium"] .worldcup-market-percent,
+:root[data-theme="stadium"] .worldcup-market-input {
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-muted,
+:root[data-theme="stadium"] .worldcup-market-input::placeholder,
+:root[data-theme="stadium"] .worldcup-market-currency {
+  color: var(--cup-muted) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-outcome {
+  border-color: rgba(242, 236, 221, 0.16) !important;
+  background: var(--cup-cream) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-track {
+  background: rgba(242, 236, 221, 0.12) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-amount {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-mint-soft) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-currency {
+  border-color: rgba(242, 236, 221, 0.16) !important;
+  background: var(--cup-paper) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-void {
+  border-color: var(--cup-ink) !important;
+  background: color-mix(in srgb, var(--cup-yellow) 18%, var(--cup-paper)) !important;
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"] .worldcup-market-trophy {
+  background: var(--cup-yellow) !important;
+  color: var(--cup-ink) !important;
+}
+
+.worldcup-state-surface {
+  border-color: var(--cup-ink) !important;
+  background: var(--cup-paper) !important;
+  color: var(--cup-text) !important;
+  box-shadow: 6px 7px 0 var(--cup-ink) !important;
+}
+
+:root[data-theme="stadium"]
+  .worldcup-market-status[class*="bg-[#afe9d9]"] {
+  background: var(--cup-mint-soft) !important;
+  color: var(--cup-text) !important;
+}
+
+:root[data-theme="stadium"]
+  .worldcup-market-status[class*="bg-[#eca8cb]"] {
+  background: var(--cup-pink) !important;
+  color: var(--cup-text) !important;
+}
+
+.tournament-ranking-tabs svg {
+  flex: none;
 }

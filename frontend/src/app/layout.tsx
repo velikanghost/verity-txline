@@ -4,6 +4,23 @@ import "./globals.css";
 import AppProviders from "@/components/providers/AppProviders";
 import AppShell from "@/components/layout/AppShell";
 
+const themeBootScript = `
+  (function () {
+    var root = document.documentElement;
+    try {
+      var savedTheme = window.localStorage.getItem("verity-ui-theme");
+      var theme = savedTheme === "stadium" || savedTheme === "light"
+        ? savedTheme
+        : "light";
+      root.dataset.theme = theme;
+      root.style.colorScheme = theme === "stadium" ? "dark" : "light";
+    } catch (error) {
+      root.dataset.theme = "light";
+      root.style.colorScheme = "light";
+    }
+  })();
+`;
+
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
@@ -79,6 +96,9 @@ export default function RootLayout({
       className={`${poppins.variable} ${silkscreen.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body
         className="game-app min-h-screen overflow-y-scroll bg-background text-foreground"
         suppressHydrationWarning

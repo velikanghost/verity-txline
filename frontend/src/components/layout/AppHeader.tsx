@@ -7,6 +7,7 @@ import { useWalletProfile } from "@/hooks/useWalletProfile";
 import { useUsdcBalance } from "@/hooks/useUsdcBalance";
 import { useNotificationsQuery } from "@/store/verity/verityQueries";
 import { PixelTrophyIcon } from "@/components/icons/PixelTrophyIcon";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 export default function AppHeader() {
   const { authenticated, loading, login } = useAuth();
@@ -18,8 +19,8 @@ export default function AppHeader() {
   ).length;
 
   return (
-    <header className="arcade-app-header sticky top-0 z-30 flex items-center justify-between gap-3 py-3 backdrop-blur-xl sm:mt-3 sm:rounded-2xl sm:border sm:border-white/[0.07] sm:px-4">
-      <Link href="/pvp" className="group flex min-w-0 items-center gap-2.5">
+    <header className="arcade-app-header sticky top-0 z-30 flex items-center justify-between gap-3 py-3 backdrop-blur-xl sm:hidden">
+      <Link href="/" className="group flex min-w-0 items-center gap-2.5">
         <span className="arcade-brand-emblem flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px]">
           <PixelTrophyIcon className="h-8 w-8" />
         </span>
@@ -45,6 +46,8 @@ export default function AppHeader() {
             <span>{isLoading ? "•••" : `$${formattedBalance}`}</span>
           </button>
         )}
+
+        <ThemeToggle />
 
         <Link
           aria-label="Open alerts"

@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query"
 import { apiRequest } from "@/store/apiClient"
+import { usePreviewMode } from "@/hooks/usePreviewMode"
 
 /**
  * Claim winnings for one or more resolved markets via the Solana program's
@@ -9,11 +10,15 @@ import { apiRequest } from "@/store/apiClient"
  */
 export function useClaimWinnings() {
   const qc = useQueryClient()
+  const previewMode = usePreviewMode()
 
   const redeemMultipleWinnings = async (
     marketIds: string[],
-    _totalWinnings?: number,
+    totalWinnings?: number,
   ) => {
+    void totalWinnings
+    if (previewMode) throw new Error("Sample preview is read-only.")
+
     const results: { marketId: string; txSig?: string; error?: string }[] = []
     for (const marketId of marketIds) {
       try {
@@ -22,8 +27,11 @@ export function useClaimWinnings() {
           body: JSON.stringify({ marketId }),
         })
         results.push({ marketId, txSig: res.txSig })
-      } catch (e: any) {
-        results.push({ marketId, error: e?.message })
+      } catch (error: unknown) {
+        results.push({
+          marketId,
+          error: error instanceof Error ? error.message : "Claim failed",
+        })
       }
     }
     qc.invalidateQueries({ queryKey: ["worldcup", "markets"] })

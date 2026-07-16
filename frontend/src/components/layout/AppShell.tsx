@@ -7,6 +7,7 @@ import CinematicBackdrop from "@/components/layout/CinematicBackdrop";
 import { useSocket } from "@/hooks/useSocket";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
 import { useEffect } from "react";
+import { PreviewModeBanner } from "@/components/ui/PreviewModeBanner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { profile } = useWalletProfile();
@@ -32,6 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* Single full-width column — every page owns its own layout. */}
         <main className="min-w-0 flex-1 max-w-[1080px] pb-28 sm:pb-0">
           <AppHeader />
+          <PreviewModeBanner />
           <div className="px-4 sm:px-0">{children}</div>
         </main>
       </div>

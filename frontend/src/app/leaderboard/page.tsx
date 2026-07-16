@@ -3,10 +3,41 @@
 import { useState } from "react";
 import { usePvpLeaderboardQuery } from "@/store/verity/verityQueries";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
-import { Zap, Users, Info, CircleHelp, Medal } from "lucide-react";
+import { Zap, Users, Info, Medal } from "lucide-react";
 import Link from "next/link";
+import { usePreviewMode } from "@/hooks/usePreviewMode";
+import { PREVIEW_LEADERBOARD } from "@/lib/previewData";
+import { getArenaRank } from "@/lib/arenaRank";
 
 type LeaderboardTab = "xp" | "referrers" | "points-system";
+
+interface LeaderboardUser {
+  id: string;
+  username: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  arenaXp?: number;
+  referralCount?: number;
+  pvpMatchesLostCount?: number;
+}
+
+interface XpLeaderboardUser extends LeaderboardUser {
+  arenaXp: number;
+}
+
+interface ReferrerLeaderboardUser extends LeaderboardUser {
+  arenaXp: number;
+  referralCount: number;
+}
+
+interface LeaderboardData {
+  xp: XpLeaderboardUser[];
+  referrers: ReferrerLeaderboardUser[];
+  currentUserXp: number | null;
+  currentUserXpRank: number | null;
+  currentUserReferral: number | null;
+  currentUserReferralRank: number | null;
+}
 
 export function LeaderboardContent({
   embedded = false,
@@ -14,12 +45,18 @@ export function LeaderboardContent({
   embedded?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp");
+  const previewMode = usePreviewMode();
   const { profile: loggedInProfile } = useWalletProfile();
   const {
     data: leaderboardData,
     isLoading,
     error,
-  } = usePvpLeaderboardQuery(loggedInProfile?.id);
+  } = usePvpLeaderboardQuery(loggedInProfile?.id, {
+    enabled: !previewMode,
+  });
+  const displayLeaderboard: LeaderboardData | undefined = previewMode
+    ? PREVIEW_LEADERBOARD
+    : (leaderboardData as LeaderboardData | undefined);
 
   const pvpRules = [
     {
@@ -93,10 +130,10 @@ export function LeaderboardContent({
       )}
 
       {/* Tabs */}
-      <div className="tournament-ranking-tabs flex gap-2 overflow-x-auto border-b border-border pb-px ">
+      <div className="tournament-ranking-tabs grid grid-cols-3 overflow-hidden border-b border-border pb-px">
         <button
           onClick={() => setActiveTab("xp")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors ${
+          className={`flex min-w-0 items-center justify-center gap-1.5 border-b-2 px-1.5 py-3 text-[11px] font-medium tracking-tight whitespace-nowrap transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
             activeTab === "xp"
               ? "border-charcoal-primary text-charcoal-primary "
               : "border-transparent text-ash hover:text-charcoal-primary "
@@ -107,7 +144,7 @@ export function LeaderboardContent({
         </button>
         <button
           onClick={() => setActiveTab("referrers")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors ${
+          className={`flex min-w-0 items-center justify-center gap-1.5 border-b-2 px-1.5 py-3 text-[11px] font-medium tracking-tight whitespace-nowrap transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
             activeTab === "referrers"
               ? "border-charcoal-primary text-charcoal-primary "
               : "border-transparent text-ash hover:text-charcoal-primary "
@@ -118,7 +155,7 @@ export function LeaderboardContent({
         </button>
         <button
           onClick={() => setActiveTab("points-system")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors ${
+          className={`flex min-w-0 items-center justify-center gap-1.5 border-b-2 px-1.5 py-3 text-[11px] font-medium tracking-tight whitespace-nowrap transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
             activeTab === "points-system"
               ? "border-charcoal-primary text-charcoal-primary "
               : "border-transparent text-ash hover:text-charcoal-primary "
@@ -131,7 +168,7 @@ export function LeaderboardContent({
 
       {/* Content */}
       <div className="flex flex-col gap-3 min-h-[350px]">
-        {isLoading && (
+        {!previewMode && isLoading && (
           <div className="verity-card overflow-hidden">
             <div className="p-4 border-b border-border bg-white-surface/40 ">
               <div className="h-4 w-32 rounded bg-stone-surface animate-pulse" />
@@ -173,13 +210,13 @@ export function LeaderboardContent({
           </div>
         )}
 
-        {error && (
+        {!previewMode && error && (
           <div className="tournament-ranking-error verity-card p-8 text-center text-sm text-coral-red">
             Failed to load leaderboard data: {error.message}
           </div>
         )}
 
-        {!isLoading && !error && (
+        {(previewMode || (!isLoading && !error)) && (
           <>
             {activeTab === "xp" && (
               <div className="verity-card overflow-hidden">
@@ -191,13 +228,13 @@ export function LeaderboardContent({
                     Ranked by Result XP earned from resolved PvP duels.
                   </p>
                 </div>
-                {leaderboardData?.xp?.length === 0 ? (
+                {displayLeaderboard?.xp?.length === 0 ? (
                   <div className="p-8 text-center text-sm text-ash">
                     No rankings available yet.
                   </div>
                 ) : (
                   <div className="divide-y divide-border ">
-                    {leaderboardData?.xp?.map((user: any, index: number) => (
+                    {displayLeaderboard?.xp?.map((user, index) => (
                       <UserLeaderboardRow
                         key={user.id}
                         user={user}
@@ -208,21 +245,21 @@ export function LeaderboardContent({
                       />
                     ))}
                     {(() => {
-                      const isUserInXpList = leaderboardData?.xp?.some(
-                        (u: any) => u.id === loggedInProfile?.id,
+                      const isUserInXpList = displayLeaderboard?.xp?.some(
+                        (user) => user.id === loggedInProfile?.id,
                       );
                       if (
                         !isUserInXpList &&
                         loggedInProfile &&
-                        leaderboardData?.currentUserXpRank != null &&
-                        leaderboardData.currentUserXpRank > 50
+                        displayLeaderboard?.currentUserXpRank != null &&
+                        displayLeaderboard.currentUserXpRank > 50
                       ) {
                         return (
                           <>
                             <div className="flex items-center justify-center py-2 bg-stone-50/50 border-t border-dashed border-border ">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-ash font-mono">
                                 ••• You are ranked{" "}
-                                {leaderboardData.currentUserXpRank} •••
+                                {displayLeaderboard.currentUserXpRank} •••
                               </span>
                             </div>
                             <UserLeaderboardRow
@@ -234,9 +271,9 @@ export function LeaderboardContent({
                                 pvpMatchesLostCount:
                                   loggedInProfile.pvpMatchesLostCount ?? 0,
                               }}
-                              rank={leaderboardData.currentUserXpRank}
+                              rank={displayLeaderboard.currentUserXpRank}
                               scoreLabel="XP"
-                              scoreValue={leaderboardData.currentUserXp ?? 0}
+                              scoreValue={displayLeaderboard.currentUserXp ?? 0}
                               isCurrentUser={true}
                             />
                           </>
@@ -259,42 +296,40 @@ export function LeaderboardContent({
                     Ranked by total number of referred onboarded users.
                   </p>
                 </div>
-                {leaderboardData?.referrers?.length === 0 ? (
+                {displayLeaderboard?.referrers?.length === 0 ? (
                   <div className="p-8 text-center text-sm text-ash">
                     No referrals recorded yet.
                   </div>
                 ) : (
                   <div className="divide-y divide-border ">
-                    {leaderboardData?.referrers?.map(
-                      (user: any, index: number) => (
-                        <UserLeaderboardRow
-                          key={user.id}
-                          user={user}
-                          rank={index + 1}
-                          scoreLabel="Referrals"
-                          scoreValue={user.referralCount}
-                          extraInfo={`(${user.arenaXp} XP)`}
-                          isCurrentUser={user.id === loggedInProfile?.id}
-                        />
-                      ),
-                    )}
+                    {displayLeaderboard?.referrers?.map((user, index) => (
+                      <UserLeaderboardRow
+                        key={user.id}
+                        user={user}
+                        rank={index + 1}
+                        scoreLabel="Referrals"
+                        scoreValue={user.referralCount}
+                        extraInfo={`(${user.arenaXp} XP)`}
+                        isCurrentUser={user.id === loggedInProfile?.id}
+                      />
+                    ))}
                     {(() => {
                       const isUserInReferrersList =
-                        leaderboardData?.referrers?.some(
-                          (u: any) => u.id === loggedInProfile?.id,
+                        displayLeaderboard?.referrers?.some(
+                          (user) => user.id === loggedInProfile?.id,
                         );
                       if (
                         !isUserInReferrersList &&
                         loggedInProfile &&
-                        leaderboardData?.currentUserReferralRank != null &&
-                        leaderboardData.currentUserReferralRank > 50
+                        displayLeaderboard?.currentUserReferralRank != null &&
+                        displayLeaderboard.currentUserReferralRank > 50
                       ) {
                         return (
                           <>
                             <div className="flex items-center justify-center py-2 bg-stone-50/50 border-t border-dashed border-border ">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-ash font-mono">
                                 ••• You are ranked{" "}
-                                {leaderboardData.currentUserReferralRank} •••
+                                {displayLeaderboard.currentUserReferralRank} •••
                               </span>
                             </div>
                             <UserLeaderboardRow
@@ -304,10 +339,10 @@ export function LeaderboardContent({
                                 displayName: loggedInProfile.displayName,
                                 avatarUrl: loggedInProfile.avatarUrl,
                               }}
-                              rank={leaderboardData.currentUserReferralRank}
+                              rank={displayLeaderboard.currentUserReferralRank}
                               scoreLabel="Referrals"
                               scoreValue={
-                                leaderboardData.currentUserReferral ?? 0
+                                displayLeaderboard.currentUserReferral ?? 0
                               }
                               extraInfo={`(${loggedInProfile.arenaXp ?? 0} XP)`}
                               isCurrentUser={true}
@@ -389,7 +424,7 @@ function UserLeaderboardRow({
   extraInfo,
   isCurrentUser,
 }: {
-  user: any;
+  user: LeaderboardUser;
   rank: number;
   scoreLabel: string;
   scoreValue: number;
@@ -402,7 +437,9 @@ function UserLeaderboardRow({
     "bg-zinc-300 text-zinc-950 ", // Silver
     "bg-amber-600 text-amber-50 ", // Bronze
   ];
-  const grade = getArenaGrade(scoreLabel, scoreValue);
+  const arenaRank = getArenaRank(scoreValue);
+  const grade =
+    scoreLabel === "XP" && arenaRank.name !== "Unranked" ? arenaRank : null;
   const hasSpecialGrade =
     scoreLabel === "XP" &&
     scoreValue > 30 &&
@@ -410,123 +447,79 @@ function UserLeaderboardRow({
 
   return (
     <div
-      className={`flex items-center justify-between p-4 transition-colors ${
+      className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 p-3 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:p-4 ${
         isCurrentUser
           ? "bg-sky-blue/5 border-y border-sky-blue/15"
           : "hover:bg-white-surface/20 "
       }`}
     >
-      <div className="flex items-center gap-3 min-w-0">
-        {/* Rank Number */}
-        <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold font-mono ${
-            isTopThree ? rankColors[rank - 1] : "text-ash"
-          }`}
-        >
-          {rank}
-        </span>
+      {/* Rank Number */}
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold font-mono ${
+          isTopThree ? rankColors[rank - 1] : "text-ash"
+        }`}
+      >
+        {rank}
+      </span>
 
-        {/* User Details */}
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="h-9 w-9 shrink-0 rounded-full overflow-hidden bg-zinc-200 relative flex items-center justify-center font-bold text-zinc-500">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt={user.displayName || user.username}
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            ) : (
-              (user.displayName || user.username || "?").charAt(0).toUpperCase()
-            )}
-          </div>
-          <div className="min-w-0">
-            <Link
-              href={`/profile/${encodeURIComponent(user.id)}`}
-              className="block text-sm font-semibold tracking-tight text-charcoal-primary truncate hover:underline"
-            >
-              {user.displayName || user.username}
-            </Link>
-            <span className="block text-xs font-mono text-ash truncate">
-              @{user.username}
-            </span>
-          </div>
+      {/* User Details */}
+      <div className="flex min-w-0 items-center gap-2.5">
+        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 font-bold text-zinc-500">
+          {user.avatarUrl ? (
+            // User avatar URLs can come from arbitrary hosts, so a native image
+            // avoids coupling profiles to a fixed Next.js remote-image allowlist.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.avatarUrl}
+              alt={user.displayName || user.username}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            (user.displayName || user.username || "?").charAt(0).toUpperCase()
+          )}
+        </div>
+        <div className="min-w-0">
+          <Link
+            href={`/profile/${encodeURIComponent(user.id)}`}
+            className="block truncate text-sm font-semibold tracking-tight text-charcoal-primary hover:underline"
+          >
+            {user.displayName || user.username}
+          </Link>
+          <span className="block truncate font-mono text-xs text-ash">
+            @{user.username}
+          </span>
         </div>
       </div>
 
-      {/* Score */}
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="flex items-center gap-1.5">
+      {(grade || hasSpecialGrade) && (
+        <div className="col-start-2 col-end-4 row-start-2 flex min-w-0 flex-wrap items-center gap-1.5 sm:col-start-3 sm:col-end-auto sm:row-start-1 sm:flex-nowrap sm:justify-end">
           {grade && (
             <span
-              className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider font-mono ${grade.color}`}
+              className={`whitespace-nowrap rounded px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${grade.badgeClass}`}
             >
               {grade.name}
             </span>
           )}
           {hasSpecialGrade && (
-            <span className="rounded bg-sunburst-yellow/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sunburst-yellow font-mono">
+            <span className="whitespace-nowrap rounded bg-sunburst-yellow/15 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-sunburst-yellow">
               Special Grade
             </span>
           )}
         </div>
-        <div className="text-right">
-          <span className="font-semibold text-sm text-charcoal-primary font-mono">
-            {scoreValue}
-          </span>
-          <span className="text-[10px] text-ash font-mono uppercase tracking-wider block leading-none mt-0.5">
-            {scoreLabel} {extraInfo}
-          </span>
-        </div>
+      )}
+
+      {/* Score */}
+      <div className="col-start-3 row-start-1 shrink-0 text-right sm:col-start-4">
+        <span className="font-mono text-sm font-semibold text-charcoal-primary">
+          {scoreValue}
+        </span>
+        <span className="mt-0.5 block font-mono text-[10px] uppercase leading-none tracking-wider text-ash">
+          {scoreLabel} {extraInfo}
+        </span>
       </div>
     </div>
   );
-}
-
-function getArenaGrade(scoreLabel: string, arenaXp: number) {
-  if (scoreLabel !== "XP") return null;
-  if (arenaXp < 30) return null;
-
-  if (arenaXp <= 499) {
-    return {
-      name: "Bronze",
-      color: "bg-amber-700/10 text-amber-700 ",
-    };
-  }
-  if (arenaXp <= 1499) {
-    return {
-      name: "Silver",
-      color: "bg-zinc-500/10 text-zinc-500 ",
-    };
-  }
-  if (arenaXp <= 2999) {
-    return {
-      name: "Gold",
-      color: "bg-amber-500/10 text-amber-600 ",
-    };
-  }
-  if (arenaXp <= 4999) {
-    return {
-      name: "Platinum",
-      color: "bg-cyan-500/10 text-cyan-600 ",
-    };
-  }
-  if (arenaXp <= 6999) {
-    return {
-      name: "Diamond",
-      color: "bg-sky-blue/10 text-sky-blue",
-    };
-  }
-  if (arenaXp <= 9000) {
-    return {
-      name: "Legend",
-      color: "bg-sunburst-yellow/10 text-sunburst-yellow",
-    };
-  }
-  return {
-    name: "Mythic",
-    color: "bg-fuchsia-500/10 text-fuchsia-600 ",
-  };
 }
