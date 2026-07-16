@@ -38,6 +38,9 @@ export function useSocket() {
     // Set up global event listeners
     const handleFeedUpdated = () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] })
+      // World Cup market list + pool state (["worldcup", ...]) so resolutions,
+      // receipts and pool changes surface live without a manual refresh.
+      queryClient.invalidateQueries({ queryKey: ["worldcup"] })
     }
 
     const handlePostUpdated = (data: any) => {
@@ -49,6 +52,9 @@ export function useSocket() {
     }
 
     const handleMarketUpdated = (data: any) => {
+      // World Cup market list + pool state (keyed under ["worldcup", ...]) so a
+      // settled market's receipt appears live for everyone viewing it.
+      queryClient.invalidateQueries({ queryKey: ["worldcup"] })
       if (data?.marketId) {
         queryClient.invalidateQueries({
           queryKey: ["market-detail", data.marketId],

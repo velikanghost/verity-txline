@@ -202,12 +202,21 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
   private async getLatestScoresSeq(fixtureId: number): Promise<number | null> {
     try {
       const scores: any = await this.txlineService.getScores(fixtureId)
+      // TxLINE's `/scores/snapshot` returns a list of score-update records, each
+      // carrying a `Seq` (capital S). Use the highest sequence seen — that's the
+      // fixture's latest processed batch that a stat proof can be fetched for.
+      if (Array.isArray(scores)) {
+        let maxSeq: number | null = null
+        for (const rec of scores) {
+          const s = rec?.Seq ?? rec?.seq
+          if (typeof s === "number" && (maxSeq === null || s > maxSeq)) {
+            maxSeq = s
+          }
+        }
+        return maxSeq
+      }
       const seq =
-        scores?.seq ??
-        scores?.Seq ??
-        scores?.latestSeq ??
-        scores?.LatestSeq ??
-        (Array.isArray(scores) ? scores[scores.length - 1]?.seq : undefined)
+        scores?.Seq ?? scores?.seq ?? scores?.latestSeq ?? scores?.LatestSeq
       return typeof seq === "number" ? seq : null
     } catch {
       return null
