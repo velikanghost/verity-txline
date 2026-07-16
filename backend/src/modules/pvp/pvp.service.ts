@@ -1317,40 +1317,27 @@ export class PvpService {
       let updated = false
       for (const pick of ticket.picks) {
         if (pick.marketId.toString() === marketId) {
-          const normalizedSelection = pick.selection.toUpperCase().trim()
-          const normalizedWinner = winningOutcome.toUpperCase().trim()
+          // Match the pick to the winning outcome by its position in the
+          // market's on-chain outcome list (index 0 = default). This handles
+          // binary (No/Yes) and N-outcome markets uniformly. A case-insensitive
+          // string compare is the fallback for legacy tickets whose selection
+          // isn't one of the market's stored labels.
           let isCorrect = false
-
-          if (market && market.outcomeCount === 2) {
-            const yesText = (market.outcomes[0] || "YES").toUpperCase().trim()
-            const noText = (market.outcomes[1] || "NO").toUpperCase().trim()
-
-            if (normalizedSelection === "YES") {
-              isCorrect =
-                normalizedWinner === "YES" || normalizedWinner === yesText
-            } else if (normalizedSelection === "NO") {
-              isCorrect =
-                normalizedWinner === "NO" || normalizedWinner === noText
-            }
+          const outcomes = market?.outcomes ?? []
+          const selIdx = outcomes.findIndex(
+            (o) =>
+              o.toLowerCase().trim() === pick.selection.toLowerCase().trim(),
+          )
+          const winIdx = outcomes.findIndex(
+            (o) =>
+              o.toLowerCase().trim() === winningOutcome.toLowerCase().trim(),
+          )
+          if (selIdx >= 0 && winIdx >= 0) {
+            isCorrect = selIdx === winIdx
           } else {
-            const isStringMatch = normalizedSelection === normalizedWinner
-            let isIndexMatch = false
-            if (market && market.outcomes && market.outcomes.length > 0) {
-              const selIdx = market.outcomes.findIndex(
-                (o) =>
-                  o.toLowerCase().trim() ===
-                  pick.selection.toLowerCase().trim(),
-              )
-              const winIdx = market.outcomes.findIndex(
-                (o) =>
-                  o.toLowerCase().trim() ===
-                  winningOutcome.toLowerCase().trim(),
-              )
-              if (selIdx >= 0 && winIdx >= 0 && selIdx === winIdx) {
-                isIndexMatch = true
-              }
-            }
-            isCorrect = isStringMatch || isIndexMatch
+            isCorrect =
+              pick.selection.toUpperCase().trim() ===
+              winningOutcome.toUpperCase().trim()
           }
 
           pick.isCorrect = isCorrect
