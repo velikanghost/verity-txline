@@ -128,13 +128,13 @@ export default function CommentsThread({
           />
           <button
             aria-label="Send comment"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-midnight text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-inverse text-inverse-text transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             disabled={!draft.trim() || isSubmitting}
             onClick={handleSend}
             type="button"
           >
             {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin text-white" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Send className="h-4 w-4" />
             )}

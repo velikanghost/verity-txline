@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, X, Clock, Swords, Trophy } from "lucide-react";
+import { Swords, Trophy, LockKeyhole } from "lucide-react";
 
-interface Pick {
+export interface Pick {
   marketId: string;
   optionName: string;
   matchup?: string | null;
   selection: string;
   isCorrect: boolean | null;
+  yesCondition?: string;
+  noCondition?: string;
+  status?: string;
+  resolvedOutcome?: string | null;
 }
 
-interface DuelStatus {
+export interface DuelStatus {
   status: "queued" | "matched" | "resolved";
   ticket: {
     id: string;
@@ -54,52 +58,109 @@ function AnimatedScore({ value }: { value: number }) {
   }, [value]);
 
   return (
-    <div className="pvp-score-pop text-3xl font-black text-charcoal-primary ">
+    <div
+      aria-hidden="true"
+      className="pvp-score-pop text-3xl font-black text-charcoal-primary "
+    >
       {display}
     </div>
   );
 }
 
-function PickRow({ pick }: { pick: Pick }) {
-  const state =
-    pick.isCorrect === true
-      ? "correct"
-      : pick.isCorrect === false
-        ? "wrong"
-        : "pending";
+const displaySelection = (
+  value: string | null | undefined,
+  pick: Pick,
+): string => {
+  if (!value) return "—";
+  if (value === "YES") return pick.yesCondition || "Yes";
+  if (value === "NO") return pick.noCondition || "No";
+  return value;
+};
+
+function PredictionComparisonRow({
+  pick,
+  opponentPick,
+  isSearching = false,
+}: {
+  pick: Pick;
+  opponentPick?: Pick;
+  isSearching?: boolean;
+}) {
+  const result = pick.resolvedOutcome ?? opponentPick?.resolvedOutcome ?? null;
+  const isSettled =
+    result !== null ||
+    pick.isCorrect !== null ||
+    (opponentPick?.isCorrect ?? null) !== null;
+
   return (
-    <div className="pvp-pick-row flex items-center justify-between gap-3 rounded-xl bg-[#FAF9F6] px-3 py-3 ">
-      <div className="min-w-0">
-        {pick.matchup && (
-          <div className="text-[9px] font-mono font-bold uppercase tracking-wider text-ash truncate">
-            {pick.matchup}
-          </div>
+    <article
+      className={`pvp-comparison-row ${isSettled ? "is-settled" : ""}`}
+    >
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0">
+          {pick.matchup && (
+            <span className="block truncate font-mono text-[9px] font-black uppercase tracking-[0.12em] text-ash">
+              {pick.matchup}
+            </span>
+          )}
+          <h4 className="mt-1 truncate text-sm font-black text-charcoal-primary">
+            {pick.optionName}
+          </h4>
+        </div>
+        {isSettled && (
+          <span className="pvp-comparison-result-badge">Result in</span>
         )}
-        <div className="text-xs font-bold text-charcoal-primary truncate">
-          {pick.optionName}
-        </div>
-        <div className="text-[10px] font-mono text-ash truncate">
-          Pick: {pick.selection}
-        </div>
       </div>
-      <span
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-          state === "correct"
-            ? "bg-emerald-500/15 text-emerald-600"
-            : state === "wrong"
-              ? "bg-rose-500/15 text-rose-500"
-              : "bg-stone-400/15 text-ash"
+
+      <div
+        className={`mt-3 grid grid-cols-2 gap-2 ${
+          isSettled
+            ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_76px]"
+            : "lg:grid-cols-2"
         }`}
       >
-        {state === "correct" ? (
-          <Check className="h-3.5 w-3.5" strokeWidth={3} />
-        ) : state === "wrong" ? (
-          <X className="h-3.5 w-3.5" strokeWidth={3} />
-        ) : (
-          <Clock className="h-3.5 w-3.5" />
+        <div className="pvp-comparison-cell">
+          <span>You</span>
+          <strong>{displaySelection(pick.selection, pick)}</strong>
+        </div>
+        <div
+          className={`pvp-comparison-cell ${isSearching ? "is-searching" : ""}`}
+        >
+          <span>Rival</span>
+          {isSearching ? (
+            <strong className="pvp-rival-searching">
+              Looking for rival
+              <i aria-hidden="true" />
+              <i aria-hidden="true" />
+              <i aria-hidden="true" />
+            </strong>
+          ) : (
+            <strong>
+              {opponentPick
+                ? displaySelection(opponentPick.selection, opponentPick)
+                : "—"}
+            </strong>
+          )}
+        </div>
+
+        {isSettled && (
+          <>
+            <div className="pvp-comparison-cell is-result">
+              <span>Result</span>
+              <strong>{displaySelection(result, pick)}</strong>
+            </div>
+            <div
+              className={`pvp-comparison-cell is-points ${
+                pick.isCorrect ? "is-correct" : ""
+              }`}
+            >
+              <span>Points</span>
+              <strong>{pick.isCorrect ? "+1" : "0"}</strong>
+            </div>
+          </>
         )}
-      </span>
-    </div>
+      </div>
+    </article>
   );
 }
 
@@ -116,7 +177,12 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
         <h1 className="text-2xl font-black text-charcoal-primary leading-tight">
           {status.event?.question || "Your duel"}
         </h1>
-        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash">
+        <span
+          aria-atomic="true"
+          aria-live="polite"
+          className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash"
+          role="status"
+        >
           {status.status === "queued"
             ? "Waiting for an opponent"
             : status.status === "matched"
@@ -132,6 +198,14 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
       {/* Scoreboard */}
       {status.opponent ? (
         <div className="pvp-scoreboard verity-card flex items-center justify-between gap-3 p-5">
+          <p
+            aria-atomic="true"
+            aria-live="polite"
+            className="sr-only"
+            role="status"
+          >
+            Current score: You {myScore}, @{status.opponent.username} {oppScore}.
+          </p>
           <div className="flex-1 text-center">
             <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-ash">
               You
@@ -154,44 +228,105 @@ export default function DuelPanel({ status }: { status: DuelStatus }) {
           </div>
         </div>
       ) : (
-        <div className="verity-card p-6 text-center">
-          <Clock className="mx-auto h-6 w-6 text-ash" />
-          <p className="mt-2 text-sm font-bold text-charcoal-primary ">
-            Lineup locked in
-          </p>
-          <p className="mt-1 text-xs text-ash">
-            You&apos;ll be matched with an opponent when lineups lock.
-          </p>
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="pvp-matchmaking-card verity-card relative overflow-hidden p-5 sm:p-7"
+          role="status"
+        >
+          <div className="pvp-matchmaking-beam" aria-hidden="true" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between gap-3">
+              <span className="pvp-matchmaking-live">
+                <i aria-hidden="true" /> Live matchmaking
+              </span>
+              <span className="pvp-matchmaking-locked">
+                <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />
+                Lineup locked
+              </span>
+            </div>
+
+            <div className="pvp-matchmaking-versus mt-7 grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6">
+              <div className="flex min-w-0 flex-col items-center text-center">
+                <span className="pvp-matchmaking-avatar is-player">Y</span>
+                <strong className="mt-2 truncate text-sm">You</strong>
+                <small>Ready</small>
+              </div>
+
+              <div className="pvp-matchmaking-radar" aria-hidden="true">
+                <span />
+                <Swords className="h-5 w-5" />
+              </div>
+
+              <div className="flex min-w-0 flex-col items-center text-center">
+                <span className="pvp-matchmaking-avatar is-rival">?</span>
+                <strong className="mt-2 truncate text-sm">Finding rival</strong>
+                <small>Searching</small>
+              </div>
+            </div>
+
+            <div className="mt-7 text-center">
+              <p className="font-black text-charcoal-primary">
+                Scanning the World Cup arena
+                <span className="pvp-matchmaking-dots" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </p>
+              <p className="mx-auto mt-2 max-w-[390px] text-xs leading-relaxed text-ash">
+                We&apos;re finding someone who locked a lineup for this same
+                contest. Your ticket is safe while the search runs.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
       {resolved && status.ticket.xpEarned > 0 && (
-        <div className="pvp-success-reveal pixel-reward verity-card flex items-center justify-center gap-2 bg-amber-500/5 p-4 text-xs font-bold text-amber-600">
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="pvp-success-reveal pixel-reward verity-card flex items-center justify-center gap-2 bg-amber-500/5 p-4 text-xs font-bold text-amber-600"
+          role="status"
+        >
           <Trophy className="h-4 w-4" /> +{status.ticket.xpEarned} Arena XP
         </div>
       )}
 
-      {/* Picks side by side */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <h3 className="text-[10px] font-mono font-black uppercase tracking-wider text-ash">
-            Your lineup
-          </h3>
-          {status.ticket.picks.map((p) => (
-            <PickRow key={p.marketId} pick={p} />
+      <section className="pvp-comparison-list">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-black text-charcoal-primary">
+              Predictions
+            </h3>
+            <p className="mt-0.5 text-xs text-ash">
+              {status.opponent
+                ? `Your picks beside @${status.opponent.username}.`
+                : "Your picks are locked while we find your rival."}
+            </p>
+          </div>
+          <span className="shrink-0 font-mono text-[9px] font-black uppercase tracking-[0.12em] text-ash">
+            {resolved
+              ? "Final results"
+              : status.opponent
+                ? "Duel live"
+                : "Searching"}
+          </span>
+        </div>
+        <div className="flex flex-col gap-3">
+          {status.ticket.picks.map((pick) => (
+            <PredictionComparisonRow
+              key={pick.marketId}
+              pick={pick}
+              opponentPick={status.opponent?.picks.find(
+                (opponentPick) => opponentPick.marketId === pick.marketId,
+              )}
+              isSearching={!status.opponent}
+            />
           ))}
         </div>
-        {status.opponent && (
-          <div className="flex flex-col gap-2">
-            <h3 className="text-[10px] font-mono font-black uppercase tracking-wider text-ash">
-              @{status.opponent.username}
-            </h3>
-            {status.opponent.picks.map((p) => (
-              <PickRow key={p.marketId} pick={p} />
-            ))}
-          </div>
-        )}
-      </div>
+      </section>
     </div>
   );
 }

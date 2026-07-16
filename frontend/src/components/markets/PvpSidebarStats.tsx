@@ -8,10 +8,22 @@ import { useClaimWinnings } from "@/hooks/useClaimWinnings";
 import { Loader2 } from "lucide-react";
 
 interface PvpSidebarStatsProps {
-  profile: any;
-  referralsData: any;
+  profile?: {
+    arenaXp?: number | null;
+    pvpMatchesWonCount?: number | null;
+    pvpMatchesLostCount?: number | null;
+    pvpMatchesDrawnCount?: number | null;
+  } | null;
+  referralsData?: {
+    referralLink?: string | null;
+    activeBoosts?: unknown[];
+    hasWonFirstPvpDuel?: boolean;
+    welcomeBoosts?: unknown;
+    referees?: unknown[];
+  } | null;
   claimedMarketIds: Set<string>;
   onClaimSuccess: (marketIds: string[]) => void;
+  readOnly?: boolean;
 }
 
 export default function PvpSidebarStats({
@@ -19,41 +31,42 @@ export default function PvpSidebarStats({
   referralsData,
   claimedMarketIds,
   onClaimSuccess,
+  readOnly = false,
 }: PvpSidebarStatsProps) {
   const [copiedCode, setCopiedCode] = useState(false);
   const queryClient = useQueryClient();
   const { redeemMultipleWinnings } = useClaimWinnings();
-  const { data: claimableData } = useClaimableWinningsQuery();
+  const { data: claimableData } = useClaimableWinningsQuery({
+    enabled: !readOnly,
+  });
   const [isClaiming, setIsClaiming] = useState(false);
 
   const claimablePicksFiltered = useMemo(() => {
     return (
       claimableData?.claimablePicks?.filter(
-        (p: any) => !claimedMarketIds.has(p.marketId),
+        (pick) => !claimedMarketIds.has(pick.marketId),
       ) || []
     );
   }, [claimableData, claimedMarketIds]);
 
   const totalWinningsUsdcFiltered = useMemo(() => {
     return claimablePicksFiltered.reduce(
-      (sum: number, p: any) => sum + (p.shares ?? 0),
+      (sum, pick) => sum + (pick.shares ?? 0),
       0,
     );
   }, [claimablePicksFiltered]);
 
   const claimableMarketIdsFiltered = useMemo(() => {
-    return claimablePicksFiltered.map((p: any) => p.marketId);
+    return claimablePicksFiltered.map((pick) => pick.marketId);
   }, [claimablePicksFiltered]);
 
   const handleClaimAll = useCallback(async () => {
+    if (readOnly) return;
     if (claimableMarketIdsFiltered.length === 0) return;
 
     setIsClaiming(true);
     try {
-      await redeemMultipleWinnings(
-        claimableMarketIdsFiltered,
-        totalWinningsUsdcFiltered,
-      );
+      await redeemMultipleWinnings(claimableMarketIdsFiltered);
 
       onClaimSuccess(claimableMarketIdsFiltered);
 
@@ -76,10 +89,10 @@ export default function PvpSidebarStats({
     }
   }, [
     claimableMarketIdsFiltered,
-    totalWinningsUsdcFiltered,
     redeemMultipleWinnings,
     queryClient,
     onClaimSuccess,
+    readOnly,
   ]);
 
   function handleCopyReferral() {
@@ -92,10 +105,16 @@ export default function PvpSidebarStats({
   }
 
   const hasClaimable = useMemo(() => {
+    if (readOnly) return false;
     if (!claimableData || totalWinningsUsdcFiltered <= 0) return false;
 
     return claimablePicksFiltered.length > 1;
-  }, [claimablePicksFiltered, totalWinningsUsdcFiltered, claimableData]);
+  }, [
+    claimablePicksFiltered,
+    totalWinningsUsdcFiltered,
+    claimableData,
+    readOnly,
+  ]);
 
   return (
     <div className="pvp-stats-card verity-card flex flex-col gap-5 bg-white p-5 ">

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiRequest } from "../apiClient"
+import { usePreviewMode } from "@/hooks/usePreviewMode"
 
 export interface WorldCupMarket {
   id: string
@@ -35,10 +36,11 @@ export interface PoolState {
 
 const WC_KEY = ["worldcup", "markets"]
 
-export function useWorldCupMarketsQuery() {
+export function useWorldCupMarketsQuery(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: WC_KEY,
     queryFn: () => apiRequest<WorldCupMarket[]>("/solana/markets"),
+    enabled: options.enabled ?? true,
   })
 }
 
@@ -52,25 +54,34 @@ export function usePoolStateQuery(marketId: string | null) {
 
 export function useStakeWorldCupMutation() {
   const qc = useQueryClient()
+  const previewMode = usePreviewMode()
   return useMutation({
-    mutationFn: (input: { marketId: string; outcome: number; amountUsdc: number }) =>
-      apiRequest<{ txSig: string }>("/solana/stake", {
+    mutationFn: (input: {
+      marketId: string
+      outcome: number
+      amountUsdc: number
+    }) => {
+      if (previewMode) throw new Error("Sample preview is read-only.")
+      return apiRequest<{ txSig: string }>("/solana/stake", {
         method: "POST",
         body: JSON.stringify(input),
-      }),
+      })
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: WC_KEY }),
   })
 }
 
 export function useClaimWorldCupMutation() {
   const qc = useQueryClient()
+  const previewMode = usePreviewMode()
   return useMutation({
-    mutationFn: (input: { marketId: string }) =>
-      apiRequest<{ txSig: string }>("/solana/claim", {
+    mutationFn: (input: { marketId: string }) => {
+      if (previewMode) throw new Error("Sample preview is read-only.")
+      return apiRequest<{ txSig: string }>("/solana/claim", {
         method: "POST",
         body: JSON.stringify(input),
-      }),
+      })
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: WC_KEY }),
   })
 }
-

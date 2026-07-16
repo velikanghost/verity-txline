@@ -10,6 +10,7 @@ import {
   Trophy,
   Zap,
 } from "lucide-react";
+import { DuelNavIcon } from "@/components/icons/ArcadeNavIcons";
 
 const GAME_STEPS = [
   { label: "Build your lineup", detail: "Lock in your match reads", icon: Flag },
@@ -22,9 +23,11 @@ const GAME_STEPS = [
   { label: "Proof lands", detail: "Victory and reward verified", icon: Trophy },
 ];
 
-export function WorldCupHero() {
+export function WorldCupHero({ compact = false }: { compact?: boolean }) {
   return (
-    <section className="home-hero game-hero relative isolate overflow-hidden rounded-[30px] border border-white/10 px-5 py-6 text-white sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+    <section
+      className={`home-hero game-hero relative isolate overflow-hidden rounded-[30px] border border-white/10 text-white ${compact ? "home-hero-compact px-5 py-5 sm:px-7 sm:py-6 lg:px-8 lg:py-7" : "px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"}`}
+    >
       <div
         className="game-grid game-grid-fade absolute inset-0 -z-20 opacity-35"
         aria-hidden="true"
@@ -42,7 +45,9 @@ export function WorldCupHero() {
         aria-hidden="true"
       />
 
-      <div className="home-hero-status mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
+      <div
+        className={`home-hero-status flex flex-wrap items-center justify-between gap-3 border-b border-white/10 ${compact ? "mb-5 pb-4" : "mb-7 pb-5"}`}
+      >
         <div className="flex items-center gap-2.5">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#35e881] opacity-50" />
@@ -63,7 +68,9 @@ export function WorldCupHero() {
         </div>
       </div>
 
-      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)] lg:gap-12">
+      <div
+        className={`grid items-center gap-8 ${compact ? "lg:grid-cols-[minmax(0,1.18fr)_minmax(260px,0.82fr)] lg:gap-8" : "lg:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)] lg:gap-12"}`}
+      >
         <div>
           <div className="mb-4 inline-flex -rotate-2 items-center gap-2 rounded-xl border border-[#1479ff]/35 bg-[#1479ff]/10 px-3 py-1.5 text-[#7bb5ff] shadow-[0_0_22px_rgba(20,121,255,.12)]">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
@@ -72,7 +79,9 @@ export function WorldCupHero() {
             </span>
           </div>
 
-          <h1 className="home-poster-title max-w-2xl text-[2.85rem] leading-[0.93] sm:text-6xl lg:text-[4.45rem]">
+          <h1
+            className={`home-poster-title max-w-2xl leading-[0.93] ${compact ? "text-[2.65rem] sm:text-5xl lg:text-[3.65rem]" : "text-[2.85rem] sm:text-6xl lg:text-[4.45rem]"}`}
+          >
             Read the field.
             <span className="game-text-gradient block pb-1">
               Beat the player.
@@ -80,9 +89,9 @@ export function WorldCupHero() {
           </h1>
 
           <p className="home-hero-copy mt-5 max-w-xl text-sm font-medium leading-6 text-[#aeb4d0] sm:text-base sm:leading-7">
-            Build a World Cup lineup, meet another fan head-to-head, and prove
-            who reads the match better. Every duel result is settled with a
-            real TxLINE proof on Solana.
+            {compact
+              ? "Build your World Cup lineup, meet a rival, and settle the result with a real TxLINE proof."
+              : "Build a World Cup lineup, meet another fan head-to-head, and prove who reads the match better. Every duel result is settled with a real TxLINE proof on Solana."}
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -90,7 +99,7 @@ export function WorldCupHero() {
               href="/pvp"
               className="game-button-primary clickable inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-6 font-game text-base font-black text-white"
             >
-              Enter Duel Station
+              {compact ? "Enter the arena" : "Enter Duel Station"}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
@@ -102,7 +111,9 @@ export function WorldCupHero() {
             </Link>
           </div>
 
-          <div className="home-feature-list mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-white/45">
+          <div
+            className={`home-feature-list flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-white/45 ${compact ? "mt-5" : "mt-6"}`}
+          >
             {["Head-to-head", "Proof-verified", "USDC rewards"].map(
               (item) => (
                 <span key={item} className="flex items-center gap-1.5">
@@ -117,7 +128,18 @@ export function WorldCupHero() {
           </div>
         </div>
 
-        <div className="home-roadmap game-panel relative overflow-hidden rounded-[24px] border border-white/10 p-4 sm:p-5">
+        {compact ? (
+          <div className="home-compact-duel-card" aria-hidden="true">
+            <span className="home-compact-duel-label">Duel station</span>
+            <DuelNavIcon active className="home-compact-duel-icon" />
+            <div className="home-compact-versus">
+              <span>You</span>
+              <strong>VS</strong>
+              <span>Rival</span>
+            </div>
+          </div>
+        ) : (
+          <div className="home-roadmap game-panel relative overflow-hidden rounded-[24px] border border-white/10 p-4 sm:p-5">
           <div
             className="absolute right-5 top-5 h-16 w-16 rounded-full border border-[#1479ff]/20"
             aria-hidden="true"
@@ -173,7 +195,8 @@ export function WorldCupHero() {
               </li>
             ))}
           </ol>
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

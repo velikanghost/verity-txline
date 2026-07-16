@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, User, Swords, Search, Gamepad2 } from "lucide-react";
+import { Bell, User, Swords, Search } from "lucide-react";
 import SidebarProfile from "@/components/layout/SidebarProfile";
 import { useWalletProfile } from "@/hooks/useWalletProfile";
 import { useNotificationsQuery } from "@/store/verity/verityQueries";
 import { useAuth } from "@/components/providers/AuthModals";
+import { PixelTrophyIcon } from "@/components/icons/PixelTrophyIcon";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 const NAV_ITEMS = [
   { icon: Swords, label: "Duels", href: "/pvp" },
@@ -26,25 +28,28 @@ export default function Sidebar() {
   ).length;
 
   return (
-    <div className="tournament-sidebar game-panel flex h-full flex-col rounded-[26px] border border-white/[0.08] p-3 text-white shadow-[0_22px_70px_rgba(9,12,30,.18)] xl:p-4">
+    <div className="tournament-sidebar game-panel flex h-full flex-col rounded-[26px] border border-white/[0.08] p-2 text-white shadow-[0_22px_70px_rgba(9,12,30,.18)] xl:p-4">
       {/* Logo */}
-      <div className="mb-3 flex items-center justify-between">
+      <div className="sidebar-brand-row mb-3 flex flex-col items-center gap-3 xl:flex-row xl:justify-between xl:gap-2">
         <Link
           href="/"
-          className="group flex w-fit items-center gap-3 rounded-2xl py-4 xl:px-3"
+          className="group flex min-w-0 items-center gap-2.5 rounded-2xl py-2 xl:py-3"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1479ff] to-[#0862d3] text-white shadow-[0_8px_26px_rgba(20,121,255,.3)] transition-transform group-hover:-translate-y-0.5">
-            <Gamepad2 className="h-6 w-6" aria-hidden="true" />
-          </div>
-          <div className="hidden xl:block">
-            <span className="font-game block text-[23px] font-black leading-none text-white">
+          <span className="sidebar-brand-emblem arcade-brand-emblem flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] transition-transform group-hover:-translate-y-0.5">
+            <PixelTrophyIcon className="h-8 w-8" />
+          </span>
+          <span className="hidden min-w-0 xl:block">
+            <span className="arcade-brand-wordmark block truncate leading-none">
               Verity
             </span>
-            <span className="mt-1 block font-mono text-[7px] font-black uppercase tracking-[0.2em] text-[#777f9e]">
-              World Cup mode
+            <span className="sidebar-brand-subtitle mt-1 block font-mono text-[7px] font-black uppercase tracking-[0.2em] text-[#777f9e]">
+              World Cup duels
             </span>
-          </div>
+          </span>
         </Link>
+        <div className="sidebar-theme-toggle shrink-0">
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Nav Links */}

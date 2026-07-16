@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiRequest } from "../apiClient"
+import { usePreviewMode } from "@/hooks/usePreviewMode"
 import type {
   FeedPost,
   MarketComment,
@@ -633,17 +634,23 @@ export function useUnfollowUserMutation() {
   })
 }
 
-export function useActivePvpEventsQuery() {
+interface QueryEnabledOptions {
+  enabled?: boolean
+}
+
+export function useActivePvpEventsQuery(options: QueryEnabledOptions = {}) {
   return useQuery({
     queryKey: ["pvp-active-events"] as const,
     queryFn: () => apiRequest<any[]>("/pvp/active-events"),
+    enabled: options.enabled ?? true,
   })
 }
 
-export function useMyActivePvpTicketsQuery() {
+export function useMyActivePvpTicketsQuery(options: QueryEnabledOptions = {}) {
   return useQuery({
     queryKey: ["pvp-my-active-tickets"] as const,
     queryFn: () => apiRequest<any[]>("/pvp/my-active-tickets"),
+    enabled: options.enabled ?? true,
   })
 }
 
@@ -662,15 +669,20 @@ export function usePvpStatusQuery(parentMarketId?: string | null) {
 
 export function useSubmitPvpTicketMutation() {
   const qc = useQueryClient()
+  const previewMode = usePreviewMode()
   return useMutation({
     mutationFn: (body: {
       parentMarketId: string
       picks: { marketId: string; selection: string; amountUsdc: number }[]
-    }) =>
-      apiRequest<any>("/pvp/ticket", {
+    }) => {
+      if (previewMode) {
+        throw new Error("Sample preview is read-only.")
+      }
+      return apiRequest<any>("/pvp/ticket", {
         method: "POST",
         body: JSON.stringify(body),
-      }),
+      })
+    },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["pvp-status"] })
       void qc.invalidateQueries({ queryKey: ["pvp-my-active-tickets"] })
@@ -681,7 +693,10 @@ export function useSubmitPvpTicketMutation() {
   })
 }
 
-export function usePvpLeaderboardQuery(userId?: string) {
+export function usePvpLeaderboardQuery(
+  userId?: string,
+  options: QueryEnabledOptions = {},
+) {
   return useQuery({
     queryKey: ["pvp-leaderboards", userId] as const,
     queryFn: () =>
@@ -695,10 +710,11 @@ export function usePvpLeaderboardQuery(userId?: string) {
       }>(
         `/pvp/leaderboards${userId ? `?userId=${encodeURIComponent(userId)}` : ""}`,
       ),
+    enabled: options.enabled ?? true,
   })
 }
 
-export function useReferralsQuery() {
+export function useReferralsQuery(options: QueryEnabledOptions = {}) {
   return useQuery({
     queryKey: ["pvp-referrals"] as const,
     queryFn: () =>
@@ -720,17 +736,19 @@ export function useReferralsQuery() {
         }
         referees: any[]
       }>("/pvp/referrals"),
+    enabled: options.enabled ?? true,
   })
 }
 
-export function usePvpMatchHistoryQuery() {
+export function usePvpMatchHistoryQuery(options: QueryEnabledOptions = {}) {
   return useQuery({
     queryKey: ["pvp-history"] as const,
     queryFn: () => apiRequest<any[]>("/pvp/history"),
+    enabled: options.enabled ?? true,
   })
 }
 
-export function useClaimableWinningsQuery() {
+export function useClaimableWinningsQuery(options: QueryEnabledOptions = {}) {
   return useQuery({
     queryKey: ["pvp-claimable-winnings"] as const,
     queryFn: () =>
@@ -746,6 +764,7 @@ export function useClaimableWinningsQuery() {
           shares: number
         }>
       }>("/pvp/claimable-winnings"),
+    enabled: options.enabled ?? true,
     staleTime: 30000, // Cache for 30s to avoid excessive on-chain reads
   })
 }

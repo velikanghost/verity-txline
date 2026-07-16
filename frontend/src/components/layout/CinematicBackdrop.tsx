@@ -2,7 +2,6 @@
 
 import type { CSSProperties } from "react";
 import { usePathname } from "next/navigation";
-import { ProofBallIcon } from "@/components/icons/ProofBallIcon";
 
 const PARTICLES = [
   { left: "8%", top: "14%", size: 3, delay: "-2s", duration: "13s" },
@@ -41,11 +40,6 @@ export default function CinematicBackdrop() {
     >
       <div className="cinematic-vignette absolute inset-0" />
       <div className="cinematic-light-sweep absolute -inset-y-1/4 -left-1/3 w-1/3" />
-
-      <div className="proof-ball-scene absolute">
-        <div className="proof-ball-halo absolute inset-[16%] rounded-full" />
-        <ProofBallIcon className="h-full w-full text-[var(--scene-accent)]" />
-      </div>
 
       <div className="cinematic-particles absolute inset-0">
         {PARTICLES.map((particle, index) => (

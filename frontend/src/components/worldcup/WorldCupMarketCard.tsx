@@ -13,6 +13,7 @@ import {
 } from "@/store/verity/worldcupQueries";
 import { explorerTx } from "@/lib/solana";
 import { VerifiableResolutionReceipt } from "./VerifiableResolutionReceipt";
+import { PREVIEW_POOL_BY_MARKET } from "@/lib/previewData";
 
 const OUTCOME_STYLES = [
   {
@@ -55,9 +56,22 @@ const formatDeadline = (deadline: string) => {
   }).format(date);
 };
 
-export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
+export function WorldCupMarketCard({
+  market,
+  preview = false,
+}: {
+  market: WorldCupMarket;
+  preview?: boolean;
+}) {
   const { authenticated } = useAuth();
-  const { data: pool } = usePoolStateQuery(market.id);
+  const { data: livePool } = usePoolStateQuery(preview ? null : market.id);
+  const pool = preview
+    ? {
+        pools: PREVIEW_POOL_BY_MARKET[market.id] ?? [],
+        resolved: false,
+        voided: false,
+      }
+    : livePool;
   const stake = useStakeWorldCupMutation();
   const claim = useClaimWorldCupMutation();
   const [amount, setAmount] = useState("1");
@@ -111,34 +125,34 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
   };
 
   return (
-    <article className="game-market-card group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-white/[0.08] bg-[#0d1121] p-5 text-white shadow-[0_18px_60px_rgba(10,13,29,.16)]">
+    <article className="game-market-card group relative flex h-full flex-col overflow-hidden rounded-[24px] border-[3px] border-[#241b4a] bg-white p-5 text-[#241b4a] shadow-[6px_7px_0_rgba(36,27,74,.92)]">
       <div
-        className="absolute right-0 top-0 h-28 w-28 rounded-full bg-[#7359ff]/10 blur-3xl transition-opacity group-hover:opacity-100"
+        className="worldcup-market-glow absolute right-0 top-0 h-28 w-28 rounded-full bg-[#afe9d9]/75 blur-3xl transition-opacity group-hover:opacity-100"
         aria-hidden="true"
       />
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#ffc844]/10 text-[#ffc844]">
+            <span className="worldcup-market-trophy flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#241b4a] bg-[#f2d66a] text-[#241b4a] shadow-[2px_2px_0_#241b4a]">
               <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
-            <p className="truncate font-mono text-[9px] font-black uppercase tracking-[0.17em] text-[#77809f]">
+            <p className="worldcup-market-muted truncate font-mono text-[9px] font-black uppercase tracking-[0.17em] text-[#756e89]">
               World Cup · {market.matchup ?? `Fixture ${market.fixtureId}`}
             </p>
           </div>
-          <h3 className="font-game mt-3 text-xl font-black leading-[1.08] text-white">
+          <h3 className="worldcup-market-title font-game mt-3 text-xl font-black leading-[1.08] text-[#241b4a]">
             {market.question}
           </h3>
         </div>
         <span
-          className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 font-mono text-[8px] font-black uppercase tracking-wider ${resolved ? "bg-[#35e881]/10 text-[#58f09a]" : "bg-[#ff6b4a]/10 text-[#ff927b]"}`}
+          className={`worldcup-market-status mt-0.5 shrink-0 rounded-full border-2 border-[#241b4a] px-2.5 py-1 font-mono text-[8px] font-black uppercase tracking-wider ${resolved ? "bg-[#afe9d9] text-[#176a58]" : "bg-[#eca8cb] text-[#241b4a]"}`}
         >
           {resolved ? "Final" : "Open"}
         </span>
       </div>
 
-      <div className="mt-3 flex items-center gap-1.5 border-b border-white/[0.07] pb-4 font-mono text-[9px] font-bold uppercase tracking-wider text-[#68718f]">
+      <div className="worldcup-market-muted mt-3 flex items-center gap-1.5 border-b-2 border-[#241b4a]/15 pb-4 font-mono text-[9px] font-bold uppercase tracking-wider text-[#756e89]">
         <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
         Locks {formatDeadline(market.deadline)}
       </div>
@@ -150,24 +164,24 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
           return (
             <div
               key={`${market.id}-${label}`}
-              className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3"
+              className="worldcup-market-outcome rounded-2xl border-2 border-[#241b4a]/20 bg-[#fff9ec] p-3"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 truncate font-game text-[15px] font-black text-white">
+                <span className="worldcup-market-outcome-label min-w-0 truncate font-game text-[15px] font-black text-[#241b4a]">
                   {label}
                 </span>
-                <span className="font-mono text-[10px] font-black text-white/70">
+                <span className="worldcup-market-percent font-mono text-[10px] font-black text-[#241b4a]/75">
                   {percent}%
                 </span>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+              <div className="worldcup-market-track mt-2 h-1.5 overflow-hidden rounded-full bg-[#241b4a]/10">
                 <div
                   className={`h-full rounded-full ${style.bar}`}
                   style={{ width: `${percent}%` }}
                 />
               </div>
               <div className="mt-2 flex items-center justify-between gap-3">
-                <span className="font-mono text-[9px] font-semibold text-[#697290]">
+                <span className="worldcup-market-muted font-mono text-[9px] font-semibold text-[#756e89]">
                   {fmtUsdc(pools[index])} USDC backed
                 </span>
                 {!resolved && !voided && !market.parentMarketId && (
@@ -202,7 +216,7 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
             </button>
           </div>
         ) : voided ? (
-          <p className="rounded-xl border border-[#ffc844]/15 bg-[#ffc844]/10 p-3 text-xs font-bold text-[#ffc844]">
+          <p className="worldcup-market-void rounded-xl border-2 border-[#241b4a] bg-[#fff0b8] p-3 text-xs font-bold text-[#7f5600]">
             Match voided — your entry can be reclaimed.
           </p>
         ) : market.parentMarketId ? (
@@ -214,7 +228,7 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
             Enter in PvP
           </Link>
         ) : (
-          <div className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-[#070a15]/60 p-2">
+          <div className="worldcup-market-amount flex items-center gap-2 rounded-2xl border-2 border-[#241b4a] bg-[#d7f3ea] p-2">
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
               <Coins
                 className="h-4 w-4 shrink-0 text-[#ffc844]"
@@ -230,11 +244,11 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
                 step="0.5"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
-                className="min-w-0 flex-1 bg-transparent font-mono text-xs font-black text-white outline-none placeholder:text-white/25"
+                className="worldcup-market-input min-w-0 flex-1 bg-transparent font-mono text-xs font-black text-[#241b4a] outline-none placeholder:text-[#756e89]"
                 placeholder="Entry amount"
               />
             </div>
-            <span className="rounded-xl bg-white/[0.06] px-3 py-2 font-mono text-[9px] font-black text-white/50">
+            <span className="worldcup-market-currency rounded-xl border border-[#241b4a]/15 bg-white px-3 py-2 font-mono text-[9px] font-black text-[#756e89]">
               USDC
             </span>
           </div>
@@ -242,7 +256,7 @@ export function WorldCupMarketCard({ market }: { market: WorldCupMarket }) {
       </div>
 
       {!resolved && !voided && (
-        <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[9px] font-semibold text-[#5f6886]">
+        <p className="worldcup-market-muted mt-3 flex items-center justify-center gap-1.5 text-center text-[9px] font-semibold text-[#756e89]">
           <CheckCircle2 className="h-3 w-3 text-[#35e881]" aria-hidden="true" />
           Your pick settles against a signed TxLINE proof
         </p>

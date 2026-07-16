@@ -61,12 +61,16 @@ const displayOrder = (labels: string[]): number[] =>
 export default function LineupBuilder({
   slate,
   onSubmitted,
+  readOnly = false,
 }: {
   slate: Slate;
   onSubmitted: () => void;
+  readOnly?: boolean;
 }) {
   const { authenticated, login } = useAuth();
-  const { rawBalance, formattedBalance } = useUsdcBalance();
+  const { rawBalance, formattedBalance } = useUsdcBalance({
+    enabled: !readOnly,
+  });
   const submit = useSubmitPvpTicketMutation();
 
   const [picks, setPicks] = useState<Record<string, string>>({});
@@ -127,6 +131,7 @@ export default function LineupBuilder({
   }, [slate]);
 
   const handleSubmit = async () => {
+    if (readOnly) return toast.error("Sample preview is read-only.");
     if (!authenticated) return login();
     if (pickCount < 3) return toast.error("Pick at least 3 props.");
     if (!allAmountsValid) return toast.error("Set an amount on every pick.");
@@ -156,7 +161,7 @@ export default function LineupBuilder({
   };
 
   return (
-    <div className="pvp-lineup-builder flex flex-col gap-5 pb-56 lg:pb-6">
+    <div className="pvp-lineup-builder flex flex-col gap-5 pb-0 sm:pb-6">
       {/* Slate header */}
       <div className="flex flex-col gap-1 pb-1">
         <h1 className="text-2xl font-black leading-tight text-charcoal-primary ">
@@ -270,8 +275,8 @@ export default function LineupBuilder({
         })}
       </div>
 
-      {/* Sticky summary / submit */}
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+108px)] z-40 px-4 lg:sticky lg:bottom-4 lg:px-0">
+      {/* Ticket summary / submit */}
+      <div className="mt-1">
         <div className="pvp-lineup-summary verity-card mx-auto flex max-w-[820px] flex-col gap-2.5 border border-stone-200/70 bg-warm-canvas p-4 ">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -308,19 +313,21 @@ export default function LineupBuilder({
           </div>
           <button
             onClick={handleSubmit}
-            disabled={authenticated && !canSubmit}
+            disabled={readOnly || (authenticated && !canSubmit)}
             className="game-button-primary flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-black uppercase tracking-wider text-white transition-all hover:opacity-90 disabled:opacity-40 clickable"
           >
             <Swords className="h-4 w-4" />
-            {!authenticated
-              ? "Sign in to enter"
-              : submit.isPending
-                ? "Backing lineup…"
-                : pickCount < 3
-                  ? `Pick ${3 - pickCount} more`
-                  : !enoughBalance
-                    ? "Not enough USDC"
-                    : "Enter the duel"}
+            {readOnly
+              ? "Preview only · entry disabled"
+              : !authenticated
+                ? "Sign in to enter"
+                : submit.isPending
+                  ? "Backing lineup…"
+                  : pickCount < 3
+                    ? `Pick ${3 - pickCount} more`
+                    : !enoughBalance
+                      ? "Not enough USDC"
+                      : "Enter the duel"}
           </button>
         </div>
       </div>

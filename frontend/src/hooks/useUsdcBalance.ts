@@ -9,13 +9,13 @@ import { apiRequest } from "@/store/apiClient"
  * (`GET /solana/balance`). Keeps the same interface the UI already expects:
  * `rawBalance` (base units, 6 decimals), `formattedBalance`, `isLoading`.
  */
-export function useUsdcBalance() {
+export function useUsdcBalance(options: { enabled?: boolean } = {}) {
   const { authenticated } = useAuth()
 
   const query = useQuery({
     queryKey: ["usdcBalance"],
     queryFn: () => apiRequest<{ usdc: number; sol: number }>("/solana/balance"),
-    enabled: authenticated,
+    enabled: authenticated && (options.enabled ?? true),
     refetchInterval: 5000,
   })
 

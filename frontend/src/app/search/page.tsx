@@ -5,10 +5,19 @@ import Link from "next/link";
 import { ArrowUpRight, Search, Swords, X } from "lucide-react";
 import { SearchNavIcon } from "@/components/icons/ArcadeNavIcons";
 import { useActivePvpEventsQuery } from "@/store/verity/verityQueries";
+import { usePreviewMode } from "@/hooks/usePreviewMode";
+import { getPreviewPvpSlates } from "@/lib/previewData";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
-  const { data: slates = [], isLoading } = useActivePvpEventsQuery();
+  const previewMode = usePreviewMode();
+  const { data: liveSlates = [], isLoading } = useActivePvpEventsQuery({
+    enabled: !previewMode,
+  });
+  const slates = useMemo(
+    () => (previewMode ? getPreviewPvpSlates() : liveSlates),
+    [previewMode, liveSlates],
+  );
   const normalizedQuery = query.trim().toLowerCase();
   const results = useMemo(
     () =>
@@ -73,10 +82,10 @@ export default function SearchPage() {
       </div>
 
       <div className="mt-3 grid gap-3">
-        {isLoading ? (
+        {!previewMode && isLoading ? (
           [0, 1, 2].map((item) => (
-              <div
-                className="duel-search-skeleton h-28 animate-pulse rounded-[20px] border border-white/[0.07] bg-white/[0.035]"
+            <div
+              className="duel-search-skeleton h-28 animate-pulse rounded-[20px] border border-white/[0.07] bg-white/[0.035]"
               key={item}
             />
           ))
@@ -84,7 +93,7 @@ export default function SearchPage() {
           results.map((slate) => (
             <Link
               className="duel-search-result group flex items-center gap-4 rounded-[20px] border border-white/[0.09] bg-[#0a101c]/88 p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1479ff]/40 hover:bg-[#0d1728]"
-              href="/pvp"
+              href={`/pvp${previewMode ? `?preview=1&slate=${slate.id}` : `?slate=${slate.id}`}`}
               key={slate.id}
             >
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px] border border-[#ff6b4a]/25 bg-[#ff6b4a]/10 text-[#ff8d75]">
