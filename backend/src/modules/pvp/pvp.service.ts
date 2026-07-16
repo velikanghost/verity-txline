@@ -2440,34 +2440,48 @@ export class PvpService {
       parentMap.set(parent._id.toString(), parent)
     }
 
-    // Verify on-chain balances to find truly claimable picks
-    if (!user.walletAddress) {
+    // Winnings live on-chain: a pick is only "claimable" if the user still has
+    // an unclaimed, paying `Position` for that market. Read each winning market's
+    // position once and keep those with a positive, unclaimed payout.
+    if (!user.solanaWalletAddress) {
       return {
         claimableMarketIds: [],
         totalWinningsUsdc: 0,
         claimablePicks: [],
       }
     }
+    const owner = new PublicKey(user.solanaWalletAddress)
 
-    // Build batch queries for on-chain balance check
-    // We only need the winning outcome's balance for each market
-    const batchQueries: { marketId: string; outcomes: string[] }[] = []
-    for (const marketIdStr of uniqueMarketIds) {
-      const child = childMap.get(marketIdStr)
-      if (!child) continue
+    // One on-chain read per unique market (in parallel), keyed by market id.
+    const positionByMarket = new Map<
+      string,
+      Awaited<ReturnType<SolanaService["readUserPosition"]>>
+    >()
+    await Promise.all(
+      uniqueMarketIds.map(async (marketIdStr) => {
+        const child = childMap.get(marketIdStr)
+        if (
+          !child ||
+          child.txlineFixtureId == null ||
+          child.solanaMarketNonce == null
+        ) {
+          return
+        }
+        try {
+          const pos = await this.solanaService.readUserPosition(
+            child.txlineFixtureId,
+            child.solanaMarketNonce,
+            owner,
+          )
+          positionByMarket.set(marketIdStr, pos)
+        } catch (error: any) {
+          this.logger.warn(
+            `Claimable read failed for market ${marketIdStr}: ${error.message}`,
+          )
+        }
+      }),
+    )
 
-      const outcomes =
-        child.outcomes && child.outcomes.length > 0
-          ? child.outcomes
-          : ["YES", "NO"]
-      batchQueries.push({ marketId: marketIdStr, outcomes })
-    }
-
-    // Winnings are claimed directly against the Solana program (claim ix); this
-    // informational endpoint no longer reads Arc token balances.
-    const balancesMap: Record<string, Record<string, number>> = {}
-
-    // Filter to only picks where the user still holds tokens on-chain
     const claimablePicks: any[] = []
     const claimableMarketIds: string[] = []
     let totalWinningsUsdc = 0
@@ -2477,35 +2491,12 @@ export class PvpService {
       const child = childMap.get(marketIdStr)
       if (!child) continue
 
-      const onChain = balancesMap[marketIdStr]
-      if (!onChain) continue
+      const pos = positionByMarket.get(marketIdStr)
+      // Only surface markets that are resolved, unclaimed, and still owe a payout.
+      if (!pos || pos.claimed || pos.claimableUsdc <= 0) continue
 
-      // Determine the normalized side for balance lookup
-      const isMulti = child.outcomeCount && child.outcomeCount > 2
-      let balance = 0
-
-      if (isMulti) {
-        balance = onChain[pick.selection] ?? 0
-      } else {
-        // For binary markets, map selection to outcome name for balance lookup
-        const outcomes =
-          child.outcomes && child.outcomes.length > 0
-            ? child.outcomes
-            : ["YES", "NO"]
-        if (pick.selection === "YES") {
-          balance = onChain[outcomes[0]] ?? 0
-        } else if (pick.selection === "NO") {
-          balance = onChain[outcomes[1]] ?? 0
-        } else {
-          balance = onChain[pick.selection] ?? 0
-        }
-      }
-
-      if (balance > 0) {
-        // Avoid duplicate market IDs in the final list
-        if (!claimableMarketIds.includes(marketIdStr)) {
-          claimableMarketIds.push(marketIdStr)
-        }
+      if (!claimableMarketIds.includes(marketIdStr)) {
+        claimableMarketIds.push(marketIdStr)
 
         const parent = parentMap.get(pick.parentMarketId.toString())
         claimablePicks.push({
@@ -2514,9 +2505,9 @@ export class PvpService {
           eventQuestion: parent?.question || "PvP Event",
           optionName: child.optionName || child.question || "Unknown",
           selection: pick.selection,
-          shares: balance,
+          shares: pos.claimableUsdc,
         })
-        totalWinningsUsdc += balance
+        totalWinningsUsdc += pos.claimableUsdc
       }
     }
 

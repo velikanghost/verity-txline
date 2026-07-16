@@ -264,4 +264,38 @@ export class SolanaController {
       winningOutcome: state.winningOutcome,
     }
   }
+
+  @Get("market/:marketId/position")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Read the caller's on-chain claim state for a market",
+  })
+  async marketPosition(@Request() req: any, @Param("marketId") marketId: string) {
+    const market = await this.marketModel.findById(marketId)
+    if (
+      !market ||
+      market.txlineFixtureId == null ||
+      market.solanaMarketNonce == null
+    ) {
+      throw new NotFoundException("Solana market not found.")
+    }
+    const user = await this.userModel.findById(req.user.id)
+    if (!user?.solanaWalletAddress) {
+      return {
+        hasPosition: false,
+        claimed: false,
+        resolved: false,
+        voided: false,
+        winningOutcome: null,
+        claimableUsdc: 0,
+        stakedUsdc: 0,
+      }
+    }
+    return this.solanaService.readUserPosition(
+      market.txlineFixtureId,
+      market.solanaMarketNonce,
+      new PublicKey(user.solanaWalletAddress),
+    )
+  }
 }

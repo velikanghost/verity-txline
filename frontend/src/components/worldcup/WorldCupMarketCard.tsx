@@ -2,12 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarClock, CheckCircle2, Coins, Swords, Trophy } from "lucide-react";
+import {
+  CalendarClock,
+  CheckCircle2,
+  Coins,
+  ReceiptText,
+  Swords,
+  Trophy,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/providers/AuthModals";
 import {
   WorldCupMarket,
   usePoolStateQuery,
+  useMarketPositionQuery,
   useStakeWorldCupMutation,
   useClaimWorldCupMutation,
 } from "@/store/verity/worldcupQueries";
@@ -75,9 +83,18 @@ export function WorldCupMarketCard({
   const stake = useStakeWorldCupMutation();
   const claim = useClaimWorldCupMutation();
   const [amount, setAmount] = useState("1");
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const resolved = market.status === "resolved" || pool?.resolved;
   const voided = market.status === "voided" || pool?.voided;
+
+  // The caller's on-chain claim state — only read for resolved, signed-in,
+  // non-preview cards. Drives whether the claim button shows and its label.
+  const { data: position } = useMarketPositionQuery(preview ? null : market.id, {
+    enabled: !preview && authenticated && Boolean(resolved),
+  });
+  const hasClaimable = (position?.claimableUsdc ?? 0) > 0 && !position?.claimed;
+  const alreadyClaimed = position?.claimed === true;
   const outcomes =
     market.outcomes?.length > 0
       ? market.outcomes
@@ -203,17 +220,42 @@ export function WorldCupMarketCard({
       <div className="mt-auto pt-4">
         {resolved && market.solanaResolveTxSig ? (
           <div className="space-y-2.5">
-            <VerifiableResolutionReceipt
-              resolveTxSig={market.solanaResolveTxSig}
-              outcome={market.resolvedOutcome}
-            />
+            {hasClaimable ? (
+              <button
+                onClick={submitClaim}
+                disabled={claim.isPending}
+                className="game-button-success clickable w-full rounded-2xl py-2.5 font-game text-sm font-black text-[#07170d] disabled:opacity-50"
+              >
+                {claim.isPending
+                  ? "Unlocking…"
+                  : `Claim ${position!.claimableUsdc.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })} USDC`}
+              </button>
+            ) : alreadyClaimed ? (
+              <div className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-[#35e881]/40 bg-[#d7f3ea] py-2.5 font-game text-sm font-black text-[#176a58]">
+                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                Reward claimed
+              </div>
+            ) : null}
+
+            {/* Receipt is hidden by default — revealed on demand via this CTA. */}
             <button
-              onClick={submitClaim}
-              disabled={claim.isPending}
-              className="game-button-success clickable w-full rounded-2xl py-2.5 font-game text-sm font-black text-[#07170d] disabled:opacity-50"
+              type="button"
+              onClick={() => setShowReceipt((prev) => !prev)}
+              aria-expanded={showReceipt}
+              className="clickable flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-[#241b4a]/20 bg-[#fff9ec] py-2 font-mono text-[10px] font-black uppercase tracking-wider text-[#756e89] hover:bg-[#f4fbf7] hover:text-[#176a58]"
             >
-              {claim.isPending ? "Unlocking…" : "Claim reward"}
+              <ReceiptText className="h-3.5 w-3.5" aria-hidden="true" />
+              {showReceipt ? "Hide receipt" : "View settlement receipt"}
             </button>
+            {showReceipt && (
+              <VerifiableResolutionReceipt
+                market={market}
+                resolveTxSig={market.solanaResolveTxSig}
+                outcome={market.resolvedOutcome}
+              />
+            )}
           </div>
         ) : voided ? (
           <p className="worldcup-market-void rounded-xl border-2 border-[#241b4a] bg-[#fff0b8] p-3 text-xs font-bold text-[#7f5600]">

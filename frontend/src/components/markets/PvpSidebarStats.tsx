@@ -1,11 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "@/lib/toast";
-import { useClaimableWinningsQuery } from "@/store/verity/verityQueries";
-import { useClaimWinnings } from "@/hooks/useClaimWinnings";
-import { Loader2 } from "lucide-react";
 
 interface PvpSidebarStatsProps {
   profile?: {
@@ -21,79 +17,13 @@ interface PvpSidebarStatsProps {
     welcomeBoosts?: unknown;
     referees?: unknown[];
   } | null;
-  claimedMarketIds: Set<string>;
-  onClaimSuccess: (marketIds: string[]) => void;
-  readOnly?: boolean;
 }
 
 export default function PvpSidebarStats({
   profile,
   referralsData,
-  claimedMarketIds,
-  onClaimSuccess,
-  readOnly = false,
 }: PvpSidebarStatsProps) {
   const [copiedCode, setCopiedCode] = useState(false);
-  const queryClient = useQueryClient();
-  const { redeemMultipleWinnings } = useClaimWinnings();
-  const { data: claimableData } = useClaimableWinningsQuery({
-    enabled: !readOnly,
-  });
-  const [isClaiming, setIsClaiming] = useState(false);
-
-  const claimablePicksFiltered = useMemo(() => {
-    return (
-      claimableData?.claimablePicks?.filter(
-        (pick) => !claimedMarketIds.has(pick.marketId),
-      ) || []
-    );
-  }, [claimableData, claimedMarketIds]);
-
-  const totalWinningsUsdcFiltered = useMemo(() => {
-    return claimablePicksFiltered.reduce(
-      (sum, pick) => sum + (pick.shares ?? 0),
-      0,
-    );
-  }, [claimablePicksFiltered]);
-
-  const claimableMarketIdsFiltered = useMemo(() => {
-    return claimablePicksFiltered.map((pick) => pick.marketId);
-  }, [claimablePicksFiltered]);
-
-  const handleClaimAll = useCallback(async () => {
-    if (readOnly) return;
-    if (claimableMarketIdsFiltered.length === 0) return;
-
-    setIsClaiming(true);
-    try {
-      await redeemMultipleWinnings(claimableMarketIdsFiltered);
-
-      onClaimSuccess(claimableMarketIdsFiltered);
-
-      // Invalidate relevant queries after successful claim
-      void queryClient.invalidateQueries({
-        queryKey: ["pvp-claimable-winnings"],
-      });
-      void queryClient.invalidateQueries({ queryKey: ["pvp-status"] });
-      void queryClient.invalidateQueries({
-        queryKey: ["pvp-my-active-tickets"],
-      });
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
-      void queryClient.invalidateQueries({ queryKey: ["usdcBalance"] });
-      void queryClient.invalidateQueries({ queryKey: ["wallet-profile"] });
-    } catch (err) {
-      console.error("Failed to claim all winnings:", err);
-      toast.error("Failed to claim winnings.");
-    } finally {
-      setIsClaiming(false);
-    }
-  }, [
-    claimableMarketIdsFiltered,
-    redeemMultipleWinnings,
-    queryClient,
-    onClaimSuccess,
-    readOnly,
-  ]);
 
   function handleCopyReferral() {
     if (!referralsData?.referralLink) return;
@@ -103,18 +33,6 @@ export default function PvpSidebarStats({
     toast.success("Referral link copied!");
     setTimeout(() => setCopiedCode(false), 2000);
   }
-
-  const hasClaimable = useMemo(() => {
-    if (readOnly) return false;
-    if (!claimableData || totalWinningsUsdcFiltered <= 0) return false;
-
-    return claimablePicksFiltered.length > 1;
-  }, [
-    claimablePicksFiltered,
-    totalWinningsUsdcFiltered,
-    claimableData,
-    readOnly,
-  ]);
 
   return (
     <div className="pvp-stats-card verity-card flex flex-col gap-5 bg-white p-5 ">
@@ -134,35 +52,6 @@ export default function PvpSidebarStats({
           {profile?.arenaXp ?? 0}
         </strong>
       </div>
-
-      {/* Unclaimed Winnings Box */}
-      {hasClaimable && (
-        <div className="rounded-2xl bg-[#FAF9F6] p-4 shadow-inner text-center border border-stone-200/20 flex flex-col items-center gap-2">
-          <span className="text-[10px] font-mono text-ash uppercase font-bold tracking-wider block">
-            Unclaimed Winnings
-          </span>
-          <strong className="text-3xl font-bold font-mono text-charcoal-primary block mt-1">
-            {totalWinningsUsdcFiltered.toFixed(2)}
-            <span className="text-sm font-sans text-ash font-medium">
-              {" "}
-              USDC
-            </span>
-          </strong>
-          <button
-            onClick={handleClaimAll}
-            disabled={isClaiming}
-            className="game-button-primary mt-2 flex min-h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-bold text-white transition-all hover:opacity-90 active:opacity-100 disabled:cursor-not-allowed disabled:opacity-60 font-sans"
-          >
-            {isClaiming ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </>
-            ) : (
-              <>Claim All</>
-            )}
-          </button>
-        </div>
-      )}
 
       {/* Record Details Row */}
       <div className="flex items-center justify-between text-xs font-sans border-b border-dashed border-border pb-3 mt-1">

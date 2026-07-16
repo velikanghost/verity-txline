@@ -130,3 +130,37 @@ export function PlayerNavIcon({ active, ...props }: ArcadeIconProps) {
     </svg>
   );
 }
+
+export function AlertNavIcon({ active, ...props }: ArcadeIconProps) {
+  const bell = active ? "#F2D66A" : "#E4E1E7";
+  const metal = active ? "#8F79D8" : "#AAA5B2";
+  const spark = active ? "#DE7186" : MUTED;
+
+  return (
+    <svg viewBox="0 0 76 64" fill="none" {...props}>
+      <g opacity={active ? 1 : 0.22} transform="translate(3 4)">
+        <path d="M38 12c-12 0-16 11-17 22-1 8-5 10-5 12h44c0-2-4-4-5-12-1-11-5-22-17-22Z" fill={INK} />
+        <rect x="14" y="45" width="48" height="6" rx="3" fill={INK} />
+        <circle cx="38" cy="55" r="4.5" fill={INK} />
+      </g>
+      <path
+        d="M38 9c-12 0-16 11-17 22-1 8-5 10-5 12h44c0-2-4-4-5-12-1-11-5-22-17-22Z"
+        fill={bell}
+        stroke={INK}
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      <path d="M30 19c2-3 6-5 9-5" stroke="white" strokeWidth="3" strokeLinecap="round" />
+      <rect x="14" y="42" width="48" height="6" rx="3" fill={metal} stroke={INK} strokeWidth="3" />
+      <circle cx="38" cy="52" r="4.5" fill={metal} stroke={INK} strokeWidth="3" />
+      <circle cx="38" cy="9" r="4" fill={metal} stroke={INK} strokeWidth="2.5" />
+      <path
+        className="arcade-search-star"
+        d="m58 10 2 4 4 2-4 2-2 4-2-4-4-2 4-2Z"
+        fill={spark}
+        stroke={INK}
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}

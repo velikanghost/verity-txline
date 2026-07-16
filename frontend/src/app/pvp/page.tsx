@@ -15,6 +15,7 @@ import DuelStationStage from "@/components/pvp/DuelStationStage";
 import LineupBuilder from "@/components/pvp/LineupBuilder";
 import DuelPanel from "@/components/pvp/DuelPanel";
 import PvpSidebarStats from "@/components/markets/PvpSidebarStats";
+import PvpClaimAllBanner from "@/components/pvp/PvpClaimAllBanner";
 import DuelHistory from "@/components/markets/DuelHistory";
 import { usePreviewMode } from "@/hooks/usePreviewMode";
 import {
@@ -167,6 +168,11 @@ function PvpArenaContent() {
 
       {(authenticated || previewMode) && (
         <section className="zero-duel-arena" id="duel-arena">
+          <PvpClaimAllBanner
+            claimedMarketIds={claimedMarketIds}
+            onClaimSuccess={onClaimSuccess}
+            enabled={authenticated && !previewMode}
+          />
           <div className="zero-duel-tabs mb-6 flex gap-2 rounded-full p-1.5 lg:hidden">
             {(["arena", "history", "stats"] as MobileTab[]).map((t) => (
               <button
@@ -258,9 +264,6 @@ function PvpArenaContent() {
                       ? { referralLink: "PLAY-VERITY", activeBoosts: [] }
                       : referralsData
                   }
-                  claimedMarketIds={claimedMarketIds}
-                  onClaimSuccess={onClaimSuccess}
-                  readOnly={previewMode}
                 />
               </div>
               <div

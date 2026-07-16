@@ -34,6 +34,18 @@ export interface PoolState {
   winningOutcome: number
 }
 
+/** The caller's on-chain claim state for a single market. */
+export interface MarketPosition {
+  hasPosition: boolean
+  claimed: boolean
+  resolved: boolean
+  voided: boolean
+  winningOutcome: number | null
+  /** USDC still owed to the caller (0 once claimed / if they lost). */
+  claimableUsdc: number
+  stakedUsdc: number
+}
+
 const WC_KEY = ["worldcup", "markets"]
 
 export function useWorldCupMarketsQuery(options: { enabled?: boolean } = {}) {
@@ -49,6 +61,23 @@ export function usePoolStateQuery(marketId: string | null) {
     queryKey: ["worldcup", "pool", marketId],
     enabled: !!marketId,
     queryFn: () => apiRequest<PoolState>(`/solana/market/${marketId}/pool`),
+  })
+}
+
+/**
+ * The authenticated caller's claim state for a market. Only enabled once the
+ * market is resolved (there's nothing to claim before that) and the user is
+ * signed in. Drives the claim button / "Claimed" state on resolved cards.
+ */
+export function useMarketPositionQuery(
+  marketId: string | null,
+  options: { enabled?: boolean } = {},
+) {
+  return useQuery({
+    queryKey: ["worldcup", "position", marketId],
+    enabled: !!marketId && (options.enabled ?? true),
+    queryFn: () =>
+      apiRequest<MarketPosition>(`/solana/market/${marketId}/position`),
   })
 }
 
@@ -82,6 +111,8 @@ export function useClaimWorldCupMutation() {
         body: JSON.stringify(input),
       })
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: WC_KEY }),
+    // Broad ["worldcup"] invalidation refreshes the market list, pool, and the
+    // per-market position so the claim button flips to its "Claimed" state.
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["worldcup"] }),
   })
 }

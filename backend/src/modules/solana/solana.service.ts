@@ -330,6 +330,99 @@ export class SolanaService implements OnModuleInit {
     }
   }
 
+  /**
+   * Read a bettor's claim status for a market from on-chain state. Combines the
+   * settled market snapshot (winning outcome + payout pool) with the user's
+   * `Position` account to derive exactly what the `claim` instruction would pay,
+   * and whether they've already claimed. Returns a plain, UI-friendly shape.
+   *
+   * `claimableUsdc` is what remains to be claimed: 0 once `claimed` is true, once
+   * the position lost, or before the market resolves.
+   */
+  async readUserPosition(
+    fixtureId: number,
+    nonce: number,
+    owner: PublicKey,
+  ): Promise<{
+    hasPosition: boolean
+    claimed: boolean
+    resolved: boolean
+    voided: boolean
+    winningOutcome: number | null
+    claimableUsdc: number
+    stakedUsdc: number
+  }> {
+    this.ensureReady()
+    const market = await this.tryReadPoolState(fixtureId, nonce)
+    if (!market) {
+      return {
+        hasPosition: false,
+        claimed: false,
+        resolved: false,
+        voided: false,
+        winningOutcome: null,
+        claimableUsdc: 0,
+        stakedUsdc: 0,
+      }
+    }
+
+    const [marketPda] = deriveMarketPda(fixtureId, nonce)
+    const [positionPda] = derivePositionPda(marketPda, owner)
+    let position: any = null
+    try {
+      position = await (this.program.account as any).position.fetch(positionPda)
+    } catch {
+      position = null
+    }
+
+    const resolved = Boolean(market.resolved)
+    const voided = Boolean(market.voided)
+    const winningOutcome =
+      resolved && !voided ? Number(market.winningOutcome) : null
+
+    if (!position) {
+      return {
+        hasPosition: false,
+        claimed: false,
+        resolved,
+        voided,
+        winningOutcome,
+        claimableUsdc: 0,
+        stakedUsdc: 0,
+      }
+    }
+
+    const stakes: bigint[] = (position.stakes as any[]).map((s) =>
+      BigInt(s.toString()),
+    )
+    const stakedBase = stakes.reduce((sum, s) => sum + s, 0n)
+    const claimed = Boolean(position.claimed)
+
+    // Mirror the on-chain `claim` payout math (see programs/.../lib.rs::claim).
+    let payoutBase = 0n
+    if (resolved && !claimed) {
+      if (voided) {
+        payoutBase = stakedBase
+      } else {
+        const winningStake = stakes[Number(market.winningOutcome)] ?? 0n
+        const winningPool = BigInt(market.winningPool?.toString() ?? "0")
+        const distributable = BigInt(market.distributable?.toString() ?? "0")
+        payoutBase =
+          winningPool > 0n ? (distributable * winningStake) / winningPool : 0n
+      }
+    }
+
+    return {
+      hasPosition: true,
+      claimed,
+      resolved,
+      voided,
+      winningOutcome,
+      claimableUsdc: Number(payoutBase) / 1e6,
+      stakedUsdc: Number(stakedBase) / 1e6,
+    }
+  }
+
   // --- user-signed instruction builders ---------------------------------
   // These return a TransactionInstruction with `user` as the signer; the
   // caller (CircleSolanaWalletService) sets the fee payer and signs via Circle.
