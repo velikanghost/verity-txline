@@ -14,10 +14,10 @@ LPs and no creator royalty; the only skim is a treasury fee. No oracle trust bey
 
 ## Programs
 
-| Program | Purpose |
-| --- | --- |
-| `verity-worldcup` | The settlement engine (the deliverable). |
-| `mock-txline` | Local stand-in for TxLINE's `validate_stat`, used only by `anchor test` so the CPI + payout math run deterministically offline. Never deployed. |
+| Program           | Purpose                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `verity-worldcup` | The settlement engine (the deliverable).                                                                                        |
+| `mock-txline`     | Local stand-in for TxLINE's `validate_stat`, used only by `anchor test` so the CPI + payout math run deterministically offline. |
 
 ## Accounts
 
@@ -33,6 +33,7 @@ LPs and no creator royalty; the only skim is a treasury fee. No oracle trust bey
 init_market(fixture_id, nonce, stat_key, stat_key_b, stat_period,
             outcome_count, rules[], deadline, fee_bps)
 ```
+
 Creates a market with `outcome_count` outcomes (2–4). Outcome `0` is the **default / else**
 bucket; each of `rules[]` (length `outcome_count − 1`) is the predicate for outcomes `1..N`,
 evaluated in order (first true wins, else outcome 0). The winning conditions are fixed here and
@@ -41,7 +42,7 @@ immutable. A binary market is just `outcome_count = 2` with one rule; a 3-way ma
 
 - `stake(outcome, amount)` — stake USDC on outcome index `0..N−1`.
 - `settle(ts, fixture_summary, fixture_proof, main_tree_proof, stat_value, stat_period,
-  event_stat_root, stat_proof, stat_b?)` — keeper-only. CPIs `validate_stat` (once per rule that
+event_stat_root, stat_proof, stat_b?)` — keeper-only. CPIs `validate_stat` (once per rule that
   needs it), picks the winning outcome, and skims the treasury fee. Zero stake on the winning
   outcome voids the market (everyone refunded).
 - `claim()` — winner payout: `distributable * winning_stake / winning_pool` (voided markets
@@ -52,11 +53,11 @@ immutable. A binary market is just `outcome_count = 2` with one rule; a 3-way ma
 
 Each outcome's rule combines up to two proven stats; the mode is fixed per rule at `init_market`:
 
-| Mode | Stored as | Rule evaluated | Example |
-| --- | --- | --- | --- |
-| **Single stat** | `op=0, logic=0` | `predicate(stat_a)` | Team A to score: `A goals > 0` |
-| **Arithmetic** | `op=1 Add` / `op=2 Subtract` | `predicate(stat_a [±] stat_b)` | Total goals: `A + B > 2`; Winner: `A − B > 0` |
-| **Logical** | `logic=1 AND` / `logic=2 OR` | `(stat_a cmp_a thr_a) [AND/OR] (stat_b cmp_b thr_b)` | BTTS: `(A>0) AND (B>0)` |
+| Mode            | Stored as                    | Rule evaluated                                       | Example                                       |
+| --------------- | ---------------------------- | ---------------------------------------------------- | --------------------------------------------- |
+| **Single stat** | `op=0, logic=0`              | `predicate(stat_a)`                                  | Team A to score: `A goals > 0`                |
+| **Arithmetic**  | `op=1 Add` / `op=2 Subtract` | `predicate(stat_a [±] stat_b)`                       | Total goals: `A + B > 2`; Winner: `A − B > 0` |
+| **Logical**     | `logic=1 AND` / `logic=2 OR` | `(stat_a cmp_a thr_a) [AND/OR] (stat_b cmp_b thr_b)` | BTTS: `(A>0) AND (B>0)`                       |
 
 - **Arithmetic** `op` is TxLINE's own combine — one `validate_stat` CPI with `stat_b`/`op`.
 - **Logical** mode runs **two** `validate_stat` CPIs (one predicate per stat) and combines the
@@ -88,27 +89,11 @@ cargo-build-sbf --features localnet
 anchor idl build -p verity_worldcup -o target/idl/verity_worldcup.json -t target/types/verity_worldcup.ts
 anchor test --skip-build          # single-stat, arithmetic winner, logical BTTS, 3-way + payouts
 
-# Real devnet build + deploy (real TxLINE program id)
+# Devnet build + deploy
 cargo-build-sbf
 solana program deploy target/deploy/verity_worldcup.so \
   --program-id target/deploy/verity_worldcup-keypair.json \
   --upgrade-authority .keys/devnet-keeper.json --url devnet
 ```
 
-After an IDL change, copy it to the backend:
-`cp target/idl/verity_worldcup.json ../backend/src/modules/solana/idl/`.
-
-## Live devnet rehearsals (real TxLINE, not mock)
-
-- `scripts/full-loop-devnet.ts` — single-stat loop.
-- `scripts/full-loop-twostat-devnet.ts` — arithmetic (Add) total-goals loop.
-- `scripts/full-loop-btts-devnet.ts` — logical (AND) BTTS loop.
-
 Each runs `init_market → stake → settle (CPI into real validate_stat) → claim`.
-
-## Secrets
-
-`.keys/` holds `devnet-keeper.json` (the upgrade authority **and** settlement signer) and
-`txline-token.json` (JWT + API token). It is **gitignored** — never commit it. The program
-keypair lives in `target/` (also gitignored); back it up if you need to keep upgrading the
-deployed program id.

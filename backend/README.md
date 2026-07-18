@@ -9,20 +9,14 @@ Runs on `http://localhost:5050/api` (Swagger at `/api/docs`).
 
 ## Module overview (`src/modules/`)
 
-| Module | Purpose |
-| --- | --- |
-| **solana** | The chain layer. `SolanaService` (keeper-signed `init_market`/`settle`, pool reads), `TxlineService` (TxLINE REST + proof client), `CircleSolanaWalletService` (per-user custodial `SOL-DEVNET` wallets + tx signing), `WorldCupMarketService` (create market + deploy pool). |
-| **markets** | Market CRUD + the `MarketsKeeperService` settlement loop (below) + admin **force-settle** (`POST /markets/:id/force-settle`) as a keeper-miss safety net. |
-| **pvp** | PvP Arena: **slates** (cross-game contests), duels, matchmaking, ticket scoring. Each slate prop is a real TxLINE-settled parimutuel market that's individually backable on the home feed and links to its slate. |
-| **auth** | Passwordless email OTP (Resend) → JWT. Serializes the user's Solana wallet address. |
-| **users** | Profiles, XP/arena points, followers, Solana wallet id/address. |
-| **posts** / **comments** / **interactions** | Social feed containers, threaded comments, likes/reshares. |
-| **notifications** / **socket** | Activity feed + Socket.IO real-time broadcasts. |
-
-Removed: the EVM `blockchain`, LLM `agent`, `liquidity`, Circle `nanopayments`/`royalty`,
-and the `missions` / `coupons` / `categories` modules. TxLINE-verified settlement replaces
-oracle/subjective resolution, and markets are a **pure parimutuel** — no LPs and no creator
-royalty on-chain (only a treasury fee).
+| Module                         | Purpose                                                                                                                                                                                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **solana**                     | The chain layer. `SolanaService` (keeper-signed `init_market`/`settle`, pool reads), `TxlineService` (TxLINE REST + proof client), `CircleSolanaWalletService` (per-user custodial `SOL-DEVNET` wallets + tx signing), `WorldCupMarketService` (create market + deploy pool). |
+| **markets**                    | Market CRUD + the `MarketsKeeperService` settlement loop (below) + admin **force-settle** (`POST /markets/:id/force-settle`) as a keeper-miss safety net.                                                                                                                     |
+| **pvp**                        | PvP Arena: **slates** (cross-game contests), duels, matchmaking, ticket scoring. Each slate prop is a real TxLINE-settled parimutuel market that's individually backable on the home feed and links to its slate.                                                             |
+| **auth**                       | Passwordless email OTP (Resend) → JWT. Serializes the user's Solana wallet address.                                                                                                                                                                                           |
+| **users**                      | Profiles, XP/arena points, followers, Solana wallet id/address.                                                                                                                                                                                                               |
+| **notifications** / **socket** | Activity feed + Socket.IO real-time broadcasts.                                                                                                                                                                                                                               |
 
 ## Market resolution keeper
 
@@ -41,11 +35,11 @@ authorizes `init_market`/`settle` only, and is distinct from each user's Circle 
 
 ## TxLINE integration (`TxlineService`)
 
-- **Fixtures:** `GET /api/fixtures/snapshot` (surfaced to admin via `GET /solana/fixtures`).
+- **Fixtures:** `GET /api/fixtures/snapshot`.
 - **Scores:** snapshot + SSE stream for live/completed match state.
 - **Proofs:** `GET /api/scores/stat-validation?fixtureId=..&seq=..&statKey=..`, normalized into
   the exact `{ ts, statValue, statPeriod, eventStatRoot, statProof, fixtureProof, mainTreeProof,
-  fixtureSummary, epochDay }` shape `settle` needs.
+fixtureSummary, epochDay }` shape `settle` needs.
 
 ## Custodial Solana wallets (`CircleSolanaWalletService`)
 
@@ -73,16 +67,12 @@ pnpm build && pnpm start
 
 ### Required env
 
-| Var | Purpose |
-| --- | --- |
-| `MONGODB_URI` | Database connection |
-| `JWT_SECRET`, `RESEND_API_KEY` | Auth + OTP email |
-| `SOLANA_RPC_URL`, `SOLANA_CLUSTER` | Solana connection (devnet) |
-| `SOLANA_KEEPER_PRIVATE_KEY` | base58 keeper secret — signs `init_market`/`settle` |
-| `SOLANA_USDC_MINT` | SPL USDC mint for stakes/pools |
-| `TXLINE_API_ORIGIN`, `TXLINE_API_TOKEN` | TxLINE REST + `X-Api-Token` |
-| `CIRCLE_API_KEY`, `CIRCLE_ENTITY_SECRET`, `CIRCLE_WALLET_SET_ID`, `CIRCLE_SOLANA_BLOCKCHAIN` | Custodial Solana wallets |
-
-`.env`, and the Circle `recovery`/`recovery-dev` entity-secret material, are gitignored — never
-commit them. The IDL at `src/modules/solana/idl/verity_worldcup.json` is copied from the Anchor
-build (`solana/target/idl/`) and must be re-copied after any program change.
+| Var                                                                                          | Purpose                                             |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `MONGODB_URI`                                                                                | Database connection                                 |
+| `JWT_SECRET`, `RESEND_API_KEY`                                                               | Auth + OTP email                                    |
+| `SOLANA_RPC_URL`, `SOLANA_CLUSTER`                                                           | Solana connection (devnet)                          |
+| `SOLANA_KEEPER_PRIVATE_KEY`                                                                  | base58 keeper secret — signs `init_market`/`settle` |
+| `SOLANA_USDC_MINT`                                                                           | SPL USDC mint for stakes/pools                      |
+| `TXLINE_API_ORIGIN`, `TXLINE_API_TOKEN`                                                      | TxLINE REST + `X-Api-Token`                         |
+| `CIRCLE_API_KEY`, `CIRCLE_ENTITY_SECRET`, `CIRCLE_WALLET_SET_ID`, `CIRCLE_SOLANA_BLOCKCHAIN` | Custodial Solana wallets                            |

@@ -3,25 +3,22 @@
 The user-facing app for the TxLINE World Cup arena, built with **Next.js (App Router)**,
 **React 19**, and **Tailwind CSS v4**. Custodial by design — users sign in with email OTP, get a
 **Circle Solana wallet** provisioned automatically, and stake/claim without ever seeing a wallet
-popup (the backend builds + signs each Solana transaction). Ships as a single fixed light
-"arcade" theme (Poppins + Silkscreen; no theme toggle).
-
-Runs on `http://localhost:3000`.
+popup (the backend builds + signs each Solana transaction).
 
 ## Page routes
 
-| Route | View |
-| --- | --- |
-| `/` | **Home** — signed-out: landing hero + how-it-works; signed-in: player progress + World Cup markets. |
-| `/pvp` | **PvP Arena** — contest carousel, cross-game lineup builder, live duels. |
-| `/search` | Search open PvP contests. |
-| `/leaderboard` | Rankings (also embedded in the profile's **Rankings** tab). |
-| `/profile` | Account: **Profile · Portfolio · Rankings** tabs. |
-| `/profile/[id]` | Public profile: stats, positions, XP, past duels. |
-| `/portfolio` | Balances (USDC + SOL), position values, active duels, history. |
-| `/markets`, `/markets/worldcup` | Standalone lists of TxLINE-settled World Cup prop markets. |
-| `/notifications` | Comments, PvP results, market resolution events. |
-| `/posts/[id]` | Single matchup/market thread with comments. |
+| Route                           | View                                                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `/`                             | **Home** — signed-out: landing hero + how-it-works; signed-in: player progress + World Cup markets. |
+| `/pvp`                          | **PvP Arena** — contest carousel, cross-game lineup builder, live duels.                            |
+| `/search`                       | Search open PvP contests.                                                                           |
+| `/leaderboard`                  | Rankings (also embedded in the profile's **Rankings** tab).                                         |
+| `/profile`                      | Account: **Profile · Portfolio · Rankings** tabs.                                                   |
+| `/profile/[id]`                 | Public profile: stats, positions, XP, past duels.                                                   |
+| `/portfolio`                    | Balances (USDC + SOL), position values, active duels, history.                                      |
+| `/markets`, `/markets/worldcup` | Standalone lists of TxLINE-settled World Cup prop markets.                                          |
+| `/notifications`                | Comments, PvP results, market resolution events.                                                    |
+| `/posts/[id]`                   | Single matchup/market thread with comments.                                                         |
 
 ## World Cup market cards
 
@@ -34,16 +31,16 @@ button that routes to `/pvp?slate=…`, where it's backed as part of a duel line
 
 ## Custom hooks
 
-| Hook | Description |
-| --- | --- |
-| `useUsdcBalance` | The user's Circle wallet USDC **and** SOL balance (`GET /solana/balance`). |
-| `useUsdcTransfer` | Sends USDC from the user's Solana wallet (`POST /solana/send`). |
-| `useClaimWinnings` | Redeems winnings across resolved markets (`POST /solana/claim`). |
-| `useWalletProfile` | Authenticated user profile + Solana wallet address. |
-| `useUserPortfolio` | Positions, trade logs, balances. |
-| `useDailyVotes` | Remaining free daily signal votes. |
-| `useFeed` | Feed posts from the NestJS API. |
-| `useSocket` | Socket.IO rooms for real-time feed/market/user updates. |
+| Hook               | Description                                                                |
+| ------------------ | -------------------------------------------------------------------------- |
+| `useUsdcBalance`   | The user's Circle wallet USDC **and** SOL balance (`GET /solana/balance`). |
+| `useUsdcTransfer`  | Sends USDC from the user's Solana wallet (`POST /solana/send`).            |
+| `useClaimWinnings` | Redeems winnings across resolved markets (`POST /solana/claim`).           |
+| `useWalletProfile` | Authenticated user profile + Solana wallet address.                        |
+| `useUserPortfolio` | Positions, trade logs, balances.                                           |
+| `useDailyVotes`    | Remaining free daily signal votes.                                         |
+| `useFeed`          | Feed posts from the NestJS API.                                            |
+| `useSocket`        | Socket.IO rooms for real-time feed/market/user updates.                    |
 
 World Cup market queries/mutations live in `store/verity/worldcupQueries.ts`; Solana helpers
 (explorer links, address formatting, condition labels) in `lib/solana.ts`.

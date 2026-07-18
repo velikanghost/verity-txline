@@ -2,16 +2,10 @@
 
 ![Solana](https://img.shields.io/badge/Solana-Devnet-14F195)
 ![TxLINE](https://img.shields.io/badge/Settled_via-TxLINE_validate__stat-blue)
-![Parimutuel](https://img.shields.io/badge/Markets-Parimutuel_USDC-emerald)
 
 > A social sports prediction arena whose World Cup prop markets settle **trustlessly on
 > Solana** by CPI-ing into [TxLINE](https://txline.txodds.com)'s on-chain `validate_stat`
-> instruction — no oracle trust beyond TxLINE's cryptographically-signed match data.
-
-This is a hackathon pivot of the original "Verity" (an EVM/Arc prediction-market social app)
-onto the **TxODDS TxLINE** track. The social layer, PvP Arena, XP, admin, and portfolio are
-kept; the settlement engine is rebuilt as a custom Solana Anchor program that reads TxLINE's
-signed Merkle roots.
+> instruction — no oracle trust beyond TxLINE's cryptographically-signed match data. The settlement engine is built as a custom Solana Anchor program that reads TxLINE's signed Merkle roots.
 
 ## How settlement works
 
@@ -48,8 +42,8 @@ fouls, shots, possession, goalscorer identity).
 verity-txline/
 ├── solana/     # Anchor program (verity-worldcup) — the settlement engine
 ├── backend/    # NestJS API: TxLINE client, keeper, Circle Solana wallets, social/PvP
-├── frontend/   # Next.js user app (custodial, no wallet popups)
-├── admin/      # Next.js admin console (market + PvP-event builder, metrics)
+├── frontend/   # Next.js user app
+├── admin/      # Next.js admin consol
 ```
 
 `frontend`, `backend`, and `admin` are a **pnpm workspace**. `solana` is a standalone
