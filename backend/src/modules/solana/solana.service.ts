@@ -323,10 +323,19 @@ export class SolanaService implements OnModuleInit {
    * created by an incompatible (older) program layout, instead of throwing.
    */
   async tryReadPoolState(fixtureId: number, nonce: number): Promise<any | null> {
+    const [marketPda] = deriveMarketPda(fixtureId, nonce)
     try {
-      return await this.readPoolState(fixtureId, nonce)
-    } catch {
-      return null
+      const accountInfo = await this.connection.getAccountInfo(marketPda)
+      if (!accountInfo) {
+        return null
+      }
+      try {
+        return await this.readPoolState(fixtureId, nonce)
+      } catch {
+        return null
+      }
+    } catch (rpcErr) {
+      throw rpcErr
     }
   }
 

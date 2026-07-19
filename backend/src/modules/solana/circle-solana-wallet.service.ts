@@ -19,8 +19,7 @@ import {
 /**
  * Circle Developer-Controlled Wallets on Solana. Provisions an EOA wallet per
  * user (SOL-DEVNET) and signs arbitrary program instructions via Circle's
- * `signTransaction`, then broadcasts through an RPC connection. This preserves
- * the no-wallet-popup custodial UX the app used on Arc, now on Solana.
+ * `signTransaction`, then broadcasts through an RPC connection.
  */
 @Injectable()
 export class CircleSolanaWalletService implements OnModuleInit {

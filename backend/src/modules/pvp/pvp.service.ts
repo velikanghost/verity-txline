@@ -109,7 +109,14 @@ const rule = (
   comparison: number,
   thresholdB = 0,
   comparisonB = 0,
-): OutcomeRule => ({ op, logic, threshold, comparison, thresholdB, comparisonB })
+): OutcomeRule => ({
+  op,
+  logic,
+  threshold,
+  comparison,
+  thresholdB,
+  comparisonB,
+})
 
 /** A spec needs a second stat proof when it references stat B. */
 export function usesSecondStat(spec: MarketSpec): boolean {
@@ -139,7 +146,11 @@ export function deriveMarketSpec(
   const t = (fallback: number) =>
     handicap != null ? Math.round(handicap) : fallback
   // Binary market: one rule; outcome 0 = No/default, outcome 1 = Yes.
-  const binary = (statKey: number, statKeyB: number, r: OutcomeRule): MarketSpec => ({
+  const binary = (
+    statKey: number,
+    statKeyB: number,
+    r: OutcomeRule,
+  ): MarketSpec => ({
     statKey,
     statKeyB,
     statPeriod: 0,
@@ -166,7 +177,11 @@ export function deriveMarketSpec(
     case "clean_sheet":
       return binary(P2_GOALS, 0, rule(OP_NONE, 0, 0, CMP_EQ))
     case "btts":
-      return binary(P1_GOALS, P2_GOALS, rule(OP_NONE, LOGIC_AND, 0, CMP_GT, 0, CMP_GT))
+      return binary(
+        P1_GOALS,
+        P2_GOALS,
+        rule(OP_NONE, LOGIC_AND, 0, CMP_GT, 0, CMP_GT),
+      )
     case "major":
       // 3-way: 0 = Draw (default), 1 = teamA win (A-B>0), 2 = teamB win (A-B<0).
       return {
@@ -174,7 +189,10 @@ export function deriveMarketSpec(
         statKeyB: P2_GOALS,
         statPeriod: 0,
         outcomeCount: 3,
-        rules: [rule(OP_SUBTRACT, 0, 0, CMP_GT), rule(OP_SUBTRACT, 0, 0, CMP_LT)],
+        rules: [
+          rule(OP_SUBTRACT, 0, 0, CMP_GT),
+          rule(OP_SUBTRACT, 0, 0, CMP_LT),
+        ],
         outcomes: ["Draw", teamA, teamB],
       }
     default:
@@ -1000,7 +1018,9 @@ export class PvpService {
     const toBaseUnits = (usdc: number): bigint => BigInt(Math.round(usdc * 1e6))
     const backInstructions: TransactionInstruction[] = []
     for (const pick of dto.picks) {
-      const child = childMarkets.find((m) => m._id.toString() === pick.marketId)!
+      const child = childMarkets.find(
+        (m) => m._id.toString() === pick.marketId,
+      )!
       if (child.txlineFixtureId == null || child.solanaMarketNonce == null) {
         throw new BadRequestException(`Prop ${pick.marketId} is not on-chain.`)
       }
@@ -1595,8 +1615,7 @@ export class PvpService {
       }
     })
 
-    // Positions are tracked on the Solana program (Position PDAs); the old Arc
-    // outcome-token balance sync is no longer used.
+    // Positions are tracked on the Solana program (Position PDAs)
     const balancesMap: Record<string, Record<string, number>> = {}
 
     // Fetch existing positions in db to avoid redundant database writes
@@ -1914,10 +1933,10 @@ export class PvpService {
                   return {
                     marketId: p.marketId.toString(),
                     optionName:
-              matchChild?.optionName ||
-              matchChild?.question ||
-              "Unknown Proposition",
-            matchup: matchChild?.txlineMatchup ?? null,
+                      matchChild?.optionName ||
+                      matchChild?.question ||
+                      "Unknown Proposition",
+                    matchup: matchChild?.txlineMatchup ?? null,
                     selection: p.selection,
                     isCorrect: p.isCorrect,
                     yesCondition: matchChild?.yesCondition || "YES",
@@ -2559,16 +2578,16 @@ export class PvpService {
     const botUsernames = BOT_PROFILES.map((b) => b.username)
 
     // Parse timeframe
-    const tf = timeframe || "7d";
-    const cutoff = new Date();
+    const tf = timeframe || "7d"
+    const cutoff = new Date()
     if (tf === "1h") {
-      cutoff.setHours(cutoff.getHours() - 1);
+      cutoff.setHours(cutoff.getHours() - 1)
     } else if (tf === "1d") {
-      cutoff.setDate(cutoff.getDate() - 1);
+      cutoff.setDate(cutoff.getDate() - 1)
     } else if (tf === "30d") {
-      cutoff.setDate(cutoff.getDate() - 30);
+      cutoff.setDate(cutoff.getDate() - 30)
     } else {
-      cutoff.setDate(cutoff.getDate() - 7);
+      cutoff.setDate(cutoff.getDate() - 7)
     }
 
     // 1. Users count
@@ -2731,15 +2750,21 @@ export class PvpService {
         $project: {
           marketId: {
             $cond: {
-              if: { $ne: [{ $ifNull: ["$market.parentMarketId", null] }, null] },
+              if: {
+                $ne: [{ $ifNull: ["$market.parentMarketId", null] }, null],
+              },
               then: "$market.parentMarketId",
               else: "$marketId",
             },
           },
           marketQuestion: {
             $cond: {
-              if: { $ne: [{ $ifNull: ["$market.parentMarketId", null] }, null] },
-              then: { $ifNull: ["$parentMarket.question", "Unknown Parent Market"] },
+              if: {
+                $ne: [{ $ifNull: ["$market.parentMarketId", null] }, null],
+              },
+              then: {
+                $ifNull: ["$parentMarket.question", "Unknown Parent Market"],
+              },
               else: { $ifNull: ["$market.question", "Unknown Market"] },
             },
           },
@@ -2751,11 +2776,24 @@ export class PvpService {
     ])
 
     // 7. Activity Timeline data
-    const signups = await this.userModel.find({ createdAt: { $gte: cutoff } }, { createdAt: 1 }).lean()
-    const trades = await this.marketTradeModel.find({ createdAt: { $gte: cutoff } }, { createdAt: 1 }).lean()
-    const tickets = await this.pvpTicketModel.find({ createdAt: { $gte: cutoff } }, { createdAt: 1 }).lean()
+    const signups = await this.userModel
+      .find({ createdAt: { $gte: cutoff } }, { createdAt: 1 })
+      .lean()
+    const trades = await this.marketTradeModel
+      .find({ createdAt: { $gte: cutoff } }, { createdAt: 1 })
+      .lean()
+    const tickets = await this.pvpTicketModel
+      .find({ createdAt: { $gte: cutoff } }, { createdAt: 1 })
+      .lean()
 
-    const timeline: { label: string; signups: number; trades: number; tickets: number; start: number; end: number }[] = []
+    const timeline: {
+      label: string
+      signups: number
+      trades: number
+      tickets: number
+      start: number
+      end: number
+    }[] = []
     const nowMs = Date.now()
 
     if (tf === "1h") {
@@ -2791,12 +2829,17 @@ export class PvpService {
         const start = nowMs - (i + 1) * 24 * 60 * 60 * 1000
         const end = i === 0 ? Infinity : nowMs - i * 24 * 60 * 60 * 1000
         const dateObj = new Date(start)
-        const label = dateObj.toLocaleDateString("default", { weekday: "short" })
+        const label = dateObj.toLocaleDateString("default", {
+          weekday: "short",
+        })
         timeline.push({ label, signups: 0, trades: 0, tickets: 0, start, end })
       }
     }
 
-    const fillTimeline = (items: any[], key: "signups" | "trades" | "tickets") => {
+    const fillTimeline = (
+      items: any[],
+      key: "signups" | "trades" | "tickets",
+    ) => {
       for (const item of items) {
         if (!item.createdAt) continue
         const t = new Date(item.createdAt).getTime()
@@ -2811,12 +2854,14 @@ export class PvpService {
     fillTimeline(trades, "trades")
     fillTimeline(tickets, "tickets")
 
-    const activityTimeline = timeline.map(({ label, signups, trades, tickets }) => ({
-      label,
-      signups,
-      trades,
-      tickets,
-    }))
+    const activityTimeline = timeline.map(
+      ({ label, signups, trades, tickets }) => ({
+        label,
+        signups,
+        trades,
+        tickets,
+      }),
+    )
 
     return {
       users: {

@@ -160,17 +160,17 @@ export class CreateMarketPostDto {
   @IsString()
   @Length(1, 120, {
     message:
-      "Prediction posts require a 1 USDC Arc testnet creation transaction.",
+      "Prediction posts require a 1 USDC solana devnet creation transaction.",
   })
   creationFeeTxHash: string
 
   @ApiProperty({
-    description: "Arc testnet fee collector address",
-    example: "0x28738040d191ff30673f546FB6BF997E6cdA6dbF",
+    description: "Solana testnet fee collector address",
   })
   @IsString()
   @Length(1, 120, {
-    message: "Prediction posts require the Arc testnet fee collector address.",
+    message:
+      "Prediction posts require the solana devnet fee collector address.",
   })
   feeCollectorAddress: string
 

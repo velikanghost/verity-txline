@@ -101,6 +101,16 @@ pnpm --filter verity-admin dev   # admin console → http://localhost:3001
    link to the settlement transaction.
 5. **Claim** winnings; PvP duels tied to the same fixtures are scored and XP awarded.
 
+## On-Chain Settlement Proofs
+
+Below are live Solana Devnet explorer proofs demonstrating the successful real-time resolution of prop markets:
+
+| Market                               | Resolution | Explorer Link (Devnet)                                                                                                                                     |
+| ------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Match Result: Spain vs Argentina** | Spain Wins | [View Transaction](https://explorer.solana.com/tx/2BzkxWgzkAAP2qtpH2FcDzR3tejPDxz2cdivejTbtYyYkq8SrhtukjwoDkidXuzHzkUa8PsL2kE2tkGvnsCuYB3o?cluster=devnet) |
+| **Both Teams to Score**              | No         | [View Transaction](https://explorer.solana.com/tx/oWkB8qr8S4BqWu3rkdq1GYX9ACamd9tT6dBPuLEqouvJDq4wQSPKzdXeEcq7odGGbkZEUPzuZxp8brYzH3k7LzP?cluster=devnet)  |
+| **A red card is shown (1st half)**   | No         | [View Transaction](https://explorer.solana.com/tx/KQKsx38kpnQpznt2AZq7MiKCXMvfRA2YKW8mxYsHFEjnchSmRWHALbD4M2ewxtCJYvUhMvrr1DLbk8j7yNGLeyY?cluster=devnet)  |
+
 ---
 
 <p align="center">Built for the TxODDS TxLINE track · settled trustlessly on Solana</p>

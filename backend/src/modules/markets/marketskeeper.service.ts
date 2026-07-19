@@ -131,7 +131,29 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
     let seq: number | null = null
     if (Array.isArray(scores)) {
       let maxSeq: number | null = null
+      const provenActions = [
+        "goal",
+        "yellow_card",
+        "red_card",
+        "corner",
+        "kickoff",
+        "halftime_finalised",
+        "game_finalised",
+        "action_amend",
+        "action_discarded",
+        "clock_adjustment",
+        "lineups",
+        "connected",
+        "venue",
+        "weather",
+        "pitch",
+        "status",
+      ]
       for (const rec of scores) {
+        const action = rec?.Action ?? rec?.action
+        if (action && !provenActions.includes(action)) {
+          continue
+        }
         const s = rec?.Seq ?? rec?.seq
         if (typeof s === "number" && (maxSeq === null || s > maxSeq)) {
           maxSeq = s
@@ -171,7 +193,19 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
         )
       : (scores as any)?.StatusId === 100 || (scores as any)?.Action === "game_finalised"
 
-    let canSettle = isFinalised || force
+    const latestRecord = Array.isArray(scores)
+      ? scores[scores.length - 1]
+      : (scores as any)
+    const statusId = latestRecord?.StatusId ?? latestRecord?.statusId
+
+    const isFirstHalfMarket =
+      (market.txlineStatKey != null && market.txlineStatKey >= 1000 && market.txlineStatKey < 2000) ||
+      (market.txlineStatKeyB != null && market.txlineStatKeyB >= 1000 && market.txlineStatKeyB < 2000)
+
+    const isFirstHalfFinished = typeof statusId === "number" && statusId >= 3
+
+    let canSettle = isFinalised || (isFirstHalfMarket && isFirstHalfFinished) || force
+
 
     if (!canSettle) {
       // Check if any outcome rule is already guaranteed to be met (early satisfaction)
