@@ -110,7 +110,10 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
    * the outcome into Mongo (+ PvP resolution hook). Shared by the keeper loop
    * and the admin force-settle endpoint. Throws if it can't settle yet.
    */
-  async settleSolanaMarketDoc(market: MarketDocument): Promise<{
+  async settleSolanaMarketDoc(
+    market: MarketDocument,
+    force = false,
+  ): Promise<{
     status: "resolved" | "voided"
     txSig: string
     resolvedOutcome?: string
@@ -120,7 +123,26 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
       throw new BadRequestException("Market is not an on-chain TxLINE market.")
     }
 
-    const seq = await this.getLatestScoresSeq(market.txlineFixtureId)
+    const scores = await this.txlineService.getScores(market.txlineFixtureId)
+    if (!scores) {
+      throw new BadRequestException("No published scores batch for this fixture yet.")
+    }
+
+    let seq: number | null = null
+    if (Array.isArray(scores)) {
+      let maxSeq: number | null = null
+      for (const rec of scores) {
+        const s = rec?.Seq ?? rec?.seq
+        if (typeof s === "number" && (maxSeq === null || s > maxSeq)) {
+          maxSeq = s
+        }
+      }
+      seq = maxSeq
+    } else {
+      const s = (scores as any)?.Seq ?? (scores as any)?.seq ?? (scores as any)?.latestSeq ?? (scores as any)?.LatestSeq
+      seq = typeof s === "number" ? s : null
+    }
+
     if (seq == null) {
       throw new BadRequestException(
         "No published scores batch for this fixture yet — try again once the match has data.",
@@ -142,6 +164,37 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
             market.txlineStatKeyB,
           )
         : null
+
+    const isFinalised = Array.isArray(scores)
+      ? scores.some(
+          (rec) => rec?.StatusId === 100 || rec?.Action === "game_finalised",
+        )
+      : (scores as any)?.StatusId === 100 || (scores as any)?.Action === "game_finalised"
+
+    let canSettle = isFinalised || force
+
+    if (!canSettle) {
+      // Check if any outcome rule is already guaranteed to be met (early satisfaction)
+      const rules = market.txlineOutcomeRules || []
+      const valA = proof.statValue
+      const valB = proofB ? proofB.statValue : 0
+
+      let guaranteed = false
+      for (const rule of rules) {
+        if (isWinningOutcomeGuaranteed(rule as any, valA, valB)) {
+          guaranteed = true
+          break
+        }
+      }
+      canSettle = guaranteed
+    }
+
+    if (!canSettle) {
+      throw new BadRequestException(
+        "Match is not finalised yet and the winning outcome is not guaranteed.",
+      )
+    }
+
     const result = await this.solanaService.settleMarket(
       market.txlineFixtureId,
       market.solanaMarketNonce,
@@ -192,34 +245,71 @@ export class MarketsKeeperService implements OnModuleInit, OnModuleDestroy {
     if (market.status === "resolved" || market.status === "voided") {
       throw new BadRequestException("Market is already settled.")
     }
-    return this.settleSolanaMarketDoc(market)
-  }
-
-  /**
-   * Best-effort extraction of the latest scores sequence number for a fixture
-   * from the TxLINE scores snapshot. Several likely field shapes are handled.
-   */
-  private async getLatestScoresSeq(fixtureId: number): Promise<number | null> {
-    try {
-      const scores: any = await this.txlineService.getScores(fixtureId)
-      // TxLINE's `/scores/snapshot` returns a list of score-update records, each
-      // carrying a `Seq` (capital S). Use the highest sequence seen — that's the
-      // fixture's latest processed batch that a stat proof can be fetched for.
-      if (Array.isArray(scores)) {
-        let maxSeq: number | null = null
-        for (const rec of scores) {
-          const s = rec?.Seq ?? rec?.seq
-          if (typeof s === "number" && (maxSeq === null || s > maxSeq)) {
-            maxSeq = s
-          }
-        }
-        return maxSeq
-      }
-      const seq =
-        scores?.Seq ?? scores?.seq ?? scores?.latestSeq ?? scores?.LatestSeq
-      return typeof seq === "number" ? seq : null
-    } catch {
-      return null
-    }
+    return this.settleSolanaMarketDoc(market, true)
   }
 }
+
+/**
+ * Evaluates whether a market's outcome rule is already mathematically guaranteed to be met.
+ * Only monotonic operators/comparisons (like goals, corners, cards only increasing) are supported.
+ */
+function isWinningOutcomeGuaranteed(
+  rule: {
+    op: number
+    logic: number
+    threshold: number
+    comparison: number
+    thresholdB: number
+    comparisonB: number
+  },
+  valA: number,
+  valB: number,
+): boolean {
+  const CMP_GT = 0
+  const OP_ADD = 1
+  const OP_NONE = 0
+  const LOGIC_AND = 1
+  const LOGIC_OR = 2
+
+  const compare = (val: number, cmp: number, thr: number) => {
+    if (cmp === 0) return val > thr // CMP_GT
+    if (cmp === 1) return val < thr // CMP_LT
+    if (cmp === 2) return val === thr // CMP_EQ
+    return false
+  }
+
+  let left = valA
+  if (rule.logic === 0) {
+    if (rule.op === 1) { // OP_ADD
+      left = valA + valB
+    } else if (rule.op === 2) { // OP_SUBTRACT
+      left = valA - valB
+    }
+  }
+
+  const boolA = compare(valA, rule.comparison, rule.threshold)
+  const boolB = compare(valB, rule.comparisonB, rule.thresholdB)
+
+  const currentlyMet =
+    rule.logic === 0
+      ? compare(left, rule.comparison, rule.threshold)
+      : rule.logic === 1
+        ? boolA && boolB
+        : boolA || boolB
+
+  if (!currentlyMet) {
+    return false
+  }
+
+  // Check if it is guaranteed to stay met (monotonic stats only increase)
+  if (rule.logic === 0) {
+    const isMonotonicOp = rule.op === OP_ADD || rule.op === OP_NONE
+    const isMonotonicCmp = rule.comparison === CMP_GT
+    return isMonotonicOp && isMonotonicCmp
+  } else if (rule.logic === LOGIC_AND || rule.logic === LOGIC_OR) {
+    return rule.comparison === CMP_GT && rule.comparisonB === CMP_GT
+  }
+
+  return false
+}
+
