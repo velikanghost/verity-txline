@@ -43,7 +43,7 @@ export class UsersController {
   })
   @ApiParam({
     name: "walletAddress",
-    description: "Ethereum/Arc address",
+    description: "address",
     example: "0x28738040d191ff30673f546FB6BF997E6cdA6dbF",
   })
   @ApiResponse({

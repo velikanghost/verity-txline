@@ -1,27 +1,27 @@
-import { ImageResponse } from "next/og"
+import { ImageResponse } from 'next/og'
 
-export const alt = "Verity social prediction markets preview"
+export const alt = 'Verity social prediction markets preview'
 export const size = {
   width: 1200,
   height: 630,
 }
-export const contentType = "image/png"
+export const contentType = 'image/png'
 
 export default function OpenGraphImage() {
   return new ImageResponse(
     <div
       style={{
-        background: "#fbfaf9",
-        color: "#121212",
-        display: "flex",
-        flexDirection: "column",
-        fontFamily: "Arial, sans-serif",
-        height: "100%",
-        justifyContent: "space-between",
-        overflow: "hidden",
+        background: '#fbfaf9',
+        color: '#121212',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: 'Arial, sans-serif',
+        height: '100%',
+        justifyContent: 'space-between',
+        overflow: 'hidden',
         padding: 64,
-        position: "relative",
-        width: "100%",
+        position: 'relative',
+        width: '100%',
       }}
     >
       <Blob color="#ff3e00" left={78} top={86} rotate="-8deg" />
@@ -32,32 +32,32 @@ export default function OpenGraphImage() {
 
       <div
         style={{
-          alignItems: "center",
-          display: "flex",
+          alignItems: 'center',
+          display: 'flex',
           gap: 18,
         }}
       >
         <div
           style={{
-            alignItems: "center",
-            background: "#ffbb26",
+            alignItems: 'center',
+            background: '#ffbb26',
             borderRadius: 24,
-            color: "#121212",
-            display: "flex",
+            color: '#121212',
+            display: 'flex',
             fontSize: 44,
             fontWeight: 700,
             height: 72,
-            justifyContent: "center",
+            justifyContent: 'center',
             letterSpacing: -3,
             width: 72,
           }}
         >
           V
         </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div
             style={{
-              color: "#343433",
+              color: '#343433',
               fontSize: 34,
               fontWeight: 700,
               letterSpacing: -1.2,
@@ -67,7 +67,7 @@ export default function OpenGraphImage() {
           </div>
           <div
             style={{
-              color: "#848281",
+              color: '#848281',
               fontSize: 20,
               letterSpacing: -0.2,
             }}
@@ -79,14 +79,14 @@ export default function OpenGraphImage() {
 
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
           maxWidth: 820,
         }}
       >
         <h1
           style={{
-            color: "#121212",
+            color: '#121212',
             fontSize: 78,
             fontWeight: 700,
             letterSpacing: -4.4,
@@ -94,26 +94,13 @@ export default function OpenGraphImage() {
             margin: 0,
           }}
         >
-          Social posts that can become real markets.
+          Verity turns your opinions into real markets.
         </h1>
-        <p
-          style={{
-            color: "#474645",
-            fontSize: 30,
-            letterSpacing: -0.8,
-            lineHeight: 1.25,
-            margin: "28px 0 0",
-            maxWidth: 720,
-          }}
-        >
-          Upvote, Downvote, fund pools, provide liquidity, and trade outcomes
-          with Arc testnet USDC.
-        </p>
       </div>
 
       <div
         style={{
-          display: "flex",
+          display: 'flex',
           gap: 14,
         }}
       >
@@ -141,11 +128,11 @@ function Pill({
         background: color,
         borderRadius: 999,
         color: textColor,
-        display: "flex",
+        display: 'flex',
         fontSize: 22,
         fontWeight: 700,
         letterSpacing: -0.4,
-        padding: "16px 24px",
+        padding: '16px 24px',
       }}
     >
       {text}
@@ -167,14 +154,14 @@ function Blob({
   return (
     <div
       style={{
-        alignItems: "center",
+        alignItems: 'center',
         background: color,
-        borderRadius: "48% 58% 45% 62%",
-        display: "flex",
+        borderRadius: '48% 58% 45% 62%',
+        display: 'flex',
         height: 126,
-        justifyContent: "center",
+        justifyContent: 'center',
         left,
-        position: "absolute",
+        position: 'absolute',
         top,
         transform: `rotate(${rotate})`,
         width: 126,
@@ -182,7 +169,7 @@ function Blob({
     >
       <div
         style={{
-          background: "#121212",
+          background: '#121212',
           borderRadius: 999,
           height: 12,
           marginRight: 18,
@@ -191,7 +178,7 @@ function Blob({
       />
       <div
         style={{
-          background: "#121212",
+          background: '#121212',
           borderRadius: 999,
           height: 12,
           width: 12,
@@ -205,18 +192,18 @@ function Coin({ left, top }: { left: number; top: number }) {
   return (
     <div
       style={{
-        alignItems: "center",
-        background: "#ffbb26",
-        border: "8px solid #d48f00",
+        alignItems: 'center',
+        background: '#ffbb26',
+        border: '8px solid #d48f00',
         borderRadius: 999,
-        color: "#121212",
-        display: "flex",
+        color: '#121212',
+        display: 'flex',
         fontSize: 52,
         fontWeight: 700,
         height: 112,
-        justifyContent: "center",
+        justifyContent: 'center',
         left,
-        position: "absolute",
+        position: 'absolute',
         top,
         width: 112,
       }}
@@ -230,12 +217,12 @@ function Star({ left, top }: { left: number; top: number }) {
   return (
     <div
       style={{
-        color: "#ffbb26",
+        color: '#ffbb26',
         fontSize: 96,
         fontWeight: 700,
         left,
         lineHeight: 1,
-        position: "absolute",
+        position: 'absolute',
         top,
       }}
     >

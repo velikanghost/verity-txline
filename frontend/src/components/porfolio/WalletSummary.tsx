@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import Link from "next/link"
+import Link from 'next/link'
 import {
   CheckCircle2,
   CircleDollarSign,
@@ -9,13 +9,13 @@ import {
   Wallet,
   Copy,
   Check,
-} from "lucide-react"
-import { useAuth } from "@/components/providers/AuthModals"
-import { useUsdcBalance } from "@/hooks/useUsdcBalance"
-import { useState } from "react"
+} from 'lucide-react'
+import { useAuth } from '@/components/providers/AuthModals'
+import { useUsdcBalance } from '@/hooks/useUsdcBalance'
+import { useState } from 'react'
 
 function shortAddress(addr?: string | null) {
-  if (!addr) return ""
+  if (!addr) return ''
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
@@ -43,7 +43,7 @@ export default function WalletSummary() {
             <div className="flex items-center gap-2 text-meadow-green">
               <CircleDollarSign className="h-5 w-5" />
               <span className="font-mono text-xs font-semibold uppercase tracking-[0.16em]">
-                Arc USDC
+                USDC
               </span>
             </div>
             <Link
@@ -57,7 +57,7 @@ export default function WalletSummary() {
             </Link>
           </div>
           <p className="mt-4 font-mono text-3xl font-semibold tracking-[-0.9px] text-midnight">
-            {isLoading ? "..." : formattedBalance}
+            {isLoading ? '...' : formattedBalance}
           </p>
           <p className="font-mono text-xs text-ash">testnet USDC balance</p>
         </div>
@@ -71,7 +71,7 @@ export default function WalletSummary() {
           </div>
           <div className="mt-4 flex items-center gap-2">
             <p className="font-mono text-sm font-semibold text-charcoal-primary">
-              {isConnected ? shortAddress(address) : "Not connected"}
+              {isConnected ? shortAddress(address) : 'Not connected'}
             </p>
             {isConnected && (
               <button
@@ -93,7 +93,7 @@ export default function WalletSummary() {
           >
             {isConnected
               ? address
-              : "Connect to create posts and send Upvote/Downvote signals"}
+              : 'Connect to create posts and send Upvote/Downvote signals'}
           </p>
         </div>
       </section>
@@ -104,17 +104,14 @@ export default function WalletSummary() {
             <CheckCircle2 className="h-5 w-5 text-meadow-green" />
             <div>
               <h2 className="font-semibold tracking-[-0.18px] text-charcoal-primary">
-                Arc Testnet
+                Solana Devnet
               </h2>
-              <p className="font-mono text-xs text-ash">
-                Smart contract wallet (SCA) - gas paid in ARC
-              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs text-ash">
             <Network className="h-4 w-4" />
-            {isConnected ? "Connected (Circle WaaS)" : "Disconnected"}
+            {isConnected ? 'Connected (Circle WaaS)' : 'Disconnected'}
           </div>
         </div>
       </section>

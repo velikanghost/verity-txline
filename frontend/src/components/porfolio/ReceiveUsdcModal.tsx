@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import { X, Copy, Check } from "lucide-react";
+import React, { useState } from 'react'
+import { X, Copy, Check } from 'lucide-react'
 
 interface ReceiveUsdcModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  walletAddress: string;
+  isOpen: boolean
+  onClose: () => void
+  walletAddress: string
 }
 
 export default function ReceiveUsdcModal({
@@ -14,19 +14,19 @@ export default function ReceiveUsdcModal({
   onClose,
   walletAddress,
 }: ReceiveUsdcModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleCopy = () => {
     if (walletAddress) {
-      navigator.clipboard.writeText(walletAddress);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      navigator.clipboard.writeText(walletAddress)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
-  };
+  }
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(walletAddress)}&color=121212&bgcolor=ffffff`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(walletAddress)}&color=121212&bgcolor=ffffff`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
@@ -43,7 +43,7 @@ export default function ReceiveUsdcModal({
         </h3>
         <p className="mt-1 text-xs text-ash max-w-[280px]">
           Scan this QR code or copy the address below to transfer USDC to your
-          Smart Contract Account (SCA).
+          wallet.
         </p>
 
         {/* QR Code Container */}
@@ -72,11 +72,7 @@ export default function ReceiveUsdcModal({
             )}
           </button>
         </div>
-
-        <p className="mt-4 font-mono text-[9px] text-ash uppercase tracking-wider">
-          Network: Arc Testnet only
-        </p>
       </div>
     </div>
-  );
+  )
 }

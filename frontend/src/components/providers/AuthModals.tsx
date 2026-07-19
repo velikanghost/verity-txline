@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { useQuery } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { apiRequest, ApiError } from "@/store/apiClient";
-import type { Profile } from "@/lib/verity";
+import { useQuery } from '@tanstack/react-query'
+import { Input } from '@/components/ui/input'
+import { apiRequest, ApiError } from '@/store/apiClient'
+import type { Profile } from '@/lib/verity'
 import {
   X,
   Mail,
@@ -15,38 +15,38 @@ import {
   ChevronRight,
   Copy,
   Check,
-} from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
+} from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
 
 export function useProfileQuery() {
   return useQuery<Profile | null>({
-    queryKey: ["profile"],
+    queryKey: ['profile'],
     queryFn: async () => {
       const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("verity_auth_token")
-          : null;
-      if (!token) return null;
+        typeof window !== 'undefined'
+          ? localStorage.getItem('verity_auth_token')
+          : null
+      if (!token) return null
       try {
-        return await apiRequest<Profile>("/auth/me");
+        return await apiRequest<Profile>('/auth/me')
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
-          localStorage.removeItem("verity_auth_token");
-          return null;
+          localStorage.removeItem('verity_auth_token')
+          return null
         }
-        throw err;
+        throw err
       }
     },
     staleTime: 60 * 1000,
-  });
+  })
 }
 
 export function useAuth() {
-  const { data: user, isLoading: loading } = useProfileQuery();
-  const authenticated = !!user;
+  const { data: user, isLoading: loading } = useProfileQuery()
+  const authenticated = !!user
 
-  const login = useAuthStore((s) => s.login);
-  const logout = useAuthStore((s) => s.logout);
+  const login = useAuthStore((s) => s.login)
+  const logout = useAuthStore((s) => s.logout)
 
   return {
     user: user ?? null,
@@ -54,45 +54,45 @@ export function useAuth() {
     loading,
     login,
     logout,
-  };
+  }
 }
 
 export default function AuthModals() {
-  const authModalStep = useAuthStore((s) => s.authModalStep);
-  const email = useAuthStore((s) => s.email);
-  const otpCode = useAuthStore((s) => s.otpCode);
-  const usernameInput = useAuthStore((s) => s.usernameInput);
-  const referrerInput = useAuthStore((s) => s.referrerInput);
-  const isSubmittingOtp = useAuthStore((s) => s.isSubmittingOtp);
-  const isRequestingOtp = useAuthStore((s) => s.isRequestingOtp);
-  const authError = useAuthStore((s) => s.authError);
-  const copied = useAuthStore((s) => s.copied);
+  const authModalStep = useAuthStore((s) => s.authModalStep)
+  const email = useAuthStore((s) => s.email)
+  const otpCode = useAuthStore((s) => s.otpCode)
+  const usernameInput = useAuthStore((s) => s.usernameInput)
+  const referrerInput = useAuthStore((s) => s.referrerInput)
+  const isSubmittingOtp = useAuthStore((s) => s.isSubmittingOtp)
+  const isRequestingOtp = useAuthStore((s) => s.isRequestingOtp)
+  const authError = useAuthStore((s) => s.authError)
+  const copied = useAuthStore((s) => s.copied)
 
-  const setAuthModalStep = useAuthStore((s) => s.setAuthModalStep);
-  const setEmail = useAuthStore((s) => s.setEmail);
-  const setOtpCode = useAuthStore((s) => s.setOtpCode);
-  const setUsernameInput = useAuthStore((s) => s.setUsernameInput);
-  const setReferrerInput = useAuthStore((s) => s.setReferrerInput);
-  const setCopied = useAuthStore((s) => s.setCopied);
+  const setAuthModalStep = useAuthStore((s) => s.setAuthModalStep)
+  const setEmail = useAuthStore((s) => s.setEmail)
+  const setOtpCode = useAuthStore((s) => s.setOtpCode)
+  const setUsernameInput = useAuthStore((s) => s.setUsernameInput)
+  const setReferrerInput = useAuthStore((s) => s.setReferrerInput)
+  const setCopied = useAuthStore((s) => s.setCopied)
 
-  const handleRequestOtp = useAuthStore((s) => s.handleRequestOtp);
-  const handleVerifyOtp = useAuthStore((s) => s.handleVerifyOtp);
-  const handleSaveOnboarding = useAuthStore((s) => s.handleSaveOnboarding);
+  const handleRequestOtp = useAuthStore((s) => s.handleRequestOtp)
+  const handleVerifyOtp = useAuthStore((s) => s.handleVerifyOtp)
+  const handleSaveOnboarding = useAuthStore((s) => s.handleSaveOnboarding)
 
-  const { user } = useAuth();
-  const walletAddr = user?.walletAddress || "";
+  const { user } = useAuth()
+  const walletAddr = user?.walletAddress || ''
 
   const handleCopyAddress = () => {
-    if (!walletAddr) return;
-    navigator.clipboard.writeText(walletAddr);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+    if (!walletAddr) return
+    navigator.clipboard.writeText(walletAddr)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <>
       {/* 1. PASSWORDLESS EMAIL OTP AUTHENTICATION MODAL */}
-      {authModalStep !== "idle" && (
+      {authModalStep !== 'idle' && (
         <div className="tournament-auth-overlay fixed inset-0 z-1000 flex items-center justify-center bg-[#02040d]/75 px-4 py-6 backdrop-blur-md animate-fade-in">
           <div className="tournament-auth-modal game-modal-surface w-full max-w-[440px] overflow-hidden transition-all duration-300">
             {/* Header */}
@@ -106,17 +106,17 @@ export default function AuthModals() {
                     Verity Identity
                   </p>
                   <h3 className="text-lg font-bold text-charcoal-primary">
-                    {authModalStep === "email" && "Login or Signup"}
-                    {authModalStep === "otp" && "Enter Verification Code"}
-                    {authModalStep === "onboarding" && "Setup Profile"}
-                    {authModalStep === "success" && "Welcome to Verity!"}
+                    {authModalStep === 'email' && 'Login or Signup'}
+                    {authModalStep === 'otp' && 'Enter Verification Code'}
+                    {authModalStep === 'onboarding' && 'Setup Profile'}
+                    {authModalStep === 'success' && 'Welcome to Verity!'}
                   </h3>
                 </div>
               </div>
-              {authModalStep !== "success" &&
-                authModalStep !== "onboarding" && (
+              {authModalStep !== 'success' &&
+                authModalStep !== 'onboarding' && (
                   <button
-                    onClick={() => setAuthModalStep("idle")}
+                    onClick={() => setAuthModalStep('idle')}
                     className="rounded-lg p-1.5 text-ash hover:bg-stone-surface hover:text-midnight transition-colors"
                   >
                     <X className="h-4 w-4" />
@@ -125,7 +125,7 @@ export default function AuthModals() {
             </div>
 
             {/* Email Step */}
-            {authModalStep === "email" && (
+            {authModalStep === 'email' && (
               <form
                 onSubmit={handleRequestOtp}
                 className="tournament-auth-body space-y-4"
@@ -176,7 +176,7 @@ export default function AuthModals() {
             )}
 
             {/* OTP Step */}
-            {authModalStep === "otp" && (
+            {authModalStep === 'otp' && (
               <form
                 onSubmit={handleVerifyOtp}
                 className="tournament-auth-body space-y-4"
@@ -213,7 +213,7 @@ export default function AuthModals() {
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => setAuthModalStep("email")}
+                    onClick={() => setAuthModalStep('email')}
                     className="flex-1 h-11 rounded-[10px] border border-border bg-transparent text-graphite text-sm font-semibold hover:bg-stone-surface transition-colors"
                   >
                     Back
@@ -229,7 +229,7 @@ export default function AuthModals() {
                         Verifying...
                       </>
                     ) : (
-                      "Verify"
+                      'Verify'
                     )}
                   </button>
                 </div>
@@ -237,7 +237,7 @@ export default function AuthModals() {
             )}
 
             {/* Onboarding Step */}
-            {authModalStep === "onboarding" && (
+            {authModalStep === 'onboarding' && (
               <form
                 onSubmit={handleSaveOnboarding}
                 className="tournament-auth-body space-y-4"
@@ -304,14 +304,14 @@ export default function AuthModals() {
                       Saving...
                     </>
                   ) : (
-                    "Save & Continue"
+                    'Save & Continue'
                   )}
                 </button>
               </form>
             )}
 
             {/* Success Step (Wallet Address & Funding Details) */}
-            {authModalStep === "success" && (
+            {authModalStep === 'success' && (
               <div className="tournament-auth-body space-y-5">
                 <div className="rounded-[10px] border border-stone-surface bg-parchment-card p-4 space-y-3">
                   <div className="flex items-center justify-between">
@@ -336,18 +336,18 @@ export default function AuthModals() {
                     </button>
                   </div>
                   <div className="font-mono text-sm font-bold text-charcoal-primary break-all bg-surface-solid p-2.5 rounded-lg border border-stone-surface">
-                    {walletAddr || "Generating secure SCA wallet..."}
+                    {walletAddr || 'Generating secure SCA wallet...'}
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between gap-4 p-4 rounded-[10px] bg-sky-blue/5 border border-sky-blue/20">
                   <div className="space-y-1 text-left">
                     <h4 className="text-xs font-bold text-midnight">
-                      Need Arc Testnet Funds?
+                      Need Testnet USDC?
                     </h4>
                     <p className="text-[11px] text-ash leading-relaxed">
-                      Copy your SCA address above and get testnet USDC and ARC
-                      from the faucet to cover gas and trading.
+                      Copy your SCA address above and get testnet USDC from the
+                      faucet to cover gas and trading.
                     </p>
                   </div>
                   <a
@@ -362,7 +362,7 @@ export default function AuthModals() {
                 </div>
 
                 <button
-                  onClick={() => setAuthModalStep("idle")}
+                  onClick={() => setAuthModalStep('idle')}
                   className="w-full flex h-11 items-center justify-center gap-2 verity-pill rounded-[10px] bg-inverse text-sm font-semibold text-inverse-text transition-opacity hover:opacity-90"
                 >
                   Start Exploring
@@ -374,5 +374,5 @@ export default function AuthModals() {
         </div>
       )}
     </>
-  );
+  )
 }

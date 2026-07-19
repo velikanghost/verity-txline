@@ -1,6 +1,6 @@
-import type { MarketInput } from "@/lib/verity"
+import type { MarketInput } from '@/lib/verity'
 
-export type AgentSeverity = "info" | "warning" | "blocker"
+export type AgentSeverity = 'info' | 'warning' | 'blocker'
 
 export interface AgentFinding {
   severity: AgentSeverity
@@ -15,14 +15,14 @@ export interface VerityAgentReview {
 }
 
 const VAGUE_WORDS = [
-  "popular",
-  "successful",
-  "viral",
-  "big",
-  "famous",
-  "good",
-  "better",
-  "important",
+  'popular',
+  'successful',
+  'viral',
+  'big',
+  'famous',
+  'good',
+  'better',
+  'important',
 ]
 
 function hasNumber(value: string) {
@@ -45,8 +45,8 @@ export function reviewPredictionPost(input: MarketInput): VerityAgentReview {
 
   if (!question) {
     findings.push({
-      severity: "blocker",
-      message: "Add a clear YES/NO market question.",
+      severity: 'blocker',
+      message: 'Add a clear YES/NO market question.',
     })
   }
 
@@ -59,53 +59,53 @@ export function reviewPredictionPost(input: MarketInput): VerityAgentReview {
 
   if (VAGUE_WORDS.some((word) => question.toLowerCase().includes(word))) {
     findings.push({
-      severity: "warning",
-      message: "Replace vague wording with an objective threshold.",
+      severity: 'warning',
+      message: 'Replace vague wording with an objective threshold.',
     })
   }
 
   if (!input.deadline || deadlineDays === null) {
     findings.push({
-      severity: "blocker",
-      message: "Add a valid resolution deadline.",
+      severity: 'blocker',
+      message: 'Add a valid resolution deadline.',
     })
   } else if (deadlineDays <= 0) {
-    findings.push({ severity: "blocker", message: "Choose a future deadline." })
+    findings.push({ severity: 'blocker', message: 'Choose a future deadline.' })
   } else if (deadlineDays < 1) {
     findings.push({
-      severity: "warning",
-      message: "Very short deadlines may not gather enough social signal.",
+      severity: 'warning',
+      message: 'Very short deadlines may not gather enough social signal.',
     })
   }
 
   if (!resolutionSource) {
     findings.push({
-      severity: "blocker",
-      message: "Name the source that will resolve the market.",
+      severity: 'blocker',
+      message: 'Name the source that will resolve the market.',
     })
   }
 
   if (yesCondition.length < 12) {
     findings.push({
-      severity: "blocker",
+      severity: 'blocker',
       message:
-        "Make the YES condition explicit enough to resolve without debate.",
+        'Make the YES condition explicit enough to resolve without debate.',
     })
   }
 
   if (noCondition.length < 12) {
     findings.push({
-      severity: "blocker",
+      severity: 'blocker',
       message:
-        "Make the NO condition explicit enough to resolve without debate.",
+        'Make the NO condition explicit enough to resolve without debate.',
     })
   }
 
   const blockers = findings.filter(
-    (finding) => finding.severity === "blocker",
+    (finding) => finding.severity === 'blocker',
   ).length
   const warnings = findings.filter(
-    (finding) => finding.severity === "warning",
+    (finding) => finding.severity === 'warning',
   ).length
   const score = Math.max(0, 100 - blockers * 28 - warnings * 10)
   const approved = blockers === 0 && score >= 70
@@ -114,16 +114,16 @@ export function reviewPredictionPost(input: MarketInput): VerityAgentReview {
     approved,
     score,
     summary: approved
-      ? "Verity AI approves this prediction for the 1 USDC Arc testnet creation payment."
-      : "Verity AI needs a tighter prediction before payment is enabled.",
+      ? 'Verity AI approves this prediction for the 1 USDC testnet creation payment.'
+      : 'Verity AI needs a tighter prediction before payment is enabled.',
     findings:
       findings.length > 0
         ? findings
         : [
             {
-              severity: "info",
+              severity: 'info',
               message:
-                "Clear question, measurable outcome, deadline, and resolution source detected.",
+                'Clear question, measurable outcome, deadline, and resolution source detected.',
             },
           ],
   }
